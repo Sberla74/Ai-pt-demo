@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach AI · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--text2:#8a8780;--text3:#555350;--accent:#c8f564;--accent-dim:rgba(200,245,100,0.12);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);--radius:14px;--radius-sm:8px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .topbar{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);}
+  .topbar-left{display:flex;align-items:center;gap:10px;}
+  .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .topbar-title{font-size:14px;font-weight:500;color:var(--accent);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;}
+  .refresh-btn{padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
+  .refresh-btn:hover{color:var(--accent);border-color:rgba(200,245,100,0.3);}
+  .layout{display:flex;height:calc(100vh - 57px);}
+  .sidebar{width:260px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--surface);}
+  .sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;}
+  .trainer-group{border-bottom:1px solid var(--border);}
+  .trainer-label{padding:10px 16px 6px;font-size:12px;font-weight:500;color:var(--accent);font-family:'DM Mono',monospace;}
+  .cliente-item{padding:8px 16px 8px 24px;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;justify-content:space-between;}
+  .cliente-item:hover{background:var(--surface2);}
+  .cliente-item.active{background:var(--accent-dim);border-left:2px solid var(--accent);}
+  .cliente-name{font-size:13px;color:var(--text);}
+  .cliente-count{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+  .main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+  .main-empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text3);}
+  .main-empty p{font-size:14px;}
+  .conv-header{padding:16px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .conv-title{font-size:15px;font-weight:500;color:var(--text);}
+  .conv-meta{font-size:12px;color:var(--text2);margin-top:3px;font-family:'DM Mono',monospace;}
+  .conv-msgs{flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:10px;}
+  .msg-row{display:flex;flex-direction:column;max-width:65%;}
+  .msg-row.cliente{align-self:flex-end;align-items:flex-end;}
+  .msg-row.agente{align-self:flex-start;align-items:flex-start;}
+  .msg-row.sistema{align-self:center;align-items:center;}
+  .msg-bubble{padding:9px 13px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
+  .msg-row.cliente .msg-bubble{background:var(--accent);color:#0f0f0f;border-radius:16px 16px 4px 16px;}
+  .msg-row.agente .msg-bubble{background:var(--surface2);color:var(--text);border-radius:16px 16px 16px 4px;border:1px solid var(--border);}
+  .msg-row.sistema .msg-bubble{background:transparent;color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;padding:4px 8px;}
+  .msg-row.escalate .msg-bubble{background:var(--red-dim);border-color:rgba(255,107,107,0.2);color:var(--red);}
+  .msg-ts{font-size:10px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;}
+  .empty-state{color:var(--text3);font-size:13px;text-align:center;margin-top:40px;}
+  .stats-bar{padding:10px 24px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;gap:24px;flex-shrink:0;}
+  .stat{display:flex;flex-direction:column;gap:2px;}
+  .stat-val{font-size:18px;font-weight:600;color:var(--text);}
+  .stat-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+  @media(max-width:600px){.sidebar{width:200px;}.conv-msgs{padding:14px;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-dot"></div>
+    <span class="topbar-title">Coach AI · Dashboard</span>
+  </div>
+  <button class="refresh-btn" onclick="loadData()">Aggiorna</button>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-header">Trainer · Clienti</div>
+    <div id="sidebar-content"><div style="padding:16px;font-size:13px;color:var(--text3);">Caricamento...</div></div>
+  </div>
+  <div class="main" id="main">
+    <div class="main-empty">
+      <p>Seleziona un cliente dalla lista</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
+let allData = {};
+let activeKey = null;
+
+async function loadData() {
+  try {
+    const res = await fetch(FB_URL + '/coach_ai_conversations.json');
+    const data = await res.json();
+    allData = data || {};
+    renderSidebar();
+    if(activeKey) renderConv(activeKey.t, activeKey.c);
+  } catch(e) {
+    document.getElementById('sidebar-content').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--red);">Errore connessione Firebase</div>';
+  }
+}
+
+function renderSidebar() {
+  const el = document.getElementById('sidebar-content');
+  if(!allData || Object.keys(allData).length === 0) {
+    el.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--text3);">Nessuna conversazione ancora.</div>';
+    return;
+  }
+  let html = '';
+  for(const trainer in allData) {
+    const clienti = allData[trainer];
+    html += `<div class="trainer-group"><div class="trainer-label">${trainer}</div>`;
+    for(const cliente in clienti) {
+      const msgs = clienti[cliente];
+      const count = Object.keys(msgs).length;
+      const isActive = activeKey && activeKey.t===trainer && activeKey.c===cliente;
+      html += `<div class="cliente-item${isActive?' active':''}" onclick="selectCliente('${trainer}','${cliente}')">
+        <span class="cliente-name">${cliente}</span>
+        <span class="cliente-count">${count} msg</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function selectCliente(trainer, cliente) {
+  activeKey = { t: trainer, c: cliente };
+  renderSidebar();
+  renderConv(trainer, cliente);
+}
+
+function renderConv(trainer, cliente) {
+  const msgs = allData[trainer]?.[cliente] || {};
+  const sorted = Object.entries(msgs).sort((a,b) => parseInt(a[0]) - parseInt(b[0]));
+
+  const clienteCount = sorted.filter(([,m])=>m.ruolo==='cliente').length;
+  const agenteCount = sorted.filter(([,m])=>m.ruolo==='agente').length;
+  const escalateCount = sorted.filter(([,m])=>m.ruolo==='agente'&&m.testo&&m.testo.includes('SCALA AL TRAINER')).length;
+
+  let html = `
+    <div class="conv-header">
+      <div class="conv-title">${cliente}</div>
+      <div class="conv-meta">Trainer: ${trainer}</div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat"><span class="stat-val">${clienteCount}</span><span class="stat-label">messaggi cliente</span></div>
+      <div class="stat"><span class="stat-val">${agenteCount}</span><span class="stat-label">risposte agente</span></div>
+      <div class="stat"><span class="stat-val" style="color:${escalateCount>0?'var(--red)':'var(--text)'}">${escalateCount}</span><span class="stat-label">escalation</span></div>
+    </div>
+    <div class="conv-msgs">`;
+
+  if(sorted.length === 0) {
+    html += '<div class="empty-state">Nessun messaggio ancora.</div>';
+  } else {
+    for(const [key, msg] of sorted) {
+      const ruolo = msg.ruolo || 'sistema';
+      const testo = msg.testo || '';
+      const ts = msg.ts ? new Date(msg.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+      const isEscalate = testo.includes('SCALA AL TRAINER');
+      const rowClass = isEscalate ? 'msg-row escalate' : 'msg-row ' + ruolo;
+      html += `<div class="${rowClass}">
+        <div class="msg-bubble">${testo.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        <span class="msg-ts">${ruolo} · ${ts}</span>
+      </div>`;
+    }
+  }
+  html += '</div>';
+  document.getElementById('main').innerHTML = html;
+}
+
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>
