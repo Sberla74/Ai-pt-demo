@@ -435,6 +435,7 @@ STILE DI RISPOSTA:
 - Ha sgarrato → analizza, correggi, avanti senza sensi di colpa ma senza passarci sopra
 - Ogni risposta finisce con micro-sfida o azione immediata
 - Pasto descritto → calcola macro subito con tabella P/C/G/Kcal + delta vs target
+- Dopo la tabella macro di un pasto aggiungi SEMPRE (obbligatorio) questa riga esatta su una nuova riga: <<NUTRI:TIPO|P|C|G|KCAL>> dove TIPO è uno tra: colazione, spuntino_matt, pranzo, spuntino_pom, cena, spuntino_serale. Esempio: <<NUTRI:pranzo|45|80|18|668>>. Sostituisci i valori con i numeri reali. Non usare testo intorno al marcatore.
 
 REGOLE HARD:
 1) Dolore lombare acuto, sciatalgia, intorpidimento → "→ SCALA AL MEDICO" — stop immediato
@@ -630,15 +631,16 @@ async function callAI(text, extraContent) {
       body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:system, messages })
     });
     const data = await res.json();
-    const reply = data.content?.[0]?.text || 'Errore nella risposta.';
+    const rawReply = data.content?.[0]?.text || 'Errore nella risposta.';
+    // Estrai marcatore NUTRI dalla risposta prima di mostrarla
+    const nutriMatch = rawReply.match(/<<NUTRI:(\w+)\|(\d+)\|(\d+)\|(\d+)\|(\d+)>>/);
+    const reply = rawReply.replace(/<<NUTRI:[^>]+>>/g, '').trim();
     history.push({ role:'assistant', content:reply });
     saveMsg('agente', reply);
     saveSessione();
+    if(nutriMatch) salvaFromMarker(nutriMatch);
     setTimeout(() => estraiLog(text), 800);
-    setTimeout(() => estraiNutri(text), 1800);
-    setTimeout(() => estraiNutriDaRisposta(reply), 2800);
-    setTimeout(renderTracking, 4000);
-    removeTyping(); addMsg(reply,'bot');
+    setTimeout(renderTracking, 2000);
   } catch(e) {
     removeTyping();
     addMsg('Errore di connessione. Controlla la rete e riprova.','bot');
@@ -895,6 +897,22 @@ async function loadSessione() {
 }
 
 // NUTRI LOG — estrazione automatica pasti
+function salvaFromMarker(match) {
+  if(!clienteName || trainerName==='demo') return;
+  const [, tipo_pasto, p, c, g, k] = match;
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  const oggi = new Date().toISOString().split('T')[0];
+  const logKey = tipo_pasto+'_'+Date.now();
+  fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+oggi+'/'+logKey+'.json', {
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      tipo_pasto, proteine:+p, carbo:+c, grassi:+g, kcal:+k,
+      ts:tsISO(), trainer:trainerName, cliente:clienteName
+    })
+  }).catch(()=>{});
+}
+
 async function estraiNutri(testo) {
   if(trainerName==='demo' || !clienteName) return;
   const paroleChiave = ['colazione','pranzo','cena','spuntino','mangiato','ho mangiato','ho fatto','ho preso','ho mang','stamattina','stamani','a pranzo','a cena','stasera','uova','uovo','pollo','riso','pasta','carne','pesce','verdure','frutta','yogurt','skyr','pane','patate','salmone','vitello','manzo','merluzzo','quinoa','avena','basmati','bresaola','prosciutto','tonno','sgombro','ricotta','mozzarella','insalata','broccoli','spinaci','zucchine','carote','pomodori','mele','banana','arancia','noci','mandorle','nocciole','avocado','riso','orzo','farro','lenticchie','ceci','fagioli','fiocchi','frittata','omelette','burger','tacchino','greco','cottage','petto','filetto','fesa','scamorza','grana','parmigiano','wasa','crackers','pizza','birra','olio','burro'];
