@@ -224,7 +224,7 @@
 
 <script>
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
-const CLIENT_KEY = 'fabrizio_test';
+const CLIENT_KEYS = ['fabrizio_test', 'fabrizio_fabrizio'];
 const ROTATION_START = '2026-05-11';
 const ROTATION = [
   {label:'Full Body 1', type:'fb',   p:170, c:210, g:65, k:2050},
@@ -348,28 +348,43 @@ async function loadProgressi() {
   renderTrainingWeek(log);
 }
 
+async function fetchFromKeys(path) {
+  const results = await Promise.all(
+    CLIENT_KEYS.map(k => fetch(FB_URL+'/'+path+'/'+k+'.json').then(r=>r.json()).catch(()=>null))
+  );
+  return results;
+}
+
 async function fetchPeso() {
   try {
-    const r = await fetch(FB_URL+'/coach_ai_peso/'+CLIENT_KEY+'.json');
-    const d = await r.json();
-    if(!d) return [];
-    return Object.values(d).sort((a,b)=>new Date(a.data)-new Date(b.data));
+    const results = await fetchFromKeys('coach_ai_peso');
+    const merged = [];
+    results.forEach(d => { if(d) merged.push(...Object.values(d)); });
+    return merged.sort((a,b)=>new Date(a.data)-new Date(b.data));
   } catch(e){return[];}
 }
 
 async function fetchNutri() {
   try {
-    const r = await fetch(FB_URL+'/coach_ai_nutri/'+CLIENT_KEY+'.json');
-    const d = await r.json();
-    return d||{};
+    const results = await fetchFromKeys('coach_ai_nutri');
+    const merged = {};
+    results.forEach(d => {
+      if(!d) return;
+      Object.entries(d).forEach(([date, meals]) => {
+        if(!merged[date]) merged[date] = {};
+        Object.assign(merged[date], meals);
+      });
+    });
+    return merged;
   } catch(e){return{};}
 }
 
 async function fetchLog() {
   try {
-    const r = await fetch(FB_URL+'/coach_ai_log/'+CLIENT_KEY+'.json');
-    const d = await r.json();
-    return d?Object.values(d):[];
+    const results = await fetchFromKeys('coach_ai_log');
+    const merged = [];
+    results.forEach(d => { if(d) merged.push(...Object.values(d)); });
+    return merged;
   } catch(e){return[];}
 }
 
