@@ -351,6 +351,29 @@
 const WORKER_URL = 'https://trainer-ai-proxy.f-lonatica.workers.dev';
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
 
+const ROTATION_START = '2026-05-11';
+const ROTATION = [
+  {label:'Full Body 1', type:'fb', p:170, c:210, g:65, k:2050},
+  {label:'HIIT+Addome',  type:'hiit', p:170, c:185, g:65, k:1950},
+  {label:'Riposo attivo',type:'rest', p:170, c:170, g:65, k:1850},
+  {label:'Full Body 2', type:'fb', p:170, c:210, g:65, k:2050},
+  {label:'HIIT+Addome',  type:'hiit', p:170, c:185, g:65, k:1950},
+  {label:'Riposo attivo',type:'rest', p:170, c:170, g:65, k:1850},
+  {label:'Full Body 3', type:'fb', p:170, c:210, g:65, k:2050},
+  {label:'HIIT+Addome',  type:'hiit', p:170, c:185, g:65, k:1950},
+  {label:'Riposo attivo',type:'rest', p:170, c:170, g:65, k:1850},
+  {label:'Full Body 4', type:'fb', p:170, c:210, g:65, k:2050},
+  {label:'HIIT+Addome',  type:'hiit', p:170, c:185, g:65, k:1950},
+  {label:'Riposo attivo',type:'rest', p:170, c:170, g:65, k:1850},
+];
+function getRotationDay(dateStr) {
+  const start = new Date(ROTATION_START+'T00:00:00');
+  const d = dateStr ? new Date(dateStr+'T00:00:00') : new Date();
+  d.setHours(0,0,0,0); start.setHours(0,0,0,0);
+  const days = Math.max(0, Math.floor((d - start) / 86400000));
+  return ROTATION[days % 12];
+}
+
 const DEMO_SYSTEM = `Sei il coach personale di Fabrizio Lonatica. Conosci il suo programma in ogni dettaglio. Sei diretto, aggressivo come un buon personal trainer militare — duro ma intelligente. Non accetti scuse. Vuoi il meglio da lui.
 
 PROFILO:
@@ -359,30 +382,30 @@ Protusione lombare L4-L5 — VIETATI: squat pesante bilanciere, stacco terra, go
 DA PREFERIRE: leg press controllata, split squat assistito, hip thrust, chest press, pulley busto stabile, lat machine, macchine
 Plenity: con abbondante acqua prima di pranzo e cena — non compensarlo con pasti disordinati
 
-SETTIMANA TIPO:
-Lun → Full Body A (2.050 kcal) | Mar → HIIT+addome (1.950 kcal) | Mer → Full Body B (2.050 kcal)
-Gio → Riposo attivo (1.850 kcal) | Ven → Full Body C (1.950 kcal) | Sab → HIIT+addome+PIZZA 1 birra (2.400-2.600 kcal) | Dom → Full Body D o riposo (1.700-1.850 kcal)
-NB: Il sabato pizza+birra È nel piano — non è uno sgarro da compensare. Media settimanale ~2.000 kcal.
+ROTAZIONE (indipendente dal giorno della settimana):
+FB1 → HIIT → Riposo → FB2 → HIIT → Riposo → FB3 → HIIT → Riposo → FB4 → HIIT → Riposo → (ricomincia)
+Giorno FB: ~2.050 kcal | Giorno HIIT: ~1.950 kcal | Giorno Riposo: ~1.850 kcal
+1 pasto libero a settimana (es. pizza+birra) — è nel piano, non si compensa. Media settimanale ~2.000 kcal.
 
 RISCALDAMENTO FISSO (5 min prima di ogni full body):
 2' cyclette/cammino inclinata → Cat-camel 6 rip lente → Bird dog 6 per lato → Glute bridge 10 rip → 1 serie leggera primo esercizio
 
-FULL BODY A — Spinta/Trazione Base (30 min max, superserie):
+FULL BODY 1 — Spinta/Trazione Base (30 min max, superserie):
 A1: Leg press 3×10 (3-1-1-0, RIR 2-3) → pausa 15-30" → A2: Chest press macchina 3×8-10 (RIR 2) → 75" recupero
 B1: Lat machine presa neutra 3×10 (2-1-1-1, RIR 2) → 15-30" → B2: Hip thrust macchina 2×10-12 (RIR 2-3) → 60-75" recupero
 Core: Pallof press 2×10 per lato (anti-rotazione)
 
-FULL BODY B — Posteriori + Spalle:
+FULL BODY 2 — Posteriori + Spalle:
 A1: Split squat assistito 3×8 per lato (RIR 2-3) → A2: Rematore macchina petto supportato 3×10 (RIR 2) → 75-90"
 B1: Shoulder press macchina 2×8-10 (RIR 2) → B2: Leg curl seduto 3×10-12 (RIR 1-2) → 60-75"
 Core: Dead bug 2×8 per lato (lombare neutra, lento)
 
-FULL BODY C — Volume Moderato:
+FULL BODY 3 — Volume Moderato:
 A1: Goblet squat a box 3×8-10 (RIR 2-3) → A2: Panca inclinata manubri 3×8-10 (RIR 2) → 75"
 B1: Pulley basso busto stabile 3×10 (RIR 2) → B2: Glute bridge 2×12 (RIR 2) → 60-75"
 Finisher: Farmer carry leggero 3×25-30 m
 
-FULL BODY D — Richiamo Metabolico:
+FULL BODY 4 — Richiamo Metabolico:
 A1: Step-up basso 3×8 per lato (RIR 2-3) → A2: Chest supported row o lat machine 3×10 (RIR 2) → 75-90"
 B1: Croci ai cavi o pec deck 2×12 (RIR 1-2) → B2: Alzate laterali 2×12-15 (RIR 1-2) → 60"
 Core: Side plank 2×20-35" per lato
@@ -462,12 +485,11 @@ async function getSystemWithLog() {
   const nutriLog = await getNutriLog();
   const macroTarget = `
 
-MACRO TARGET GIORNALIERI (programma aggiornato):
-Lun/Mer/Ven (Full Body): Proteine 170g · Carboidrati 210g · Grassi 65g · ~2.050 kcal
-Mar (HIIT+addome): Proteine 170g · Carboidrati 185g · Grassi 65g · ~1.950 kcal
-Gio (Riposo attivo): Proteine 170g · Carboidrati 170g · Grassi 65g · ~1.850 kcal
-Sab (HIIT+pizza+birra): ~2.400-2.600 kcal — È NEL PIANO, non compensare
-Dom (Full Body D o riposo): Proteine 170g · Carboidrati 175g · Grassi 65g · ~1.750 kcal
+MACRO TARGET GIORNALIERI (per tipo di giornata):
+Giorno Full Body (FB1/2/3/4): Proteine 170g · Carboidrati 210g · Grassi 65g · ~2.050 kcal
+Giorno HIIT+Addome: Proteine 170g · Carboidrati 185g · Grassi 65g · ~1.950 kcal
+Giorno Riposo attivo: Proteine 170g · Carboidrati 170g · Grassi 65g · ~1.850 kcal
+Pasto libero settimanale (es. pizza+birra): ~2.400-2.600 kcal — è nel piano, non compensare
 
 TRACKING NUTRIZIONALE:
 - Pasto descritto → tabella P/C/G/Kcal con delta vs target del giorno
@@ -490,7 +512,7 @@ async function getNutriLog() {
     let log = '\n\nPASTI DI OGGI già registrati:\n';
     let totP=0, totC=0, totG=0, totK=0;
     Object.values(data).forEach(p => {
-      log += `- ${p.pasto}: P=${p.proteine}g C=${p.carbo}g G=${p.grassi}g kcal=${p.kcal}\n`;
+      log += `- ${p.tipo_pasto||p.pasto||'pasto'}: P=${p.proteine}g C=${p.carbo}g G=${p.grassi}g kcal=${p.kcal}\n`;
       totP+=p.proteine||0; totC+=p.carbo||0; totG+=p.grassi||0; totK+=p.kcal||0;
     });
     log += `TOTALE OGGI: P=${totP}g C=${totC}g G=${totG}g kcal=${totK}`;
@@ -885,7 +907,7 @@ async function estraiNutri(testo) {
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:300,
-        system:`Sei un estrattore di dati nutrizionali. Ricevi un messaggio e devi estrarre i macro del pasto descritto. Rispondi SOLO con JSON valido. Formato: {"pasto":"colazione|pranzo|cena|spuntino","alimenti":"descrizione breve","proteine":0,"carbo":0,"grassi":0,"kcal":0}. Calcola i macro in base agli alimenti e grammature descritti usando valori nutrizionali standard italiani. Se non c'è nessun pasto rispondi con {"pasto":""}. Arrotonda a numeri interi.`,
+        system:`Sei un estrattore di dati nutrizionali. Ricevi un messaggio e devi estrarre i macro del pasto descritto. Rispondi SOLO con JSON valido. Formato: {"tipo_pasto":"colazione|spuntino_matt|pranzo|spuntino_pom|cena|spuntino_serale","alimenti":"descrizione breve","proteine":0,"carbo":0,"grassi":0,"kcal":0}. Classifica tipo_pasto dal contesto: colazione=mattina/sveglia/post-workout, spuntino_matt=spuntino mattutino/11h, pranzo=pranzo/12-14h, spuntino_pom=pomeriggio/16h, cena=cena/19-21h, spuntino_serale=dopo cena. Calcola i macro usando valori nutrizionali standard italiani. Se non c'è nessun pasto rispondi con {"tipo_pasto":""}. Arrotonda a interi.`,
         messages:[{role:'user', content:'Estrai i dati nutrizionali da: '+testo}]
       })
     });
@@ -893,9 +915,9 @@ async function estraiNutri(testo) {
     const raw = data.content?.[0]?.text||'';
     const clean = raw.replace(/```json|```/g,'').trim();
     const nutri = JSON.parse(clean);
-    if(!nutri.pasto) return;
+    if(!nutri.tipo_pasto) return;
     const key = slugify(trainerName)+'_'+slugify(clienteName);
-    const logKey = nutri.pasto+'_'+Date.now();
+    const logKey = nutri.tipo_pasto+'_'+Date.now();
     fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+oggi+'/'+logKey+'.json',{
       method:'PUT',
       headers:{'Content-Type':'application/json'},
@@ -944,17 +966,7 @@ async function renderTracking() {
   renderSonnoSection();
 
   const oggi = new Date().toISOString().split('T')[0];
-  const dow = new Date().getDay(); // 0=Dom,1=Lun,2=Mar,3=Mer,4=Gio,5=Ven,6=Sab
-  const tgtMap = {
-    0: {p:170, c:175, g:65, k:1750, label:'Full Body D'},
-    1: {p:170, c:210, g:65, k:2050, label:'Full Body A'},
-    2: {p:170, c:185, g:65, k:1950, label:'HIIT+addome'},
-    3: {p:170, c:210, g:65, k:2050, label:'Full Body B'},
-    4: {p:170, c:170, g:65, k:1850, label:'Riposo attivo'},
-    5: {p:170, c:195, g:65, k:1975, label:'Full Body C'},
-    6: {p:170, c:220, g:80, k:2500, label:'HIIT+Pizza'}
-  };
-  const tgt = tgtMap[dow];
+  const tgt = getRotationDay();
   document.getElementById('track-day-badge').textContent = tgt.label;
 
   let totP=0, totC=0, totG=0, totK=0;
