@@ -358,9 +358,15 @@ async function fetchFromKeys(path) {
 async function fetchPeso() {
   try {
     const results = await fetchFromKeys('coach_ai_peso');
-    const merged = [];
-    results.forEach(d => { if(d) merged.push(...Object.values(d)); });
-    return merged.sort((a,b)=>new Date(a.data)-new Date(b.data));
+    const byDate = {};
+    results.forEach(d => {
+      if(!d) return;
+      Object.values(d).forEach(e => {
+        if(e && e.data && e.peso != null && !isNaN(e.peso))
+          byDate[e.data] = e;
+      });
+    });
+    return Object.values(byDate).sort((a,b)=>new Date(a.data)-new Date(b.data));
   } catch(e){return[];}
 }
 
