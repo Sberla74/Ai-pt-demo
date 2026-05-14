@@ -683,7 +683,7 @@ async function confrontaFoto() {
   try {
     const res=await fetch(WORKER_URL,{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:getSystem(), messages:[{role:'user',content}] })
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:customSystem||DEMO_SYSTEM, messages:[{role:'user',content}] })
     });
     const data=await res.json();
     const reply=data.content?.[0]?.text||'Errore.';
@@ -1072,14 +1072,14 @@ async function renderPesoSection() {
   const last = await loadLastPeso();
   let html = '';
   if(isFriday) html += `<span class="friday-hint">Venerdì — aggiorna il peso di questa settimana</span>`;
-  if(last) {
+  if(last && last.peso != null && !isNaN(last.peso)) {
     const delta = +(last.peso - 90).toFixed(1);
     const remaining = +(last.peso - 80).toFixed(1);
     const deltaStr = delta < 0 ? delta+'kg dall\'inizio' : (delta===0?'invariato':'+'+delta+'kg');
     const remStr = remaining > 0 ? remaining+' kg al target' : '🎯 TARGET RAGGIUNTO';
     html += `<div style="display:flex;align-items:baseline;gap:8px;">
       <span class="peso-current">${last.peso} kg</span>
-      <span class="peso-meta">${last.data}</span>
+      <span class="peso-meta">${last.data||''}</span>
     </div>
     <div class="peso-tags">
       <span class="peso-tag">${deltaStr}</span>
