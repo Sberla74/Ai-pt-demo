@@ -148,6 +148,16 @@
   .peso-input:focus{border-color:rgba(200,245,100,0.35);}
   .peso-save-btn{padding:8px 14px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
   .friday-hint{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;background:var(--accent-dim2);border:1px solid rgba(200,245,100,0.15);border-radius:var(--radius-sm);padding:5px 10px;margin-bottom:8px;display:block;}
+  .sonno-row{display:flex;align-items:center;justify-content:space-between;}
+  .sonno-val{font-size:15px;font-weight:600;color:var(--text);}
+  .sonno-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;margin-left:6px;}
+  .sonno-badge.ottimo{background:var(--accent-dim);color:var(--accent);}
+  .sonno-badge.buono{background:rgba(100,180,255,0.1);color:var(--blue);}
+  .sonno-badge.scarso{background:var(--red-dim);color:var(--red);}
+  .sonno-input-row{display:flex;gap:6px;margin-top:8px;align-items:center;}
+  .sonno-select{flex:1;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
+  .sonno-select:focus{border-color:rgba(200,245,100,0.35);}
+  .sonno-select option{background:var(--surface2);}
 </style>
 </head>
 <body>
@@ -283,6 +293,7 @@
       <span class="badge badge-demo" id="track-day-badge">—</span>
     </div>
     <div id="peso-section" class="peso-section"></div>
+    <div id="sonno-section" style="padding:10px 16px;border-bottom:1px solid var(--border);"></div>
     <div id="macro-oggi" class="macro-row"></div>
     <div id="last-workout" class="workout-section" style="display:none;"></div>
   </div>
@@ -463,8 +474,9 @@ TRACKING NUTRIZIONALE:
 - Soluzione pratica per il pasto successivo — mai sensi di colpa, solo azioni
 - Se supera → "Ok. Al prossimo pasto: [cosa fare]"`;
 
-  if(customSystem) return customSystem + profilo + log + macroTarget + nutriLog;
-  return DEMO_SYSTEM + log + nutriLog;
+  const sonnoLog = await getSonnoLog();
+  if(customSystem) return customSystem + profilo + log + macroTarget + nutriLog + sonnoLog;
+  return DEMO_SYSTEM + log + nutriLog + sonnoLog;
 }
 
 async function getNutriLog() {
@@ -929,6 +941,7 @@ async function renderTracking() {
   if(!card) return;
   card.style.display = 'block';
   renderPesoSection();
+  renderSonnoSection();
 
   const oggi = new Date().toISOString().split('T')[0];
   const dow = new Date().getDay(); // 0=Dom,1=Lun,2=Mar,3=Mer,4=Gio,5=Ven,6=Sab
@@ -1010,6 +1023,91 @@ async function getTrainingLog() {
     });
     return log;
   } catch(e) { return ''; }
+}
+
+// SONNO — Firebase
+async function loadLastSonno() {
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_sonno/'+key+'.json');
+    const data = await res.json();
+    if(!data) return null;
+    return Object.values(data).sort((a,b)=>new Date(b.data)-new Date(a.data))[0]||null;
+  } catch(e) { return null; }
+}
+
+async function getSonnoLog() {
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_sonno/'+key+'.json');
+    const data = await res.json();
+    if(!data) return '';
+    const entries = Object.values(data).sort((a,b)=>new Date(b.data)-new Date(a.data)).slice(0,7);
+    if(entries.length===0) return '';
+    const last = entries[0];
+    const avgOre = (entries.reduce((s,e)=>s+(e.ore||0),0)/entries.length).toFixed(1);
+    let ctx = `\n\nSONNO:\nStanotte: ${last.ore}h${last.qualita?' · '+last.qualita:''}`;
+    if(entries.length>1) ctx += ` | Media 7gg: ${avgOre}h`;
+    if(last.ore<6||last.qualita==='scarso') ctx += '\n→ Ha dormito poco/male — stanchezza è reale, ma adatta il consiglio senza mollare';
+    return ctx;
+  } catch(e) { return ''; }
+}
+
+async function logSonno() {
+  const ore = parseFloat(document.getElementById('sonno-ore-input')?.value||'');
+  const qualita = document.getElementById('sonno-qualita-input')?.value||'';
+  if(!ore||ore<2||ore>14) { document.getElementById('sonno-ore-input')?.focus(); return; }
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  const oggi = new Date().toISOString().split('T')[0];
+  await fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+oggi+'.json',{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ore, qualita, data:oggi, ts:tsISO()})
+  }).catch(()=>{});
+  renderSonnoSection();
+}
+
+function toggleSonnoInput() {
+  const area = document.getElementById('sonno-input-area');
+  if(!area) return;
+  const open = area.style.display==='block';
+  area.style.display = open?'none':'block';
+  if(!open) setTimeout(()=>document.getElementById('sonno-ore-input')?.focus(),50);
+}
+
+async function renderSonnoSection() {
+  const section = document.getElementById('sonno-section');
+  if(!section) return;
+  const last = await loadLastSonno();
+  let html = '';
+  if(last && last.ore!=null && !isNaN(last.ore)) {
+    const q = last.qualita||'';
+    const badgeCls = q==='ottimo'?'ottimo':q==='scarso'?'scarso':'buono';
+    html += `<div class="sonno-row">
+      <div style="display:flex;align-items:center;">
+        <span style="font-size:13px;margin-right:6px;">🌙</span>
+        <span class="sonno-val">${last.ore}h</span>
+        ${q?`<span class="sonno-badge ${badgeCls}">${q}</span>`:''}
+      </div>
+      <span style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;">${last.data||''}</span>
+    </div>`;
+  } else {
+    html += `<div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">🌙</span><span class="peso-meta">Sonno non registrato</span></div>`;
+  }
+  html += `<button class="peso-log-btn" onclick="toggleSonnoInput()">+ registra sonno</button>
+  <div id="sonno-input-area" style="display:none;">
+    <div class="sonno-input-row">
+      <input type="number" id="sonno-ore-input" class="peso-input" placeholder="ore (es. 7.5)" step="0.5" min="2" max="14" style="max-width:110px;" onkeydown="if(event.key==='Enter')logSonno()">
+      <select id="sonno-qualita-input" class="sonno-select">
+        <option value="">qualità</option>
+        <option value="ottimo">ottimo</option>
+        <option value="buono">buono</option>
+        <option value="nella norma">nella norma</option>
+        <option value="scarso">scarso</option>
+      </select>
+      <button class="peso-save-btn" onclick="logSonno()">Salva</button>
+    </div>
+  </div>`;
+  section.innerHTML = html;
 }
 
 // FOTO — persistenza localStorage
