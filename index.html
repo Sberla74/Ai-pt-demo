@@ -122,6 +122,32 @@
   .paste-actions{display:flex;gap:8px;}
   .btn-primary{flex:1;padding:11px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
   .btn-secondary{padding:11px 18px;border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-size:14px;font-family:'DM Sans',sans-serif;border:1px solid var(--border2);cursor:pointer;}
+  .macro-row{display:flex;flex-direction:column;gap:8px;padding:14px 16px;}
+  .macro-item{display:flex;flex-direction:column;gap:4px;}
+  .macro-item-header{display:flex;justify-content:space-between;align-items:center;}
+  .macro-item-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+  .macro-item-val{font-size:11px;color:var(--text);font-family:'DM Mono',monospace;}
+  .macro-track{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+  .macro-fill{height:100%;border-radius:2px;transition:width 0.5s ease;}
+  .macro-fill.ok{background:var(--accent);}
+  .macro-fill.over{background:var(--red);}
+  .macro-fill.low{background:var(--text3);}
+  .workout-section{padding:10px 16px 14px;border-top:1px solid var(--border);}
+  .workout-title{font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);margin-bottom:6px;}
+  .workout-ex{font-size:13px;color:var(--text);line-height:1.6;}
+  .peso-section{padding:12px 16px;border-bottom:1px solid var(--border);}
+  .peso-current{font-size:22px;font-weight:600;color:var(--text);line-height:1;}
+  .peso-meta{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+  .peso-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .peso-tag{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-family:'DM Mono',monospace;}
+  .peso-tag.good{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,245,100,0.2);}
+  .peso-log-btn{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;background:none;border:none;cursor:pointer;margin-top:8px;padding:0;display:block;}
+  .peso-log-btn:hover{color:var(--accent);}
+  .peso-input-row{display:flex;gap:8px;margin-top:8px;}
+  .peso-input{flex:1;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
+  .peso-input:focus{border-color:rgba(200,245,100,0.35);}
+  .peso-save-btn{padding:8px 14px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
+  .friday-hint{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;background:var(--accent-dim2);border:1px solid rgba(200,245,100,0.15);border-radius:var(--radius-sm);padding:5px 10px;margin-bottom:8px;display:block;}
 </style>
 </head>
 <body>
@@ -129,10 +155,10 @@
 <div class="header">
   <div class="logo">
     <div class="logo-dot"></div>
-    <span class="logo-text" id="logo-text">Coach AI · Demo</span>
+    <span class="logo-text" id="logo-text">Coach AI · Fabrizio</span>
   </div>
-  <h1 class="headline" id="headline">Il tuo assistente<br>sempre disponibile</h1>
-  <p class="subline">Risponde ai clienti 24/7, li motiva e analizza i loro progressi fotografici.</p>
+  <h1 class="headline" id="headline">Il tuo coach<br>niente scuse</h1>
+  <p class="subline">Diretto, aggressivo, sempre disponibile. 80 kg entro il 9 agosto.</p>
 </div>
 
 <div class="container">
@@ -142,15 +168,15 @@
       <span class="badge badge-demo" id="scheda-badge">Demo</span>
     </div>
     <div class="scheda-info">
-      <span class="scheda-name" id="scheda-name">Cliente esempio — Marco R.</span>
+      <span class="scheda-name" id="scheda-name">Fabrizio Lonatica — Piano 90 giorni</span>
       <div class="scheda-meta" id="scheda-meta">
-        <span class="tag">Blocco 1 · 6 sett.</span>
-        <span class="tag">3 full body/sett.</span>
-        <span class="tag">Dieta inclusa</span>
+        <span class="tag">Fase 1 · mag-giu</span>
+        <span class="tag">Full Body + HIIT</span>
+        <span class="tag">Obiettivo: 80 kg</span>
       </div>
     </div>
     <div class="upload-area">
-      <span class="upload-label">Vuoi provare con la scheda di un tuo cliente?</span>
+      <span class="upload-label">Carica scheda aggiornata (PDF o testo)</span>
       <div class="upload-row">
         <label class="upload-btn" for="file-input">Carica PDF</label>
         <input type="file" id="file-input" accept=".pdf,.txt" onchange="handleFile(this)">
@@ -229,26 +255,36 @@
       </div>
     </div>
     <div class="foto-section">
-      <span class="foto-label">Confronto foto progressi</span>
-      <span class="foto-disclaimer">Solo corpo, senza volto. Le foto non vengono salvate.</span>
+      <span class="foto-label">Tu vs. il tuo meglio</span>
+      <span class="foto-disclaimer">Carica la tua forma migliore e quella di oggi — sfidati ogni settimana.</span>
       <div class="foto-row">
         <div class="foto-slot">
           <div class="foto-thumb" onclick="document.getElementById('foto-prima-input').click()" id="thumb-prima">
             <span class="placeholder">+ Prima</span>
           </div>
           <input type="file" id="foto-prima-input" accept="image/*" onchange="loadFoto(this,'prima')">
-          <div class="foto-slot-label">Prima <span>inizio</span></div>
+          <div class="foto-slot-label">Best <span>forma migliore</span></div>
         </div>
         <div class="foto-slot">
           <div class="foto-thumb" onclick="document.getElementById('foto-dopo-input').click()" id="thumb-dopo">
-            <span class="placeholder">+ Dopo</span>
+            <span class="placeholder">+ Oggi</span>
           </div>
           <input type="file" id="foto-dopo-input" accept="image/*" onchange="loadFoto(this,'dopo')">
-          <div class="foto-slot-label">Dopo <span>aggiornamento</span></div>
+          <div class="foto-slot-label">Oggi <span>attuale</span></div>
         </div>
       </div>
-      <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()">Analizza progressi con AI</button>
+      <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()">Confronta con il Coach</button>
     </div>
+  </div>
+
+  <div class="card" id="tracking-card" style="display:none;">
+    <div class="card-header">
+      <span class="card-title">Tracker</span>
+      <span class="badge badge-demo" id="track-day-badge">—</span>
+    </div>
+    <div id="peso-section" class="peso-section"></div>
+    <div id="macro-oggi" class="macro-row"></div>
+    <div id="last-workout" class="workout-section" style="display:none;"></div>
   </div>
 
   <div class="chat-card">
@@ -261,16 +297,16 @@
     </div>
     <div class="chat-msgs" id="msgs">
       <div class="msg bot">
-        <div class="bubble" id="welcome-msg">Ciao! Sono il tuo assistente AI. Sono qui per assisterti 24/7. Dubbi? Domande sulla scheda o sulla dieta? Scrivi pure!</div>
+        <div class="bubble" id="welcome-msg">Ciao Fabrizio. 80 kg entro il 9 agosto — questo è l'obiettivo. Niente scuse, solo risultati. Cosa devi fare oggi?</div>
         <span class="msg-time">ora</span>
       </div>
     </div>
     <div class="escalate-banner" id="escalate-banner">⚠ Escalation al trainer — risposta inviata, notifica in arrivo</div>
     <div class="suggestions">
-      <button class="sug" onclick="useSug(this)">Oggi sono stanco, mi alleno?</button>
-      <button class="sug" onclick="useSug(this)">Ho saltato 2 giorni</button>
-      <button class="sug" onclick="useSug(this)">Sostituisco il pollo?</button>
-      <button class="sug" onclick="useSug(this)">Dolore alla spalla</button>
+      <button class="sug" onclick="useSug(this)">Non ho voglia di allenarmi</button>
+      <button class="sug" onclick="useSug(this)">Ho sgarrato ieri</button>
+      <button class="sug" onclick="useSug(this)">Quanto manca all'obiettivo?</button>
+      <button class="sug" onclick="useSug(this)">Cosa mangio adesso?</button>
     </div>
     <div class="input-row">
       <textarea id="txt" placeholder="Scrivi come faresti su WhatsApp..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
@@ -298,23 +334,78 @@
   </div>
 </div>
 
-<div class="footer" id="footer-txt">coach-ai · demo · nessun dato salvato</div>
+<div class="footer" id="footer-txt">coach-ai · fabrizio · obiettivo 80 kg · 9 agosto 2026</div>
 
 <script>
 const WORKER_URL = 'https://trainer-ai-proxy.f-lonatica.workers.dev';
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
 
-const DEMO_SYSTEM = `Sei un assistente AI per il personal training. Conosci la scheda e il piano alimentare del cliente. Rispondi in italiano, tono diretto e amichevole come su WhatsApp. Max 5-6 righe.
+const DEMO_SYSTEM = `Sei il coach personale di Fabrizio Lonatica. Conosci il suo programma in ogni dettaglio. Sei diretto, aggressivo come un buon personal trainer militare — duro ma intelligente. Non accetti scuse. Vuoi il meglio da lui.
 
-SCHEDA DEMO — Marco R., obiettivo: dimagrimento e tonificazione:
-Frequenza: 3 full body/settimana (Lun/Mer/Ven)
-SEDUTA A: Leg press 3x12 RIR2 | Chest row 3x12 | Chest press inclinata 3x10 | RDL 3x10 | Leg curl 3x12 | Alzate laterali 3x15 | Plank 3x30"
-SEDUTA B: Goblet squat 3x12 | Lat machine 3x10 | Panca manubri 3x10 | Hip thrust 3x12 | Leg extension 3x12 | Face pull 3x15 | Dead bug 3x8
-SEDUTA C: Split squat 3x10 | Seated row 3x12 | Dip assistita 3x10 | Back extension 3x12 | Curl manubri 3x12 | Pushdown 3x12 | Crunch cable 3x15
-PIANO: Colazione uova 3+albumi+avena 50g | Pranzo riso 80g+proteina 200g+verdure+EVO | Cena proteina 200g+verdure+grassi | Spuntino skyr+noci | Acqua 2.5L
-Integratori: creatina 5g, omega-3 2g, vitamina D 2000UI
+PROFILO:
+Uomo, 52 anni, 185 cm, 90 kg → obiettivo 80 kg (16-24 settimane, ritmo 0,4-0,7 kg/sett)
+Protusione lombare L4-L5 — VIETATI: squat pesante bilanciere, stacco terra, good morning, sit-up classici, russian twist pesanti, sprint, burpees, salti
+DA PREFERIRE: leg press controllata, split squat assistito, hip thrust, chest press, pulley busto stabile, lat machine, macchine
+Plenity: con abbondante acqua prima di pranzo e cena — non compensarlo con pasti disordinati
 
-REGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "→ SCALA AL TRAINER" in fondo 4) Non inventare nulla fuori dalla scheda 5) Concludi SEMPRE con una frase motivazionale breve e autentica legata al contesto 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
+SETTIMANA TIPO:
+Lun → Full Body A (2.050 kcal) | Mar → HIIT+addome (1.950 kcal) | Mer → Full Body B (2.050 kcal)
+Gio → Riposo attivo (1.850 kcal) | Ven → Full Body C (1.950 kcal) | Sab → HIIT+addome+PIZZA 1 birra (2.400-2.600 kcal) | Dom → Full Body D o riposo (1.700-1.850 kcal)
+NB: Il sabato pizza+birra È nel piano — non è uno sgarro da compensare. Media settimanale ~2.000 kcal.
+
+RISCALDAMENTO FISSO (5 min prima di ogni full body):
+2' cyclette/cammino inclinata → Cat-camel 6 rip lente → Bird dog 6 per lato → Glute bridge 10 rip → 1 serie leggera primo esercizio
+
+FULL BODY A — Spinta/Trazione Base (30 min max, superserie):
+A1: Leg press 3×10 (3-1-1-0, RIR 2-3) → pausa 15-30" → A2: Chest press macchina 3×8-10 (RIR 2) → 75" recupero
+B1: Lat machine presa neutra 3×10 (2-1-1-1, RIR 2) → 15-30" → B2: Hip thrust macchina 2×10-12 (RIR 2-3) → 60-75" recupero
+Core: Pallof press 2×10 per lato (anti-rotazione)
+
+FULL BODY B — Posteriori + Spalle:
+A1: Split squat assistito 3×8 per lato (RIR 2-3) → A2: Rematore macchina petto supportato 3×10 (RIR 2) → 75-90"
+B1: Shoulder press macchina 2×8-10 (RIR 2) → B2: Leg curl seduto 3×10-12 (RIR 1-2) → 60-75"
+Core: Dead bug 2×8 per lato (lombare neutra, lento)
+
+FULL BODY C — Volume Moderato:
+A1: Goblet squat a box 3×8-10 (RIR 2-3) → A2: Panca inclinata manubri 3×8-10 (RIR 2) → 75"
+B1: Pulley basso busto stabile 3×10 (RIR 2) → B2: Glute bridge 2×12 (RIR 2) → 60-75"
+Finisher: Farmer carry leggero 3×25-30 m
+
+FULL BODY D — Richiamo Metabolico:
+A1: Step-up basso 3×8 per lato (RIR 2-3) → A2: Chest supported row o lat machine 3×10 (RIR 2) → 75-90"
+B1: Croci ai cavi o pec deck 2×12 (RIR 1-2) → B2: Alzate laterali 2×12-15 (RIR 1-2) → 60"
+Core: Side plank 2×20-35" per lato
+
+HIIT (18-22 min, bike/air bike/ellittica — NO corsa/salti):
+5' riscaldamento progressivo → 8-10 round × 20" forte (RPE 8-9) + 70" facile → 3-5' defaticamento
+
+ADDOME SICURO (8-10 min dopo HIIT):
+McGill curl-up modificato 2×6-8 tenute 8" | Side plank 2×20-35" per lato | Bird dog 2×6-8 per lato | Pallof press 2×10 per lato
+
+NUTRIZIONE:
+Proteine 160-180g/die (sempre, ogni giorno — priorità assoluta)
+Grassi 60-70g/die | Carboidrati 170-220g nei giorni di pesi, 170g riposo
+Acqua 2,5-3 L/die (fondamentale con Plenity)
+Ogni pasto: proteine + verdure + carboidrati controllati + grassi misurati
+Alcol: max 1-2 occasioni/settimana (il sabato è già pianificato)
+Passi: 8.000-10.000/die
+
+PROGRESSIONE:
+Sett 1-2 Adattamento: tecnica, zero dolore | Sett 3-6 Costruzione: +carico graduale | Sett 7-10 Consolidamento | Sett 11 Scarico -30-40% volume | Sett 12 Ripartenza+valutazione
+Aumento carico: quando completi tutte le serie al range alto con RIR corretto → +2,5-5%
+
+STILE DI RISPOSTA:
+- Max 5-6 righe, breve come WhatsApp
+- Diretto e aggressivo: sfida Fabrizio, non lo giustifica mai
+- Stanco → "Tutti lo sono. Vai."
+- Ha sgarrato → analizza, correggi, avanti senza sensi di colpa ma senza passarci sopra
+- Ogni risposta finisce con micro-sfida o azione immediata
+- Pasto descritto → calcola macro subito con tabella P/C/G/Kcal + delta vs target
+
+REGOLE HARD:
+1) Dolore lombare acuto, sciatalgia, intorpidimento → "→ SCALA AL MEDICO" — stop immediato
+2) Non inventare nulla fuori dal piano
+3) Tutorial → "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano"`;
 
 let customSystem = null;
 let pdfBase64 = null;
@@ -360,20 +451,20 @@ async function getSystemWithLog() {
   const nutriLog = await getNutriLog();
   const macroTarget = `
 
-MACRO TARGET GIORNALIERI (dal piano del Dott. Piccolo):
-Giorno allenamento: Proteine 177g · Carboidrati 163g · Grassi 75g · ~2016 kcal
-Giorno off: Proteine 156g · Carboidrati 102g · Grassi 78g · ~1709 kcal
+MACRO TARGET GIORNALIERI (programma aggiornato):
+Lun/Mer/Ven (Full Body): Proteine 170g · Carboidrati 210g · Grassi 65g · ~2.050 kcal
+Mar (HIIT+addome): Proteine 170g · Carboidrati 185g · Grassi 65g · ~1.950 kcal
+Gio (Riposo attivo): Proteine 170g · Carboidrati 170g · Grassi 65g · ~1.850 kcal
+Sab (HIIT+pizza+birra): ~2.400-2.600 kcal — È NEL PIANO, non compensare
+Dom (Full Body D o riposo): Proteine 170g · Carboidrati 175g · Grassi 65g · ~1.750 kcal
 
-REGOLE TRACKING NUTRIZIONALE:
-- Se il cliente descrive un pasto (anche informalmente), calcola subito i macro di quello che ha mangiato
-- Confronta con i target giornalieri e mostra lo scarto: es. "+20g proteine rispetto al target, -30g carbo"
-- Indica cosa fare nel pasto successivo per riallinearsi
-- Se supera i macro, non farlo sentire in colpa — dai una strategia pratica di recupero
-- Usa sempre una breve tabella: Proteine / Carbo / Grassi / Kcal con valore mangiato e delta vs target
-- Concludi con una frase motivazionale contestuale`;
+TRACKING NUTRIZIONALE:
+- Pasto descritto → tabella P/C/G/Kcal con delta vs target del giorno
+- Soluzione pratica per il pasto successivo — mai sensi di colpa, solo azioni
+- Se supera → "Ok. Al prossimo pasto: [cosa fare]"`;
 
   if(customSystem) return customSystem + profilo + log + macroTarget + nutriLog;
-  return DEMO_SYSTEM + profilo + log + macroTarget + nutriLog;
+  return DEMO_SYSTEM + log + nutriLog;
 }
 
 async function getNutriLog() {
@@ -405,8 +496,8 @@ function initSession() {
   const params = new URLSearchParams(window.location.search);
   const tn = params.get('trainer');
   const cn = params.get('cliente');
-  trainerName = tn ? tn.trim() : 'demo';
-  clienteName = cn ? cn.trim() : 'utente_' + Math.random().toString(36).substr(2,5);
+  trainerName = tn ? tn.trim() : 'fabrizio';
+  clienteName = cn ? cn.trim() : 'fabrizio';
   sessionId = slugify(trainerName) + '_' + slugify(clienteName) + '_' + Date.now();
 
   if(tn && tn.trim()) {
@@ -511,6 +602,7 @@ async function callAI(text, extraContent) {
     saveSessione();
     estraiLog(text);
     estraiNutri(text);
+    setTimeout(renderTracking, 2500);
     removeTyping(); addMsg(reply,'bot');
   } catch(e) {
     removeTyping();
@@ -548,6 +640,7 @@ function loadFoto(input, tipo) {
       fotoDopo={url,base64,mtype};
       document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`;
     }
+    saveFotoToStorage(tipo,base64,mtype);
     document.getElementById('confronta-btn').style.display=(fotoPrima||fotoDopo)?'block':'none';
   };
   reader.readAsDataURL(file);
@@ -566,21 +659,21 @@ async function confrontaFoto() {
     content=[
       { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
       { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
-      { type:'text', text:'Prima foto = inizio percorso, seconda foto = aggiornamento. Solo corpo senza volto per privacy. Analizza i progressi visibili: composizione corporea, massa muscolare, definizione, postura. Sii specifico, incoraggiante e concreto. Concludi con una frase motivazionale potente.' }
+      { type:'text', text:'Prima foto = forma migliore di Fabrizio (il suo standard di riferimento), seconda foto = forma attuale oggi. Confronta brutalmente ma costruttivamente: cosa è cambiato, cosa manca ancora, quanto dista dalla forma migliore. Sii diretto — non mentire per compiacere. Concludi con una sfida concreta per la prossima settimana.' }
     ];
   } else if(fotoPrima) {
     msgText='Analisi foto iniziale';
     addMsg(msgText,'user',fotoPrima.url);
     content=[
       { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
-      { type:'text', text:'Foto iniziale del cliente (solo corpo, senza volto). Valutazione oggettiva della composizione corporea attuale: punti di forza visibili, aree su cui lavorare, postura. Tono professionale e motivante — è il punto di partenza del percorso.' }
+      { type:'text', text:'Foto di Fabrizio nella sua forma migliore — il suo standard di riferimento, il suo obiettivo visivo. Analizza composizione corporea: muscoli visibili, definizione, postura. Sii dettagliato e diretto. Finisci con: "Questo è il tuo standard. Tornaci."' }
     ];
   } else {
     msgText='Analisi foto aggiornamento';
     addMsg(msgText,'user',fotoDopo.url);
     content=[
       { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
-      { type:'text', text:'Foto di aggiornamento (solo corpo, senza volto). Analizza composizione corporea: massa muscolare, definizione, postura. Specifico e incoraggiante.' }
+      { type:'text', text:'Foto attuale di Fabrizio. Valuta composizione corporea onestamente: cosa sta migliorando, cosa deve ancora lavorare. Sii diretto, non dire bugie per essere carino. Finisci con una sfida concreta per la prossima settimana.' }
     ];
   }
 
@@ -760,8 +853,9 @@ async function loadSessione() {
       document.getElementById('scheda-badge').textContent = 'Attiva';
       document.getElementById('scheda-badge').className = 'badge badge-custom';
       document.getElementById('scheda-meta').innerHTML = `<span class="tag">Sessione ripristinata</span><span class="tag">${Math.round(ore)}h fa</span>`;
-      addMsg('Bentornato! Ho ripristinato la tua sessione — scheda, profilo e conversazione precedente. Continua pure.','bot');
+      addMsg('Bentornato Fabrizio. Ho ripristinato la sessione. 80 kg entro il 9 agosto — continua da dove eri rimasto.','bot');
     }
+    renderTracking();
   } catch(e) {}
 }
 
@@ -829,6 +923,73 @@ async function estraiLog(testo) {
   } catch(e) {}
 }
 
+async function renderTracking() {
+  if(!clienteName) return;
+  const card = document.getElementById('tracking-card');
+  if(!card) return;
+  card.style.display = 'block';
+  renderPesoSection();
+
+  const oggi = new Date().toISOString().split('T')[0];
+  const dow = new Date().getDay(); // 0=Dom,1=Lun,2=Mar,3=Mer,4=Gio,5=Ven,6=Sab
+  const tgtMap = {
+    0: {p:170, c:175, g:65, k:1750, label:'Full Body D'},
+    1: {p:170, c:210, g:65, k:2050, label:'Full Body A'},
+    2: {p:170, c:185, g:65, k:1950, label:'HIIT+addome'},
+    3: {p:170, c:210, g:65, k:2050, label:'Full Body B'},
+    4: {p:170, c:170, g:65, k:1850, label:'Riposo attivo'},
+    5: {p:170, c:195, g:65, k:1975, label:'Full Body C'},
+    6: {p:170, c:220, g:80, k:2500, label:'HIIT+Pizza'}
+  };
+  const tgt = tgtMap[dow];
+  document.getElementById('track-day-badge').textContent = tgt.label;
+
+  let totP=0, totC=0, totG=0, totK=0;
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+oggi+'.json');
+    const data = await res.json();
+    if(data) Object.values(data).forEach(p=>{
+      totP+=p.proteine||0; totC+=p.carbo||0; totG+=p.grassi||0; totK+=p.kcal||0;
+    });
+  } catch(e) {}
+
+  function bar(val, t, label, unit) {
+    const pct = Math.min(100, Math.round(val/t*100));
+    const delta = val - t;
+    const cls = pct >= 100 ? 'over' : pct >= 50 ? 'ok' : 'low';
+    const dStr = delta === 0 ? '' : (delta > 0 ? ' +'+delta : ' '+delta) + unit;
+    const dCol = pct >= 100 ? 'var(--red)' : 'var(--text3)';
+    return `<div class="macro-item">
+      <div class="macro-item-header">
+        <span class="macro-item-label">${label}</span>
+        <span class="macro-item-val">${val}/${t}${unit}<span style="color:${dCol};font-size:10px;">${dStr}</span></span>
+      </div>
+      <div class="macro-track"><div class="macro-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+  document.getElementById('macro-oggi').innerHTML =
+    bar(totP,tgt.p,'Proteine','g') +
+    bar(totC,tgt.c,'Carbo','g') +
+    bar(totG,tgt.g,'Grassi','g') +
+    bar(totK,tgt.k,'Kcal',' kcal');
+
+  const workoutEl = document.getElementById('last-workout');
+  try {
+    const res2 = await fetch(FB_URL+'/coach_ai_log/'+key+'.json');
+    const data2 = await res2.json();
+    if(data2) {
+      const entries = Object.values(data2).sort((a,b)=>new Date(b.data||0)-new Date(a.data||0));
+      const last = entries.find(e=>e.esercizi&&e.esercizi.length>0);
+      if(last) {
+        workoutEl.style.display = 'block';
+        const exHtml = last.esercizi.map(e=>e.nome?`<div class="workout-ex">· ${e.nome}${e.serie&&e.rip?' '+e.serie+'×'+e.rip:''}${e.carico_kg>0?' @ '+e.carico_kg+'kg':''}</div>`:'').join('');
+        workoutEl.innerHTML = `<div class="workout-title">Ultimo allenamento · ${last.data||'?'}${last.sessione?' · '+last.sessione:''}</div>${exHtml}`;
+      }
+    }
+  } catch(e) {}
+}
+
 async function getTrainingLog() {
   if(trainerName==='demo' || !clienteName) return '';
   const key = slugify(trainerName)+'_'+slugify(clienteName);
@@ -851,8 +1012,96 @@ async function getTrainingLog() {
   } catch(e) { return ''; }
 }
 
+// FOTO — persistenza localStorage
+function saveFotoToStorage(tipo, base64, mtype) {
+  try { localStorage.setItem('coachAI_foto_'+tipo, JSON.stringify({base64, mtype})); } catch(e) {}
+}
+
+function restoreFotos() {
+  ['prima','dopo'].forEach(tipo => {
+    try {
+      const saved = localStorage.getItem('coachAI_foto_'+tipo);
+      if(!saved) return;
+      const {base64, mtype} = JSON.parse(saved);
+      const url = `data:${mtype};base64,${base64}`;
+      if(tipo==='prima') { fotoPrima={url,base64,mtype}; document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`; }
+      else { fotoDopo={url,base64,mtype}; document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`; }
+      document.getElementById('confronta-btn').style.display='block';
+    } catch(e) {}
+  });
+}
+
+// PESO — Firebase
+async function loadLastPeso() {
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_peso/'+key+'.json');
+    const data = await res.json();
+    if(!data) return null;
+    return Object.values(data).sort((a,b)=>new Date(b.data)-new Date(a.data))[0] || null;
+  } catch(e) { return null; }
+}
+
+async function logPeso() {
+  const input = document.getElementById('peso-new-input');
+  const val = parseFloat((input.value||'').replace(',','.'));
+  if(!val || val < 40 || val > 200) { input.focus(); return; }
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  const oggi = new Date().toISOString().split('T')[0];
+  await fetch(FB_URL+'/coach_ai_peso/'+key+'/'+oggi+'.json', {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({peso:val, data:oggi, ts:tsISO()})
+  }).catch(()=>{});
+  input.value = '';
+  renderPesoSection();
+}
+
+function togglePesoInput() {
+  const area = document.getElementById('peso-input-area');
+  if(!area) return;
+  const open = area.style.display === 'block';
+  area.style.display = open ? 'none' : 'block';
+  if(!open) setTimeout(()=>document.getElementById('peso-new-input')?.focus(), 50);
+}
+
+async function renderPesoSection() {
+  const section = document.getElementById('peso-section');
+  if(!section) return;
+  const dow = new Date().getDay();
+  const isFriday = dow === 5;
+  const last = await loadLastPeso();
+  let html = '';
+  if(isFriday) html += `<span class="friday-hint">Venerdì — aggiorna il peso di questa settimana</span>`;
+  if(last) {
+    const delta = +(last.peso - 90).toFixed(1);
+    const remaining = +(last.peso - 80).toFixed(1);
+    const deltaStr = delta < 0 ? delta+'kg dall\'inizio' : (delta===0?'invariato':'+'+delta+'kg');
+    const remStr = remaining > 0 ? remaining+' kg al target' : '🎯 TARGET RAGGIUNTO';
+    html += `<div style="display:flex;align-items:baseline;gap:8px;">
+      <span class="peso-current">${last.peso} kg</span>
+      <span class="peso-meta">${last.data}</span>
+    </div>
+    <div class="peso-tags">
+      <span class="peso-tag">${deltaStr}</span>
+      <span class="peso-tag${remaining<=3?' good':''}">${remStr}</span>
+    </div>`;
+  } else {
+    html += `<span class="peso-meta">Nessun peso ancora — registra ogni venerdì mattina</span>`;
+  }
+  html += `<button class="peso-log-btn" onclick="togglePesoInput()">+ registra peso</button>
+  <div id="peso-input-area" style="display:none;">
+    <div class="peso-input-row">
+      <input type="number" id="peso-new-input" class="peso-input" placeholder="es. 89.5" step="0.1" min="40" max="200" onkeydown="if(event.key==='Enter')logPeso()">
+      <button class="peso-save-btn" onclick="logPeso()">Salva</button>
+    </div>
+  </div>`;
+  section.innerHTML = html;
+}
+
 initSession();
 loadSessione();
+renderTracking();
+restoreFotos();
 </script>
 </body>
 </html>
