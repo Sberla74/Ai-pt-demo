@@ -531,7 +531,7 @@ function initSession() {
   const tn = params.get('trainer');
   const cn = params.get('cliente');
   trainerName = tn ? tn.trim() : 'fabrizio';
-  clienteName = cn ? cn.trim() : 'fabrizio';
+  clienteName = cn ? cn.trim() : 'test';
   sessionId = slugify(trainerName) + '_' + slugify(clienteName) + '_' + Date.now();
 
   if(tn && tn.trim()) {
