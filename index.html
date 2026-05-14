@@ -634,9 +634,10 @@ async function callAI(text, extraContent) {
     history.push({ role:'assistant', content:reply });
     saveMsg('agente', reply);
     saveSessione();
-    estraiLog(text);
-    estraiNutri(text);
-    setTimeout(renderTracking, 2500);
+    setTimeout(() => estraiLog(text), 800);
+    setTimeout(() => estraiNutri(text), 1800);
+    setTimeout(() => estraiNutriDaRisposta(reply), 2800);
+    setTimeout(renderTracking, 4000);
     removeTyping(); addMsg(reply,'bot');
   } catch(e) {
     removeTyping();
@@ -896,7 +897,7 @@ async function loadSessione() {
 // NUTRI LOG — estrazione automatica pasti
 async function estraiNutri(testo) {
   if(trainerName==='demo' || !clienteName) return;
-  const paroleChiave = ['colazione','pranzo','cena','spuntino','mangiato','ho mangiato','ho fatto','uova','pollo','riso','pasta','carne','pesce','verdure','frutta','yogurt','skyr','pane','patate','salmone','vitello','manzo','merluzzo','quinoa','avena','basmati'];
+  const paroleChiave = ['colazione','pranzo','cena','spuntino','mangiato','ho mangiato','ho fatto','ho preso','ho mang','stamattina','stamani','a pranzo','a cena','stasera','uova','uovo','pollo','riso','pasta','carne','pesce','verdure','frutta','yogurt','skyr','pane','patate','salmone','vitello','manzo','merluzzo','quinoa','avena','basmati','bresaola','prosciutto','tonno','sgombro','ricotta','mozzarella','insalata','broccoli','spinaci','zucchine','carote','pomodori','mele','banana','arancia','noci','mandorle','nocciole','avocado','riso','orzo','farro','lenticchie','ceci','fagioli','fiocchi','frittata','omelette','burger','tacchino','greco','cottage','petto','filetto','fesa','scamorza','grana','parmigiano','wasa','crackers','pizza','birra','olio','burro'];
   const hasKeyword = paroleChiave.some(k => testo.toLowerCase().includes(k));
   if(!hasKeyword) return;
 
@@ -922,6 +923,39 @@ async function estraiNutri(testo) {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({...nutri, ts:tsISO(), trainer:trainerName, cliente:clienteName})
+    }).catch(()=>{});
+  } catch(e) {}
+}
+async function estraiNutriDaRisposta(risposta) {
+  if(trainerName==='demo' || !clienteName) return;
+  // Fires only when coach reply contains a macro table (P/C/G) — means it analyzed a meal
+  if(!risposta.includes('P=') && !risposta.includes('Prot') && !risposta.includes('kcal') && !risposta.includes('proteine')) return;
+  const oggi = new Date().toISOString().split('T')[0];
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:300,
+        system:`Sei un estrattore di dati nutrizionali. Ricevi la risposta di un coach AI che ha analizzato un pasto del cliente. Estrai i macro del pasto discusso. Rispondi SOLO con JSON valido. Formato: {"tipo_pasto":"colazione|spuntino_matt|pranzo|spuntino_pom|cena|spuntino_serale","alimenti":"descrizione breve","proteine":0,"carbo":0,"grassi":0,"kcal":0}. Se non ci sono macro chiari rispondi con {"tipo_pasto":""}. Arrotonda a interi.`,
+        messages:[{role:'user', content:'Estrai i dati nutrizionali dalla seguente risposta del coach: '+risposta}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text||'';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const nutri = JSON.parse(clean);
+    if(!nutri.tipo_pasto) return;
+    const key = slugify(trainerName)+'_'+slugify(clienteName);
+    // Avoid duplicate: check if this tipo_pasto already saved today
+    const checkRes = await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+oggi+'.json');
+    const existing = await checkRes.json();
+    if(existing && Object.values(existing).some(e=>(e.tipo_pasto||e.pasto)===nutri.tipo_pasto)) return;
+    const logKey = nutri.tipo_pasto+'_'+Date.now();
+    fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+oggi+'/'+logKey+'.json',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...nutri, ts:tsISO(), trainer:trainerName, cliente:clienteName, fonte:'risposta'})
     }).catch(()=>{});
   } catch(e) {}
 }
