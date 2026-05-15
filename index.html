@@ -357,6 +357,7 @@ VIETATO per lombare: squat pesante con bilanciere, stacco pesante, sit-up classi
 REGOLE COACH: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore lombare acuto/sciatalgia: scrivi "⚠ SCALA AL MEDICO" in fondo 4) Non inventare esercizi o cibi fuori dal piano 5) Concludi SEMPRE con una frase motivazionale breve e potente 6) Se chiede tecnica/video: breve spiegazione + "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano"`;
 
 let customSystem = null;
+let customSystemSource = null;
 let pdfBase64 = null;
 let history = [];
 let busy = false;
@@ -605,6 +606,7 @@ function applyPDF(nome,base64){
   const tl=trainerName&&trainerName!='demo'?' di '+trainerName:'';
   pdfBase64=base64; history=[];
   customSystem=`Sei un assistente AI per il personal training${tl}. Hai letto la scheda dal PDF allegato. Rispondi in italiano, tono diretto e amichevole. Max 5-6 righe. REGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" 4) Non inventare nulla fuori dal PDF 5) Concludi SEMPRE con una frase motivazionale breve e autentica 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
+  customSystemSource='pdf';
   aggiornaUI(nome,'PDF reale','Letto da Claude');
 }
 
@@ -612,6 +614,7 @@ function applyTesto(nome,contenuto){
   const tl=trainerName&&trainerName!='demo'?' di '+trainerName:'';
   pdfBase64=null; history=[];
   customSystem=`Sei un assistente AI per il personal training${tl}. Conosci la scheda del cliente. Rispondi in italiano, tono diretto e amichevole. Max 5-6 righe.\n\nSCHEDA — ${nome}:\n${contenuto.substring(0,4000)}\n\nREGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" 4) Non inventare nulla fuori dalla scheda 5) Concludi SEMPRE con una frase motivazionale breve e autentica 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
+  customSystemSource='testo';
   aggiornaUI(nome,'Scheda reale','Caricata ora');
 }
 
@@ -644,7 +647,8 @@ function saveSessione() {
     ts: tsISO(),
     trainer: trainerName,
     cliente: clienteName,
-    customSystem: customSystem||'',
+    customSystem: customSystemSource ? customSystem : '',
+    customSystemSource: customSystemSource||'',
     schedaNome: document.getElementById('scheda-name')?.textContent||'',
     messaggi: history.slice(-20)
   };
@@ -664,7 +668,7 @@ async function loadSessione() {
     if(!data || !data.ts) return;
     const ore = (Date.now() - new Date(data.ts).getTime()) / 3600000;
     if(ore > 72) return;
-    if(data.customSystem) customSystem = data.customSystem;
+    if(data.customSystem && data.customSystemSource) { customSystem = data.customSystem; customSystemSource = data.customSystemSource; }
     if(data.messaggi && data.messaggi.length > 0) {
       history = data.messaggi;
       document.getElementById('msgs').innerHTML = '';
