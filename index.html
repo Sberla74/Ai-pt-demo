@@ -7,834 +7,759 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Coach AI">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f0f0f">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
-  --text:#f0ede8;--text2:#8a8780;--text3:#555350;
-  --accent:#c8f564;--accent-dim:rgba(200,245,100,0.12);--accent-dim2:rgba(200,245,100,0.06);
-  --red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);--blue:#64b4ff;
-  --radius:14px;--radius-sm:8px;
-  --hh:56px;--tbh:58px;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;}
-
-/* HEADER */
-.app-header{position:fixed;top:0;left:0;right:0;z-index:20;height:var(--hh);padding-top:env(safe-area-inset-top);background:rgba(15,15,15,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding-left:18px;padding-right:18px;}
-.logo{display:flex;align-items:center;gap:8px;}
-.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.8)}}
-.logo-text{font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);font-family:'DM Mono',monospace;}
-.day-badge{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:right;line-height:1.4;}
-
-/* TAB BAR */
-.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:20;height:var(--tbh);padding-bottom:env(safe-area-inset-bottom);background:rgba(15,15,15,0.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;}
-.tab-btn{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;font-size:9px;font-family:'DM Mono',monospace;letter-spacing:0.05em;text-transform:uppercase;color:var(--text3);transition:color 0.15s;padding:0;}
-.tab-btn.active{color:var(--accent);}
-.tab-indicator{width:18px;height:2px;border-radius:1px;background:transparent;transition:background 0.15s;margin-bottom:1px;}
-.tab-btn.active .tab-indicator{background:var(--accent);}
-
-/* TAB CONTENT */
-.tab-content{position:fixed;top:var(--hh);bottom:var(--tbh);left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;flex-direction:column;}
-.tab-content.active{display:flex;}
-.tab-scroll{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
-
-/* CARD */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-.card-header{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.card-title{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;}
-.card-body{padding:13px 15px;}
-.label-sm{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;display:block;margin-bottom:3px;}
-.num-input{width:100%;padding:8px 6px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:15px;font-family:'DM Mono',monospace;outline:none;-webkit-appearance:none;text-align:center;}
-.num-input:focus{border-color:rgba(200,245,100,0.4);}
-.text-input{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
-.text-input:focus{border-color:rgba(200,245,100,0.4);}
-.text-input::placeholder{color:var(--text3);}
-.save-btn{padding:9px 20px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
-.save-btn:active{opacity:0.8;}
-.no-data{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;padding:6px 0;}
-.tag{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-family:'DM Mono',monospace;}
-.tag.good{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,245,100,0.2);}
-
-/* ═══ CHAT TAB ═══ */
-#tab-chat{padding:0;}
-.chat-msgs{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
-.chat-msgs::-webkit-scrollbar{width:0;}
-.msg{display:flex;flex-direction:column;max-width:85%;}
-.msg.user{align-self:flex-end;align-items:flex-end;}
-.msg.bot{align-self:flex-start;align-items:flex-start;}
-.bubble{padding:9px 13px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
-.msg.user .bubble{background:var(--accent);color:#0f0f0f;border-radius:16px 16px 4px 16px;}
-.msg.bot .bubble{background:var(--surface2);color:var(--text);border-radius:16px 16px 16px 4px;border:1px solid var(--border);}
-.msg-time{font-size:10px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;}
-.msg-foto{width:100px;border-radius:10px;margin-bottom:4px;opacity:0.8;}
-.escalate-banner{display:none;margin:0 12px 6px;padding:7px 12px;border-radius:var(--radius-sm);background:var(--red-dim);border:1px solid rgba(255,107,107,0.2);font-size:12px;color:var(--red);font-family:'DM Mono',monospace;flex-shrink:0;}
-.suggestions{padding:6px 10px;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;}
-.sug{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
-.sug:active{color:var(--accent);}
-.input-row{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border);flex-shrink:0;}
-.input-row textarea{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;padding:8px 11px;resize:none;height:38px;outline:none;line-height:1.4;transition:border-color 0.15s;}
-.input-row textarea:focus{border-color:rgba(200,245,100,0.35);}
-.send-btn{padding:0 16px;height:38px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;border:none;cursor:pointer;flex-shrink:0;}
-.send-btn:disabled{opacity:0.4;}
-.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--text3);margin:0 2px;animation:bounce 1.2s ease-in-out infinite;}
-.typing span:nth-child(2){animation-delay:0.2s;}
-.typing span:nth-child(3){animation-delay:0.4s;}
-@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
-
-/* ═══ PASTI TAB ═══ */
-.pasti-total{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;}
-.pt-val{font-size:17px;font-weight:600;line-height:1;}
-.pt-label{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px;}
-.pt-ok{color:var(--accent);}.pt-over{color:var(--red);}.pt-low{color:var(--text2);}
-.macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
-.meal-target-row{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px;line-height:1.5;}
-.meal-saved-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-.chip{font-size:11px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:20px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(200,245,100,0.2);}
-.chip.neutral{background:var(--surface2);color:var(--text2);border-color:var(--border);}
-.saved-badge{font-size:10px;color:var(--accent);font-family:'DM Mono',monospace;}
-.meal-desc-saved{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:5px;font-style:italic;}
-
-/* ═══ FOTO TAB ═══ */
-.foto-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-.foto-slot{display:flex;flex-direction:column;gap:6px;}
-.foto-slot-label{font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;text-align:center;text-transform:uppercase;letter-spacing:0.05em;}
-.foto-thumb{width:100%;aspect-ratio:3/4;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
-.foto-thumb img{width:100%;height:100%;object-fit:cover;}
-.foto-placeholder{font-size:11px;color:var(--text3);text-align:center;padding:8px;font-family:'DM Mono',monospace;line-height:1.5;}
-.confronta-btn{width:100%;padding:12px;border-radius:var(--radius-sm);border:1px solid rgba(200,245,100,0.3);background:var(--accent-dim2);color:var(--accent);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;}
-.confronta-btn:disabled{opacity:0.3;cursor:not-allowed;}
-
-/* ═══ PESO TAB ═══ */
-.peso-big{font-size:44px;font-weight:600;line-height:1;color:var(--text);}
-.peso-unit{font-size:20px;color:var(--text2);}
-.peso-sub{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:3px;}
-.tag-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
-.peso-history-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
-.peso-history-row:last-child{border-bottom:none;}
-.peso-date{color:var(--text3);font-family:'DM Mono',monospace;font-size:11px;}
-.peso-val{font-weight:500;font-size:14px;}
-.peso-delta{font-size:10px;font-family:'DM Mono',monospace;margin-left:4px;}
-
-/* ═══ SONNO TAB ═══ */
-.sonno-big{font-size:40px;font-weight:600;line-height:1;}
-.sonno-unit{font-size:18px;color:var(--text2);}
-.sonno-sub{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:3px;}
-.quality-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;margin-left:6px;vertical-align:middle;}
-.quality-badge.ottimo{background:var(--accent-dim);color:var(--accent);}
-.quality-badge.buono{background:rgba(100,180,255,0.1);color:var(--blue);}
-.quality-badge.scarso{background:var(--red-dim);color:var(--red);}
-.sonno-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 10px;}
-.sonno-select{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
-.sonno-select:focus{border-color:rgba(200,245,100,0.4);}
-.week-sonno-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
-.week-sonno-row:last-child{border-bottom:none;}
-.week-day-name{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;width:28px;flex-shrink:0;}
-.week-day-val{font-size:13px;font-weight:500;}
-.week-day-none{color:var(--text3);font-size:12px;font-family:'DM Mono',monospace;}
-.week-avg{display:flex;justify-content:space-between;align-items:center;padding-top:10px;margin-top:4px;border-top:1px solid var(--border2);}
-.week-avg-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
-.week-avg-val{font-size:20px;font-weight:600;color:var(--accent);}
-
-/* TOAST */
-.toast{position:fixed;bottom:calc(var(--tbh) + 14px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--accent);color:#0f0f0f;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;padding:8px 20px;border-radius:20px;opacity:0;transition:opacity 0.22s,transform 0.22s;pointer-events:none;z-index:999;white-space:nowrap;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  :root {
+    --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;
+    --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+    --text:#f0ede8;--text2:#8a8780;--text3:#555350;
+    --accent:#c8f564;--accent-dim:rgba(200,245,100,0.12);--accent-dim2:rgba(200,245,100,0.06);
+    --red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);
+    --blue:#64b4ff;--blue-dim:rgba(100,180,255,0.1);
+    --radius:14px;--radius-sm:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{overflow-x:hidden;max-width:100%;}
+  @supports(padding:max(0px)){
+    .header,.container,.footer{
+      padding-left:max(20px,env(safe-area-inset-left));
+      padding-right:max(20px,env(safe-area-inset-right));
+    }
+    .footer{padding-bottom:max(32px,env(safe-area-inset-bottom));}
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+  .header{width:100%;max-width:480px;padding:28px 20px 0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+  .headline{font-size:26px;font-weight:600;line-height:1.2;color:var(--text);margin-top:6px;}
+  .subline{font-size:14px;color:var(--text2);line-height:1.6;margin-top:4px;}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.8)}}
+  .logo-text{font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);font-family:'DM Mono',monospace;}
+  .container{width:100%;max-width:480px;padding:20px;display:flex;flex-direction:column;gap:14px;flex:1;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-title{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;}
+  .badge{font-size:11px;font-weight:500;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:20px;}
+  .badge-demo{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(200,245,100,0.2);}
+  .badge-custom{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(100,180,255,0.2);}
+  .scheda-info{padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+  .scheda-name{font-size:15px;font-weight:500;color:var(--text);}
+  .scheda-meta{display:flex;gap:8px;flex-wrap:wrap;}
+  .tag{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-family:'DM Mono',monospace;}
+  .upload-area{padding:14px 16px;border-top:1px solid var(--border);}
+  .upload-label{font-size:12px;color:var(--text2);margin-bottom:10px;display:block;}
+  .upload-row{display:flex;gap:8px;}
+  .upload-btn{flex:1;padding:10px 14px;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.18s;}
+  .upload-btn:hover{border-color:rgba(200,245,100,0.3);color:var(--accent);background:var(--accent-dim2);}
+  .paste-btn{padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;white-space:nowrap;}
+  .paste-btn:hover{border-color:rgba(200,245,100,0.3);color:var(--accent);}
+  #file-input,#foto-prima-input,#foto-dopo-input{display:none;}
+  .profilo-field{display:flex;flex-direction:column;gap:4px;}
+  .profilo-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;letter-spacing:0.04em;}
+  .profilo-input{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
+  .profilo-input:focus{border-color:rgba(200,245,100,0.35);}
+  .profilo-input::placeholder{color:var(--text3);}
+  .profilo-input option{background:var(--surface2);color:var(--text);}
+  .foto-section{padding:14px 16px;border-top:1px solid var(--border);}
+  .foto-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;}
+  .foto-disclaimer{font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5;font-family:'DM Mono',monospace;}
+  .foto-row{display:flex;gap:8px;}
+  .foto-slot{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .foto-thumb{width:100%;aspect-ratio:3/4;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color 0.18s;}
+  .foto-thumb:hover{border-color:rgba(200,245,100,0.3);}
+  .foto-thumb img{width:100%;height:100%;object-fit:cover;}
+  .foto-thumb .placeholder{font-size:11px;color:var(--text3);text-align:center;padding:8px;font-family:'DM Mono',monospace;}
+  .foto-slot-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+  .foto-slot-label span{font-size:10px;color:var(--text3);}
+  .confronta-btn{width:100%;margin-top:10px;padding:10px;border-radius:var(--radius-sm);border:1px solid rgba(200,245,100,0.3);background:var(--accent-dim2);color:var(--accent);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;display:none;}
+  .confronta-btn:hover{background:var(--accent-dim);}
+  .confronta-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .chat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;height:440px;overflow:hidden;}
+  .chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .chat-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(200,245,100,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0;}
+  .chat-name{font-size:14px;font-weight:500;color:var(--text);}
+  .chat-status{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;}
+  .chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
+  .chat-msgs::-webkit-scrollbar{width:3px;}
+  .chat-msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+  .msg{display:flex;flex-direction:column;max-width:82%;}
+  .msg.user{align-self:flex-end;align-items:flex-end;}
+  .msg.bot{align-self:flex-start;align-items:flex-start;}
+  .bubble{padding:9px 13px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
+  .msg.user .bubble{background:var(--accent);color:#0f0f0f;border-radius:16px 16px 4px 16px;}
+  .msg.bot .bubble{background:var(--surface2);color:var(--text);border-radius:16px 16px 16px 4px;border:1px solid var(--border);}
+  .msg-time{font-size:10px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;}
+  .msg-foto{width:120px;border-radius:10px;margin-bottom:4px;opacity:0.8;}
+  .escalate-banner{display:none;margin:0 14px 8px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--red-dim);border:1px solid rgba(255,107,107,0.2);font-size:12px;color:var(--red);font-family:'DM Mono',monospace;flex-shrink:0;}
+  .suggestions{padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border);flex-shrink:0;}
+  .sug{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap;}
+  .sug:hover{border-color:rgba(200,245,100,0.35);color:var(--accent);background:var(--accent-dim2);}
+  .input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0;}
+  .input-row textarea{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;padding:9px 12px;resize:none;height:38px;outline:none;line-height:1.4;transition:border-color 0.15s;}
+  .input-row textarea:focus{border-color:rgba(200,245,100,0.35);}
+  .input-row textarea::placeholder{color:var(--text3);}
+  .send-btn{padding:9px 16px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;}
+  .send-btn:hover{opacity:0.85;}
+  .send-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .typing{display:flex;gap:4px;align-items:center;padding:10px 14px;}
+  .typing span{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:bounce 1.2s infinite;}
+  .typing span:nth-child(2){animation-delay:.2s}
+  .typing span:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+  .privacy-note{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--text2);line-height:1.5;}
+  .privacy-icon{width:16px;height:16px;flex-shrink:0;opacity:0.5;}
+  .footer{width:100%;max-width:480px;padding:16px 20px 32px;text-align:center;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+  .paste-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:flex-end;justify-content:center;}
+  .paste-overlay.open{display:flex;}
+  .paste-modal{width:100%;max-width:480px;background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border2);padding:20px;display:flex;flex-direction:column;gap:12px;animation:slideup 0.22s ease;}
+  @keyframes slideup{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .paste-modal-title{font-size:14px;font-weight:500;color:var(--text);}
+  .paste-modal textarea{width:100%;height:200px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;padding:12px;resize:none;outline:none;line-height:1.6;}
+  .paste-modal textarea:focus{border-color:rgba(200,245,100,0.3);}
+  .paste-modal textarea::placeholder{color:var(--text3);}
+  .paste-actions{display:flex;gap:8px;}
+  .btn-primary{flex:1;padding:11px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
+  .btn-secondary{padding:11px 18px;border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-size:14px;font-family:'DM Sans',sans-serif;border:1px solid var(--border2);cursor:pointer;}
 </style>
 </head>
 <body>
 
-<header class="app-header">
+<div class="header">
   <div class="logo">
     <div class="logo-dot"></div>
-    <span class="logo-text">Coach AI · Fabrizio</span>
+    <span class="logo-text" id="logo-text">Coach AI · Demo</span>
   </div>
-  <div class="day-badge" id="day-badge">—</div>
-</header>
+  <h1 class="headline" id="headline">Il tuo assistente<br>sempre disponibile</h1>
+  <p class="subline">Risponde ai clienti 24/7, li motiva e analizza i loro progressi fotografici.</p>
+</div>
 
-<!-- CHAT -->
-<div class="tab-content active" id="tab-chat">
-  <div class="chat-msgs" id="msgs">
-    <div class="msg bot">
-      <div class="bubble">Ciao Fabrizio. 80 kg entro il 9 agosto — questo è l'obiettivo. Niente scuse, solo risultati. Cosa devi fare oggi?</div>
-      <span class="msg-time">ora</span>
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Scheda attiva</span>
+      <span class="badge badge-demo" id="scheda-badge">Demo</span>
     </div>
-  </div>
-  <div class="escalate-banner" id="escalate-banner">Escalation al trainer</div>
-  <div class="suggestions">
-    <button class="sug" onclick="useSug(this)">Non ho voglia di allenarmi</button>
-    <button class="sug" onclick="useSug(this)">Ho sgarrato ieri</button>
-    <button class="sug" onclick="useSug(this)">Quanto manca all'obiettivo?</button>
-    <button class="sug" onclick="useSug(this)">Cosa mangio adesso?</button>
-  </div>
-  <div class="input-row">
-    <textarea id="txt" placeholder="Scrivi al coach..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
-    <button class="send-btn" id="send-btn" onclick="send()">Invia</button>
-  </div>
-</div>
-
-<!-- PASTI -->
-<div class="tab-content" id="tab-pasti">
-  <div class="tab-scroll" id="pasti-container">
-    <div style="text-align:center;padding:24px;color:var(--text3);font-family:'DM Mono',monospace;font-size:12px;">Caricamento...</div>
-  </div>
-</div>
-
-<!-- FOTO -->
-<div class="tab-content" id="tab-foto">
-  <div class="tab-scroll">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Confronto foto</span></div>
-      <div class="card-body">
-        <div class="foto-grid">
-          <div class="foto-slot">
-            <div class="foto-thumb" id="thumb-prima" onclick="document.getElementById('foto-prima-input').click()">
-              <div class="foto-placeholder">Foto migliore<br>(standard)</div>
-            </div>
-            <div class="foto-slot-label">Best</div>
-          </div>
-          <div class="foto-slot">
-            <div class="foto-thumb" id="thumb-dopo" onclick="document.getElementById('foto-dopo-input').click()">
-              <div class="foto-placeholder">Foto oggi<br>(attuale)</div>
-            </div>
-            <div class="foto-slot-label">Oggi</div>
-          </div>
-        </div>
-        <input type="file" id="foto-prima-input" accept="image/*" style="display:none" onchange="loadFoto(this,'prima')">
-        <input type="file" id="foto-dopo-input" accept="image/*" style="display:none" onchange="loadFoto(this,'dopo')">
-        <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()" disabled>Analisi AI confronto</button>
-        <p style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:8px;text-align:center;">Le foto rimangono sul dispositivo</p>
+    <div class="scheda-info">
+      <span class="scheda-name" id="scheda-name">Cliente esempio — Marco R.</span>
+      <div class="scheda-meta" id="scheda-meta">
+        <span class="tag">Blocco 1 · 6 sett.</span>
+        <span class="tag">3 full body/sett.</span>
+        <span class="tag">Dieta inclusa</span>
       </div>
     </div>
+    <div class="upload-area">
+      <span class="upload-label">Vuoi provare con la scheda di un tuo cliente?</span>
+      <div class="upload-row">
+        <label class="upload-btn" for="file-input">Carica PDF</label>
+        <input type="file" id="file-input" accept=".pdf,.txt" onchange="handleFile(this)">
+        <button class="paste-btn" onclick="openPaste()">Incolla testo</button>
+      </div>
+    </div>
+
+    <!-- PROFILO CLIENTE -->
+    <div class="upload-area" id="profilo-section">
+      <span class="upload-label">Profilo cliente <span style="color:var(--text3);font-weight:400;">(opzionale ma consigliato)</span></span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div class="profilo-field">
+          <label class="profilo-label">Nome</label>
+          <input type="text" id="p-nome" placeholder="es. Marco" class="profilo-input">
+        </div>
+        <div class="profilo-field">
+          <label class="profilo-label">Età</label>
+          <input type="number" id="p-eta" placeholder="es. 35" class="profilo-input" min="16" max="80">
+        </div>
+        <div class="profilo-field">
+          <label class="profilo-label">Peso (kg)</label>
+          <input type="number" id="p-peso" placeholder="es. 82" class="profilo-input">
+        </div>
+        <div class="profilo-field">
+          <label class="profilo-label">Altezza (cm)</label>
+          <input type="number" id="p-altezza" placeholder="es. 178" class="profilo-input">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div class="profilo-field">
+          <label class="profilo-label">Sesso</label>
+          <select id="p-sesso" class="profilo-input">
+            <option value="">—</option>
+            <option value="uomo">Uomo</option>
+            <option value="donna">Donna</option>
+          </select>
+        </div>
+        <div class="profilo-field">
+          <label class="profilo-label">Esperienza</label>
+          <select id="p-esperienza" class="profilo-input">
+            <option value="">—</option>
+            <option value="principiante (meno di 1 anno)">Principiante</option>
+            <option value="intermedio (1-3 anni)">Intermedio</option>
+            <option value="avanzato (3+ anni)">Avanzato</option>
+          </select>
+        </div>
+        <div class="profilo-field">
+          <label class="profilo-label">Obiettivo</label>
+          <select id="p-obiettivo" class="profilo-input">
+            <option value="">—</option>
+            <option value="dimagrimento e riduzione del grasso corporeo">Dimagrimento</option>
+            <option value="aumento massa muscolare">Massa muscolare</option>
+            <option value="tonificazione e definizione">Tonificazione</option>
+            <option value="performance sportiva">Performance sportiva</option>
+            <option value="riabilitazione e recupero">Riabilitazione</option>
+            <option value="salute e benessere generale">Salute generale</option>
+          </select>
+        </div>
+        <div class="profilo-field">
+          <label class="profilo-label">Sport / attività</label>
+          <input type="text" id="p-sport" placeholder="es. triathlon, calcio..." class="profilo-input">
+        </div>
+      </div>
+      <div class="profilo-field" style="margin-bottom:8px;">
+        <label class="profilo-label">Limitazioni fisiche o note mediche</label>
+        <input type="text" id="p-limitazioni" placeholder="es. lombalgia cronica, protesi ginocchio..." class="profilo-input">
+      </div>
+      <div class="profilo-field">
+        <label class="profilo-label">Stile di vita</label>
+        <select id="p-stile" class="profilo-input">
+          <option value="">—</option>
+          <option value="sedentario (poco movimento fuori dall'allenamento)">Sedentario</option>
+          <option value="attivo (movimento regolare durante la giornata)">Attivo</option>
+          <option value="molto attivo (sport quotidiano o lavoro fisico intenso)">Molto attivo</option>
+        </select>
+      </div>
+    </div>
+    <div class="foto-section">
+      <span class="foto-label">Confronto foto progressi</span>
+      <span class="foto-disclaimer">Solo corpo, senza volto. Le foto non vengono salvate.</span>
+      <div class="foto-row">
+        <div class="foto-slot">
+          <div class="foto-thumb" onclick="document.getElementById('foto-prima-input').click()" id="thumb-prima">
+            <span class="placeholder">+ Prima</span>
+          </div>
+          <input type="file" id="foto-prima-input" accept="image/*" onchange="loadFoto(this,'prima')">
+          <div class="foto-slot-label">Prima <span>inizio</span></div>
+        </div>
+        <div class="foto-slot">
+          <div class="foto-thumb" onclick="document.getElementById('foto-dopo-input').click()" id="thumb-dopo">
+            <span class="placeholder">+ Dopo</span>
+          </div>
+          <input type="file" id="foto-dopo-input" accept="image/*" onchange="loadFoto(this,'dopo')">
+          <div class="foto-slot-label">Dopo <span>aggiornamento</span></div>
+        </div>
+      </div>
+      <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()">Analizza progressi con AI</button>
+    </div>
+  </div>
+
+  <div class="chat-card">
+    <div class="chat-header">
+      <div class="chat-avatar" id="chat-initials">AI</div>
+      <div>
+        <div class="chat-name" id="chat-name">Coach AI</div>
+        <div class="chat-status">online</div>
+      </div>
+    </div>
+    <div class="chat-msgs" id="msgs">
+      <div class="msg bot">
+        <div class="bubble" id="welcome-msg">Ciao! Sono il tuo assistente AI. Sono qui per assisterti 24/7. Dubbi? Domande sulla scheda o sulla dieta? Scrivi pure!</div>
+        <span class="msg-time">ora</span>
+      </div>
+    </div>
+    <div class="escalate-banner" id="escalate-banner">⚠ Escalation al trainer — risposta inviata, notifica in arrivo</div>
+    <div class="suggestions">
+      <button class="sug" onclick="useSug(this)">Oggi sono stanco, mi alleno?</button>
+      <button class="sug" onclick="useSug(this)">Ho saltato 2 giorni</button>
+      <button class="sug" onclick="useSug(this)">Sostituisco il pollo?</button>
+      <button class="sug" onclick="useSug(this)">Dolore alla spalla</button>
+    </div>
+    <div class="input-row">
+      <textarea id="txt" placeholder="Scrivi come faresti su WhatsApp..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
+      <button class="send-btn" id="send-btn" onclick="send()">Invia</button>
+    </div>
+  </div>
+
+  <div class="privacy-note">
+    <svg class="privacy-icon" viewBox="0 0 16 16" fill="none">
+      <path d="M8 1L2 3.5V8c0 3.3 2.5 5.7 6 7 3.5-1.3 6-3.7 6-7V3.5L8 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M5.5 8l1.8 1.8L10.5 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Schede e foto non vengono mai salvate — tutto rimane solo nel tuo dispositivo durante la sessione.</span>
   </div>
 </div>
 
-<!-- PESO -->
-<div class="tab-content" id="tab-peso">
-  <div class="tab-scroll" id="peso-container">
-    <div style="text-align:center;padding:24px;color:var(--text3);font-family:'DM Mono',monospace;font-size:12px;">Caricamento...</div>
+<div class="paste-overlay" id="paste-overlay" onclick="handleOverlayClick(event)">
+  <div class="paste-modal">
+    <div class="paste-modal-title">Incolla il testo della scheda</div>
+    <textarea id="paste-txt" placeholder="Incolla qui la scheda del cliente: esercizi, serie, ripetizioni, piano alimentare..."></textarea>
+    <div class="paste-actions">
+      <button class="btn-primary" onclick="loadPastedScheda()">Carica scheda</button>
+      <button class="btn-secondary" onclick="closePaste()">Annulla</button>
+    </div>
   </div>
 </div>
 
-<!-- SONNO -->
-<div class="tab-content" id="tab-sonno">
-  <div class="tab-scroll" id="sonno-container">
-    <div style="text-align:center;padding:24px;color:var(--text3);font-family:'DM Mono',monospace;font-size:12px;">Caricamento...</div>
-  </div>
-</div>
-
-<nav class="tab-bar">
-  <button class="tab-btn active" id="nav-chat" onclick="switchTab('chat')">
-    <div class="tab-indicator"></div>Chat
-  </button>
-  <button class="tab-btn" id="nav-pasti" onclick="switchTab('pasti')">
-    <div class="tab-indicator"></div>Pasti
-  </button>
-  <button class="tab-btn" id="nav-foto" onclick="switchTab('foto')">
-    <div class="tab-indicator"></div>Foto
-  </button>
-  <button class="tab-btn" id="nav-peso" onclick="switchTab('peso')">
-    <div class="tab-indicator"></div>Peso
-  </button>
-  <button class="tab-btn" id="nav-sonno" onclick="switchTab('sonno')">
-    <div class="tab-indicator"></div>Sonno
-  </button>
-</nav>
-<div class="toast" id="toast"></div>
+<div class="footer" id="footer-txt">coach-ai · demo · nessun dato salvato</div>
 
 <script>
 const WORKER_URL = 'https://trainer-ai-proxy.f-lonatica.workers.dev';
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
-const ROTATION_START = '2026-05-11';
-const ROTATION = [
-  {label:'Full Body 1',type:'fb'},{label:'HIIT+Addome',type:'hiit'},{label:'Riposo',type:'rest'},
-  {label:'Full Body 2',type:'fb'},{label:'HIIT+Addome',type:'hiit'},{label:'Riposo',type:'rest'},
-  {label:'Full Body 3',type:'fb'},{label:'HIIT+Addome',type:'hiit'},{label:'Riposo',type:'rest'},
-  {label:'Full Body 4',type:'fb'},{label:'HIIT+Addome',type:'hiit'},{label:'Riposo',type:'rest'},
-];
-const MEAL_TARGETS = {
-  fb:{
-    colazione:{p:40,c:45,g:15,k:475},spuntino_matt:{p:15,c:20,g:5,k:185},
-    pranzo:{p:55,c:85,g:20,k:740},spuntino_pom:{p:15,c:20,g:5,k:185},
-    cena:{p:45,c:35,g:20,k:500},spuntino_serale:{p:0,c:5,g:0,k:0}
-  },
-  hiit:{
-    colazione:{p:40,c:40,g:14,k:450},spuntino_matt:{p:15,c:18,g:5,k:177},
-    pranzo:{p:55,c:75,g:20,k:700},spuntino_pom:{p:15,c:18,g:5,k:177},
-    cena:{p:45,c:30,g:20,k:476},spuntino_serale:{p:0,c:4,g:0,k:0}
-  },
-  rest:{
-    colazione:{p:35,c:35,g:12,k:390},spuntino_matt:{p:15,c:15,g:5,k:165},
-    pranzo:{p:50,c:70,g:18,k:650},spuntino_pom:{p:15,c:15,g:5,k:165},
-    cena:{p:50,c:30,g:20,k:500},spuntino_serale:{p:0,c:5,g:0,k:0}
-  }
-};
-const MEAL_LABELS = {
-  colazione:'Colazione',spuntino_matt:'Spuntino mattina',pranzo:'Pranzo',
-  spuntino_pom:'Spuntino pomeriggio',cena:'Cena',spuntino_serale:'Spuntino serale'
-};
-const MEAL_ORDER = ['colazione','spuntino_matt','pranzo','spuntino_pom','cena','spuntino_serale'];
 
-const DEMO_SYSTEM = `Sei il coach personale di Fabrizio Lonatica. Conosci il suo programma in ogni dettaglio. Sei diretto, aggressivo come un buon personal trainer militare — duro ma intelligente. Non accetti scuse. Vuoi il meglio da lui.
+const DEMO_SYSTEM = `Sei un assistente AI per il personal training. Conosci la scheda e il piano alimentare del cliente. Rispondi in italiano, tono diretto e amichevole come su WhatsApp. Max 5-6 righe.
 
-PROFILO:
-Uomo, 52 anni, 185 cm, 90 kg → obiettivo 80 kg (16-24 settimane, ritmo 0,4-0,7 kg/sett)
-Protusione lombare L4-L5 — VIETATI: squat pesante bilanciere, stacco terra, good morning, sit-up classici, russian twist pesanti, sprint, burpees, salti
-DA PREFERIRE: leg press controllata, split squat assistito, hip thrust, chest press, pulley busto stabile, lat machine, macchine
-Plenity: con abbondante acqua prima di pranzo e cena — non compensarlo con pasti disordinati
+SCHEDA DEMO — Marco R., obiettivo: dimagrimento e tonificazione:
+Frequenza: 3 full body/settimana (Lun/Mer/Ven)
+SEDUTA A: Leg press 3x12 RIR2 | Chest row 3x12 | Chest press inclinata 3x10 | RDL 3x10 | Leg curl 3x12 | Alzate laterali 3x15 | Plank 3x30"
+SEDUTA B: Goblet squat 3x12 | Lat machine 3x10 | Panca manubri 3x10 | Hip thrust 3x12 | Leg extension 3x12 | Face pull 3x15 | Dead bug 3x8
+SEDUTA C: Split squat 3x10 | Seated row 3x12 | Dip assistita 3x10 | Back extension 3x12 | Curl manubri 3x12 | Pushdown 3x12 | Crunch cable 3x15
+PIANO: Colazione uova 3+albumi+avena 50g | Pranzo riso 80g+proteina 200g+verdure+EVO | Cena proteina 200g+verdure+grassi | Spuntino skyr+noci | Acqua 2.5L
+Integratori: creatina 5g, omega-3 2g, vitamina D 2000UI
 
-ROTAZIONE (indipendente dal giorno della settimana):
-FB1 → HIIT → Riposo → FB2 → HIIT → Riposo → FB3 → HIIT → Riposo → FB4 → HIIT → Riposo → (ricomincia)
-Giorno FB: ~2.050 kcal | Giorno HIIT: ~1.950 kcal | Giorno Riposo: ~1.850 kcal
-1 pasto libero a settimana (es. pizza+birra) — è nel piano, non si compensa. Media settimanale ~2.000 kcal.
+REGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" in fondo 4) Non inventare nulla fuori dalla scheda 5) Concludi SEMPRE con una frase motivazionale breve e autentica legata al contesto 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
 
-RISCALDAMENTO FISSO (5 min prima di ogni full body):
-2' cyclette/cammino inclinata → Cat-camel 6 rip lente → Bird dog 6 per lato → Glute bridge 10 rip → 1 serie leggera primo esercizio
-
-FULL BODY 1 — Spinta/Trazione Base (30 min max, superserie):
-A1: Leg press 3×10 (3-1-1-0, RIR 2-3) → 15-30" → A2: Chest press macchina 3×8-10 (RIR 2) → 75"
-B1: Lat machine presa neutra 3×10 (2-1-1-1, RIR 2) → 15-30" → B2: Hip thrust macchina 2×10-12 (RIR 2-3) → 60-75"
-Core: Pallof press 2×10 per lato
-
-FULL BODY 2 — Posteriori + Spalle:
-A1: Split squat assistito 3×8 per lato (RIR 2-3) → A2: Rematore macchina petto supportato 3×10 (RIR 2) → 75-90"
-B1: Shoulder press macchina 2×8-10 (RIR 2) → B2: Leg curl seduto 3×10-12 (RIR 1-2) → 60-75"
-Core: Dead bug 2×8 per lato
-
-FULL BODY 3 — Volume Moderato:
-A1: Goblet squat a box 3×8-10 (RIR 2-3) → A2: Panca inclinata manubri 3×8-10 (RIR 2) → 75"
-B1: Pulley basso busto stabile 3×10 (RIR 2) → B2: Glute bridge 2×12 (RIR 2) → 60-75"
-Finisher: Farmer carry leggero 3×25-30 m
-
-FULL BODY 4 — Richiamo Metabolico:
-A1: Step-up basso 3×8 per lato (RIR 2-3) → A2: Chest supported row o lat machine 3×10 (RIR 2) → 75-90"
-B1: Croci ai cavi o pec deck 2×12 (RIR 1-2) → B2: Alzate laterali 2×12-15 (RIR 1-2) → 60"
-Core: Side plank 2×20-35" per lato
-
-HIIT (18-22 min, bike/air bike/ellittica — NO corsa/salti):
-5' riscaldamento progressivo → 8-10 round × 20" forte (RPE 8-9) + 70" facile → 3-5' defaticamento
-
-ADDOME SICURO (8-10 min dopo HIIT):
-McGill curl-up modificato 2×6-8 tenute 8" | Side plank 2×20-35" per lato | Bird dog 2×6-8 per lato | Pallof press 2×10 per lato
-
-NUTRIZIONE:
-Proteine 160-180g/die | Grassi 60-70g/die | Carboidrati 170-220g nei giorni di pesi, 170g riposo
-Acqua 2,5-3 L/die | Ogni pasto: proteine + verdure + carbo controllati + grassi misurati
-Alcol: max 1-2 occasioni/settimana | Passi: 8.000-10.000/die
-
-PROGRESSIONE:
-Sett 1-2 Adattamento | Sett 3-6 Costruzione: +carico graduale | Sett 7-10 Consolidamento | Sett 11 Scarico -30-40% volume | Sett 12 Ripartenza
-Aumento carico: quando completi tutte le serie al range alto con RIR corretto → +2,5-5%
-
-STILE DI RISPOSTA:
-- Max 5-6 righe di testo (escluse tabella macro e marker NUTRI che sono sempre obbligatori)
-- Diretto e aggressivo: sfida Fabrizio, non lo giustifica mai
-- Stanco → "Tutti lo sono. Vai."
-- Ha sgarrato → analizza, correggi, avanti senza sensi di colpa ma senza passarci sopra
-- Ogni risposta finisce con micro-sfida o azione immediata
-- Pasto descritto → calcola macro subito con tabella P/C/G/Kcal + delta vs target del giorno
-- OBBLIGATORIO — dopo la tabella macro aggiungi SEMPRE su una riga separata: <<NUTRI:TIPO|P|C|G|KCAL>> (TIPO: colazione / spuntino_matt / pranzo / spuntino_pom / cena / spuntino_serale). Solo il marker, nessun testo intorno. MAI ometterlo.
-
-REGOLE HARD:
-1) Dolore lombare acuto, sciatalgia, intorpidimento → "→ SCALA AL MEDICO" — stop immediato
-2) Non inventare nulla fuori dal piano
-3) Tutorial → "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano"`;
-
-let trainerName = 'fabrizio';
-let clienteName = 'test';
+let customSystem = null;
+let pdfBase64 = null;
 let history = [];
 let busy = false;
+let trainerName = '';
+let clienteName = '';
+let sessionId = '';
 let fotoPrima = null;
 let fotoDopo = null;
+let trainingLog = [];
 
-// ═══ UTILS ═══
-function slugify(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');}
-function now(){return new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});}
-function tsISO(){return new Date().toISOString();}
-function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function getMonday(d){const day=new Date(d),dow=day.getDay();day.setDate(day.getDate()-(dow===0?6:dow-1));day.setHours(0,0,0,0);return day;}
+function getSystem() { return customSystem || DEMO_SYSTEM; }
 
-function getRotationDay(dateStr){
-  const start=new Date(ROTATION_START+'T00:00:00');
-  const d=new Date((dateStr||todayStr())+'T00:00:00');
-  d.setHours(0,0,0,0);start.setHours(0,0,0,0);
-  const days=Math.max(0,Math.floor((d-start)/86400000));
-  return ROTATION[days%12];
+function getProfilo() {
+  const nome = document.getElementById('p-nome')?.value.trim();
+  const eta = document.getElementById('p-eta')?.value;
+  const peso = document.getElementById('p-peso')?.value;
+  const altezza = document.getElementById('p-altezza')?.value;
+  const sesso = document.getElementById('p-sesso')?.value;
+  const esperienza = document.getElementById('p-esperienza')?.value;
+  const obiettivo = document.getElementById('p-obiettivo')?.value;
+  const sport = document.getElementById('p-sport')?.value.trim();
+  const limitazioni = document.getElementById('p-limitazioni')?.value.trim();
+  const stile = document.getElementById('p-stile')?.value;
+  const parts = [];
+  if(nome) parts.push('Nome: ' + nome);
+  if(eta) parts.push('Età: ' + eta + ' anni');
+  if(sesso) parts.push('Sesso: ' + sesso);
+  if(peso && altezza) parts.push('Corporatura: ' + peso + 'kg, ' + altezza + 'cm');
+  else if(peso) parts.push('Peso: ' + peso + 'kg');
+  else if(altezza) parts.push('Altezza: ' + altezza + 'cm');
+  if(obiettivo) parts.push('Obiettivo: ' + obiettivo);
+  if(esperienza) parts.push('Esperienza: ' + esperienza);
+  if(sport) parts.push('Sport/attività: ' + sport);
+  if(stile) parts.push('Stile di vita: ' + stile);
+  if(limitazioni) parts.push('Limitazioni/note mediche: ' + limitazioni);
+  return parts.length > 0 ? '\n\nPROFILO CLIENTE:\n' + parts.join('\n') : '';
 }
 
-function showToast(msg){
-  const t=document.getElementById('toast');if(!t)return;
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),3000);
+async function getSystemWithLog() {
+  const profilo = getProfilo();
+  const log = await getTrainingLog();
+  return getSystem() + profilo + log;
 }
 
-function updateDayBadge(){
-  const d=new Date();
-  const days=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-  const months=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-  const rot=getRotationDay();
-  const label=rot.label.replace('Full Body','FB');
-  document.getElementById('day-badge').innerHTML=days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()]+'<br><span style="color:var(--accent)">'+label+'</span>';
+function now() { return new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); }
+function tsISO() { return new Date().toISOString(); }
+
+function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
 }
 
-// ═══ TAB NAV ═══
-function switchTab(tab){
-  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  document.getElementById('nav-'+tab).classList.add('active');
-  if(tab==='pasti') renderPastiTab();
-  if(tab==='peso') renderPesoTab();
-  if(tab==='sonno') renderSonnoTab();
+function initSession() {
+  const params = new URLSearchParams(window.location.search);
+  const tn = params.get('trainer');
+  const cn = params.get('cliente');
+  trainerName = tn ? tn.trim() : 'demo';
+  clienteName = cn ? cn.trim() : 'utente_' + Math.random().toString(36).substr(2,5);
+  sessionId = slugify(trainerName) + '_' + slugify(clienteName) + '_' + Date.now();
+
+  if(tn && tn.trim()) {
+    const display = 'Coach ' + tn.trim() + ' AI';
+    document.getElementById('logo-text').textContent = display + ' · Demo';
+    document.getElementById('headline').innerHTML = 'Assistente AI<br>di ' + tn.trim();
+    document.getElementById('chat-name').textContent = display;
+    document.getElementById('chat-initials').textContent = tn.trim().charAt(0).toUpperCase();
+    document.getElementById('welcome-msg').textContent = 'Ciao! Sono l\'assistente AI di ' + tn.trim() + '. Sono qui per assisterti 24/7. Dubbi? Domande sulla scheda o sulla dieta? Scrivi pure!';
+    document.getElementById('footer-txt').textContent = 'coach-ai · ' + tn.trim().toLowerCase() + ' · nessun dato salvato';
+    document.title = 'Coach ' + tn.trim() + ' AI';
+  }
 }
 
-// ═══ CHAT ═══
-function linkify(text){
-  const e=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return e.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" style="color:var(--accent);word-break:break-all;">$1</a>');
+// SALVA MESSAGGIO SU FIREBASE
+function saveMsg(ruolo, testo) {
+  const key = Date.now();
+  const path = '/coach_ai_conversations/' + slugify(trainerName) + '/' + slugify(clienteName) + '/' + key + '.json';
+  fetch(FB_URL + path, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      ruolo,
+      testo: testo.substring(0, 2000),
+      ts: tsISO(),
+      trainer: trainerName,
+      cliente: clienteName
+    })
+  }).catch(()=>{});
 }
-function addMsg(text,role,fotoUrl){
-  const msgs=document.getElementById('msgs');
-  const escalate=text.includes('→ SCALA AL TRAINER');
-  const clean=text.replace('→ SCALA AL TRAINER','').trim();
-  const d=document.createElement('div');
-  d.className='msg '+(role==='user'?'user':'bot');
-  let html='';
-  if(fotoUrl) html+=`<img src="${fotoUrl}" class="msg-foto">`;
-  const content=role==='bot'?linkify(clean):clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  html+=`<div class="bubble">${content}</div><span class="msg-time">${now()}</span>`;
-  d.innerHTML=html;
+
+function linkify(text) {
+  const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:var(--accent);text-decoration:underline;word-break:break-all;">$1</a>');
+}
+
+function addMsg(text, role, fotoUrl) {
+  const msgs = document.getElementById('msgs');
+  const escalate = text.includes('⚠ SCALA AL TRAINER');
+  const clean = text.replace('⚠ SCALA AL TRAINER','').trim();
+  const d = document.createElement('div');
+  d.className = 'msg ' + (role==='user'?'user':'bot');
+  let html = '';
+  if(fotoUrl) html += `<img src="${fotoUrl}" class="msg-foto">`;
+  const bubbleContent = role==='bot' ? linkify(clean) : clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  html += `<div class="bubble">${bubbleContent}</div>`;
+  html += `<span class="msg-time">${now()}</span>`;
+  d.innerHTML = html;
   msgs.appendChild(d);
-  document.getElementById('escalate-banner').style.display=escalate?'block':'none';
-  msgs.scrollTop=msgs.scrollHeight;
+  document.getElementById('escalate-banner').style.display = escalate ? 'block' : 'none';
+  msgs.scrollTop = msgs.scrollHeight;
 }
-function showTyping(){
-  const msgs=document.getElementById('msgs');
-  const d=document.createElement('div');
-  d.className='msg bot';d.id='typing-msg';
+
+function showTyping() {
+  const msgs = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.className='msg bot'; d.id='typing-msg';
   d.innerHTML='<div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
-  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
 }
-function removeTyping(){const t=document.getElementById('typing-msg');if(t)t.remove();}
+function removeTyping() { const t=document.getElementById('typing-msg'); if(t) t.remove(); }
 
-async function getNutriLog(){
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+todayStr()+'.json');
-    const data=await res.json();if(!data)return'';
-    const byPasto={};
-    Object.values(data).forEach(m=>{const tp=m.tipo_pasto||'';if(!byPasto[tp]||m.ts>byPasto[tp].ts)byPasto[tp]=m;});
-    let log='\n\nPASTI DI OGGI già registrati:\n';
-    let totP=0,totC=0,totG=0,totK=0;
-    Object.values(byPasto).forEach(p=>{
-      const desc=p.descrizione?` (${p.descrizione})`:'';
-      log+=`- ${p.tipo_pasto}${desc}: P=${p.proteine}g C=${p.carbo}g G=${p.grassi}g kcal=${p.kcal}\n`;
-      totP+=p.proteine||0;totC+=p.carbo||0;totG+=p.grassi||0;totK+=p.kcal||0;
+async function callAI(text, extraContent) {
+  busy=true; document.getElementById('send-btn').disabled=true;
+  showTyping();
+
+  const userContent = extraContent || text;
+  const system = await getSystemWithLog();
+  let messages;
+
+  if(pdfBase64 && history.length === 0) {
+    messages = [{ role:'user', content:[
+      { type:'document', source:{ type:'base64', media_type:'application/pdf', data:pdfBase64 } },
+      { type:'text', text: typeof userContent==='string' ? userContent : text }
+    ]}];
+  } else if(pdfBase64 && history.length > 0) {
+    const rebuilt = history.map((h,i) => i===0 ? {
+      role:'user', content:[
+        { type:'document', source:{ type:'base64', media_type:'application/pdf', data:pdfBase64 } },
+        { type:'text', text:h.content }
+      ]
+    } : { role:h.role, content:h.content });
+    rebuilt.push({ role:'user', content: userContent });
+    messages = rebuilt;
+  } else {
+    const allMsgs = [...history, { role:'user', content: userContent }];
+    messages = allMsgs.map(h=>({ role:h.role, content:h.content }));
+  }
+
+  history.push({ role:'user', content: text });
+  saveMsg('cliente', text);
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, system:system, messages })
     });
-    log+=`TOTALE OGGI: P=${totP}g C=${totC}g G=${totG}g kcal=${totK}`;
-    return log;
-  }catch(e){return'';}
-}
-async function getSonnoLog(){
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+todayStr()+'.json');
-    const s=await res.json();if(!s||!s.ore)return'';
-    return`\n\nSONNO STANOTTE: ${s.ore}h${s.qualita?' ('+s.qualita+')':''}`;
-  }catch(e){return'';}
-}
-async function getTrainingLog(){
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_log/'+key+'.json');
-    const data=await res.json();if(!data)return'';
-    const entries=Object.values(data).sort((a,b)=>new Date(b.data||0)-new Date(a.data||0));
-    const last=entries.find(e=>e.esercizi&&e.esercizi.length>0);
-    if(!last)return'';
-    const exNames=last.esercizi.map(e=>e.nome).filter(Boolean).slice(0,4).join(', ');
-    return`\n\nULTIMO ALLENAMENTO: ${last.sessione||last.tipo||'?'} il ${last.data||'?'} (${exNames})`;
-  }catch(e){return'';}
-}
-async function getSystemWithLog(){
-  const [log,nutriLog,sonnoLog]=await Promise.all([getTrainingLog(),getNutriLog(),getSonnoLog()]);
-  const macroTarget=`\n\nMACRO TARGET GIORNALIERI:\nFB: P170 C210 G65 ~2050kcal | HIIT: P170 C185 G65 ~1950kcal | Riposo: P170 C170 G65 ~1850kcal`;
-  return DEMO_SYSTEM+log+macroTarget+nutriLog+sonnoLog;
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Errore nella risposta.';
+    history.push({ role:'assistant', content:reply });
+    saveMsg('agente', reply);
+    saveSessione();
+    estraiLog(text);
+    removeTyping(); addMsg(reply,'bot');
+  } catch(e) {
+    removeTyping();
+    addMsg('Errore di connessione. Controlla la rete e riprova.','bot');
+  }
+  busy=false; document.getElementById('send-btn').disabled=false;
 }
 
-async function callAI(text,extraContent){
-  busy=true;document.getElementById('send-btn').disabled=true;showTyping();
-  const userContent=extraContent||text;
-  const system=await getSystemWithLog();
-  const allMsgs=[...history,{role:'user',content:userContent}];
-  const messages=allMsgs.map(h=>({role:h.role,content:h.content}));
-  history.push({role:'user',content:text});
-  saveMsg('cliente',text);
-  try{
-    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system,messages})});
-    const data=await res.json();
-    const rawReply=data.content?.[0]?.text||'Errore nella risposta.';
-    const nutriMatch=rawReply.match(/<<NUTRI:(\w+)\|([\d.]+)\|([\d.]+)\|([\d.]+)\|([\d.]+)>>/);
-    const reply=rawReply.replace(/<<NUTRI:[^>]+>>/g,'').trim();
-    removeTyping();addMsg(reply,'bot');
-    history.push({role:'assistant',content:reply});
-    saveMsg('agente',reply);saveSessione();
-    if(nutriMatch)salvaFromMarker(nutriMatch);
-    setTimeout(()=>estraiLog(text),800);
-  }catch(e){removeTyping();addMsg('Errore di connessione. Controlla la rete e riprova.','bot');}
-  busy=false;document.getElementById('send-btn').disabled=false;
-}
-
-function send(){
-  const txt=document.getElementById('txt');const v=txt.value.trim();
-  if(!v||busy)return;txt.value='';
+function send() {
+  const txt=document.getElementById('txt');
+  const v=txt.value.trim();
+  if(!v||busy) return;
+  txt.value='';
   document.getElementById('escalate-banner').style.display='none';
-  addMsg(v,'user');callAI(v);
+  addMsg(v,'user'); callAI(v);
 }
-function useSug(btn){
-  if(busy)return;
+
+function useSug(btn) {
+  if(busy) return;
   document.getElementById('escalate-banner').style.display='none';
-  addMsg(btn.textContent,'user');callAI(btn.textContent);
+  addMsg(btn.textContent,'user'); callAI(btn.textContent);
 }
 
-// ═══ SALVA NUTRI DA MARKER CHAT ═══
-async function salvaFromMarker(match){
-  if(!clienteName||trainerName==='demo')return;
-  const[,tipo_pasto,p,c,g,k]=match;
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  const logKey=tipo_pasto+'_'+Date.now();
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+todayStr()+'/'+logKey+'.json',{
-      method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({tipo_pasto,proteine:Math.round(+p),carbo:Math.round(+c),grassi:Math.round(+g),kcal:Math.round(+k),ts:tsISO(),trainer:trainerName,cliente:clienteName})
-    });
-    if(res.ok)showToast('✓ '+tipo_pasto.replace('_',' ')+' tracciata');
-  }catch(e){}
-}
-
-async function estraiLog(testo){
-  if(trainerName==='demo'||!clienteName)return;
-  const parole=['allenamento','ho fatto','ho allenato','ho completato','leg press','chest press','lat machine','hip thrust','squat','stacco','rematore','shoulder press','leg curl','split squat','step-up','pallof','bird dog','dead bug','side plank','farmer','hiit','full body','fb1','fb2','fb3','fb4'];
-  if(!parole.some(p=>testo.toLowerCase().includes(p)))return;
-  try{
-    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,system:'Estrai i dati di allenamento dal messaggio. Rispondi SOLO con JSON: {"sessione":"nome","esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0}]}. Se non c\'è allenamento: {"sessione":null,"esercizi":[]}',messages:[{role:'user',content:testo}]})});
-    const data=await res.json();
-    const txt=data.content?.[0]?.text||'';
-    const jsonMatch=txt.match(/\{[\s\S]*\}/);
-    if(!jsonMatch)return;
-    const log=JSON.parse(jsonMatch[0]);
-    if(!log.sessione||!log.esercizi||log.esercizi.length===0)return;
-    const key=slugify(trainerName)+'_'+slugify(clienteName);
-    fetch(FB_URL+'/coach_ai_log/'+key+'/'+Date.now()+'.json',{
-      method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({...log,data:todayStr(),ts:tsISO(),trainer:trainerName,cliente:clienteName})
-    }).catch(()=>{});
-  }catch(e){}
-}
-
-// ═══ PASTI TAB ═══
-async function loadPastiOggi(){
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+todayStr()+'.json');
-    const data=await res.json();if(!data)return{};
-    const byPasto={};
-    Object.values(data).forEach(m=>{const tp=m.tipo_pasto||'';if(!byPasto[tp]||m.ts>byPasto[tp].ts)byPasto[tp]=m;});
-    return byPasto;
-  }catch(e){return{};}
-}
-
-async function renderPastiTab(){
-  const container=document.getElementById('pasti-container');if(!container)return;
-  const rot=getRotationDay();
-  const targets=MEAL_TARGETS[rot.type]||MEAL_TARGETS.rest;
-  const saved=await loadPastiOggi();
-  let totP=0,totC=0,totG=0,totK=0;
-  Object.values(saved).forEach(m=>{totP+=m.proteine||0;totC+=m.carbo||0;totG+=m.grassi||0;totK+=m.kcal||0;});
-  const tP=rot.type==='fb'?170:rot.type==='hiit'?170:170;
-  const tC=rot.type==='fb'?210:rot.type==='hiit'?185:170;
-  const tG=65,tK=rot.type==='fb'?2050:rot.type==='hiit'?1950:1850;
-  function ptCls(v,t){return v>t*1.1?'pt-over':v>=t*0.6?'pt-ok':'pt-low';}
-  let html=`<div class="pasti-total">
-    <div><div class="pt-val ${ptCls(totP,tP)}">${Math.round(totP)}</div><div class="pt-label">P / ${tP}g</div></div>
-    <div><div class="pt-val ${ptCls(totC,tC)}">${Math.round(totC)}</div><div class="pt-label">C / ${tC}g</div></div>
-    <div><div class="pt-val ${ptCls(totG,tG)}">${Math.round(totG)}</div><div class="pt-label">G / ${tG}g</div></div>
-    <div><div class="pt-val ${ptCls(totK,tK)}">${Math.round(totK)}</div><div class="pt-label">Kcal / ${tK}</div></div>
-  </div>`;
-  MEAL_ORDER.forEach(mk=>{
-    const tgt=targets[mk];const sv=saved[mk];const lbl=MEAL_LABELS[mk];
-    html+=`<div class="card">
-      <div class="card-header">
-        <span class="card-title">${lbl}</span>
-        ${sv?'<span class="saved-badge">salvato</span>':''}
-      </div>
-      <div class="card-body">
-        <div class="meal-target-row">Target: P${tgt.p}g · C${tgt.c}g · G${tgt.g}g · ${tgt.k}kcal</div>
-        <div class="macro-grid">
-          <div><span class="label-sm">Prot (g)</span><input type="number" class="num-input" id="mp-p-${mk}" placeholder="${tgt.p}" min="0" max="300" value="${sv?.proteine||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-          <div><span class="label-sm">Carbo (g)</span><input type="number" class="num-input" id="mp-c-${mk}" placeholder="${tgt.c}" min="0" max="500" value="${sv?.carbo||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-          <div><span class="label-sm">Grassi (g)</span><input type="number" class="num-input" id="mp-g-${mk}" placeholder="${tgt.g}" min="0" max="200" value="${sv?.grassi||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-          <div><span class="label-sm">Kcal</span><input type="number" class="num-input" id="mp-k-${mk}" placeholder="${tgt.k}" min="0" max="5000" value="${sv?.kcal||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-        </div>
-        <input type="text" class="text-input" id="mp-desc-${mk}" placeholder="Descrizione (es. 2 uova, 10g mandorle)" style="margin-bottom:10px;" value="${sv?.descrizione||''}">
-        <button class="save-btn" onclick="salvaPasto('${mk}')">Salva</button>
-        ${sv?`<div class="meal-saved-chips">
-          <span class="chip">P ${sv.proteine}g</span>
-          <span class="chip">C ${sv.carbo}g</span>
-          <span class="chip">G ${sv.grassi}g</span>
-          <span class="chip">${sv.kcal} kcal</span>
-        </div>${sv.descrizione?`<div class="meal-desc-saved">${sv.descrizione}</div>`:''}`:''}</div></div>`;
-  });
-  container.innerHTML=html;
-}
-
-async function salvaPasto(mk){
-  const p=Math.round(parseFloat(document.getElementById('mp-p-'+mk)?.value||'0')||0);
-  const c=Math.round(parseFloat(document.getElementById('mp-c-'+mk)?.value||'0')||0);
-  const g=Math.round(parseFloat(document.getElementById('mp-g-'+mk)?.value||'0')||0);
-  let k=Math.round(parseFloat(document.getElementById('mp-k-'+mk)?.value||'0')||0);
-  const desc=document.getElementById('mp-desc-'+mk)?.value.trim()||'';
-  if(!p&&!c&&!g&&!k){showToast('Inserisci almeno un valore');return;}
-  if(!k)k=Math.round(p*4+c*4+g*9);
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  const logKey=mk+'_'+Date.now();
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+todayStr()+'/'+logKey+'.json',{
-      method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({tipo_pasto:mk,proteine:p,carbo:c,grassi:g,kcal:k,descrizione:desc,ts:tsISO(),trainer:trainerName,cliente:clienteName})
-    });
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    showToast('✓ '+MEAL_LABELS[mk]+' salvata');
-    renderPastiTab();
-  }catch(e){showToast('Errore salvataggio');}
-}
-
-// ═══ FOTO TAB ═══
-function loadFoto(input,tipo){
-  const file=input.files[0];if(!file)return;
+function loadFoto(input, tipo) {
+  const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=function(e){
-    const url=e.target.result;const base64=url.split(',')[1];const mtype=file.type||'image/jpeg';
-    if(tipo==='prima'){fotoPrima={url,base64,mtype};document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`;}
-    else{fotoDopo={url,base64,mtype};document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`;}
-    saveFotoToStorage(tipo,base64,mtype);
-    document.getElementById('confronta-btn').disabled=false;
-  };reader.readAsDataURL(file);
-}
-function saveFotoToStorage(tipo,base64,mtype){try{localStorage.setItem('coach_foto_'+tipo,JSON.stringify({base64,mtype}));}catch(e){}}
-function restoreFotos(){
-  ['prima','dopo'].forEach(tipo=>{
-    try{
-      const saved=localStorage.getItem('coach_foto_'+tipo);if(!saved)return;
-      const{base64,mtype}=JSON.parse(saved);const url=`data:${mtype};base64,${base64}`;
-      if(tipo==='prima'){fotoPrima={url,base64,mtype};document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`;}
-      else{fotoDopo={url,base64,mtype};document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`;}
-      document.getElementById('confronta-btn').disabled=false;
-    }catch(e){}
-  });
-}
-
-async function confrontaFoto(){
-  if(busy)return;
-  switchTab('chat');
-  const btn=document.getElementById('confronta-btn');btn.disabled=true;
-  let content=[],msgText='';
-  if(fotoPrima&&fotoDopo){
-    msgText='Analisi confronto prima/dopo';addMsg(msgText,'user',fotoPrima.url);
-    content=[{type:'image',source:{type:'base64',media_type:fotoPrima.mtype,data:fotoPrima.base64}},{type:'image',source:{type:'base64',media_type:fotoDopo.mtype,data:fotoDopo.base64}},{type:'text',text:'Prima foto = forma migliore di Fabrizio (standard di riferimento), seconda foto = forma attuale oggi. Confronta brutalmente ma costruttivamente: cosa è cambiato, cosa manca ancora, quanto dista dalla forma migliore. Sii diretto — non mentire per compiacere. Concludi con una sfida concreta per la prossima settimana.'}];
-  }else if(fotoPrima){
-    msgText='Analisi foto standard';addMsg(msgText,'user',fotoPrima.url);
-    content=[{type:'image',source:{type:'base64',media_type:fotoPrima.mtype,data:fotoPrima.base64}},{type:'text',text:'Foto di Fabrizio nella sua forma migliore — il suo standard di riferimento. Analizza composizione corporea: muscoli visibili, definizione, postura. Sii dettagliato e diretto. Finisci con: "Questo è il tuo standard. Tornaci."'}];
-  }else{
-    msgText='Analisi foto aggiornamento';addMsg(msgText,'user',fotoDopo.url);
-    content=[{type:'image',source:{type:'base64',media_type:fotoDopo.mtype,data:fotoDopo.base64}},{type:'text',text:'Foto attuale di Fabrizio. Valuta composizione corporea onestamente. Sii diretto. Finisci con una sfida concreta per la prossima settimana.'}];
-  }
-  saveMsg('cliente',msgText);busy=true;document.getElementById('send-btn').disabled=true;showTyping();
-  try{
-    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:DEMO_SYSTEM,messages:[{role:'user',content}]})});
-    const data=await res.json();const reply=data.content?.[0]?.text||'Errore.';
-    history.push({role:'user',content:msgText});history.push({role:'assistant',content:reply});
-    saveMsg('agente',reply);removeTyping();addMsg(reply,'bot');
-  }catch(e){removeTyping();addMsg('Errore di connessione. Riprova.','bot');}
-  busy=false;document.getElementById('send-btn').disabled=false;btn.disabled=false;
-}
-
-// ═══ PESO TAB ═══
-async function renderPesoTab(){
-  const container=document.getElementById('peso-container');if(!container)return;
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  let pesate=[];
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_peso/'+key+'.json');
-    const data=await res.json();
-    if(data)pesate=Object.values(data).filter(e=>e&&e.data&&e.peso!=null&&!isNaN(e.peso)).sort((a,b)=>b.data.localeCompare(a.data));
-  }catch(e){}
-  const last=pesate[0];
-  let html='<div class="card"><div class="card-header"><span class="card-title">Peso settimanale</span></div><div class="card-body">';
-  if(last){
-    const delta=+(last.peso-90).toFixed(1);const rem=+(last.peso-80).toFixed(1);
-    html+=`<div class="peso-big">${last.peso} <span class="peso-unit">kg</span></div>
-    <div class="peso-sub">${last.data}</div>
-    <div class="tag-row">
-      <span class="tag">${delta<0?delta+'kg dall\'inizio':delta===0?'invariato':'+'+delta+'kg'}</span>
-      <span class="tag${rem<=3?' good':''}">${rem>0?rem+' kg al target':'TARGET RAGGIUNTO'}</span>
-    </div>`;
-  }else{html+='<div class="no-data">Nessun peso ancora registrato</div>';}
-  html+=`<div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:16px;align-items:end;">
-    <div><span class="label-sm">Nuovo peso (kg)</span>
-      <input type="number" class="num-input" id="peso-new-input" placeholder="es. 88.5" step="0.1" min="40" max="200" onkeydown="if(event.key==='Enter')logPeso()">
-    </div>
-    <button class="save-btn" onclick="logPeso()">Salva</button>
-  </div>`;
-  if(pesate.length>0){
-    html+='<div style="margin-top:16px;"><div style="font-size:10px;color:var(--text3);font-family:DM Mono,monospace;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Storico</div>';
-    pesate.slice(0,8).forEach((p,i)=>{
-      const prev=pesate[i+1];
-      let deltaStr='';
-      if(prev){const d=+(p.peso-prev.peso).toFixed(1);deltaStr=d===0?'':d<0?`<span class="peso-delta" style="color:var(--accent)">${d}</span>`:`<span class="peso-delta" style="color:var(--red)">+${d}</span>`;}
-      html+=`<div class="peso-history-row"><span class="peso-date">${p.data}</span><span class="peso-val">${p.peso} kg ${deltaStr}</span></div>`;
-    });
-    html+='</div>';
-  }
-  html+='</div></div>';
-  container.innerHTML=html;
-}
-
-async function logPeso(){
-  const input=document.getElementById('peso-new-input');
-  const val=parseFloat((input?.value||'').replace(',','.'));
-  if(!val||val<40||val>200){input?.focus();return;}
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_peso/'+key+'/'+todayStr()+'.json',{
-      method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({peso:val,data:todayStr(),ts:tsISO()})
-    });
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    showToast('✓ Peso salvato');renderPesoTab();
-  }catch(e){
-    if(input){input.style.borderColor='var(--red)';setTimeout(()=>{input.style.borderColor='';},2000);}
-  }
-}
-
-// ═══ SONNO TAB ═══
-async function renderSonnoTab(){
-  const container=document.getElementById('sonno-container');if(!container)return;
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  let allSonno={};
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_sonno/'+key+'.json');
-    const data=await res.json();if(data)allSonno=data;
-  }catch(e){}
-  const todaySonno=allSonno[todayStr()]||null;
-  const monday=getMonday(new Date());
-  const dayNames=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
-  let totalOre=0,countNotti=0;
-  const weekRows=[];
-  for(let i=0;i<7;i++){
-    const d=new Date(monday);d.setDate(d.getDate()+i);
-    const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const entry=allSonno[ds]||null;
-    weekRows.push({day:dayNames[i],ds,entry});
-    if(entry&&entry.ore){totalOre+=parseFloat(entry.ore)||0;countNotti++;}
-  }
-  const avg=countNotti>0?(totalOre/countNotti).toFixed(1):null;
-  function qBadge(q){if(!q)return'';const cls=q==='ottimo'?'ottimo':q==='buono'?'buono':'scarso';return`<span class="quality-badge ${cls}">${q}</span>`;}
-
-  let html=`<div class="card">
-    <div class="card-header"><span class="card-title">Sonno di stanotte</span></div>
-    <div class="card-body">`;
-  if(todaySonno){html+=`<div class="sonno-big">${todaySonno.ore}<span class="sonno-unit"> h</span>${qBadge(todaySonno.qualita)}</div><div class="sonno-sub">Registrato oggi</div>`;}
-  else{html+='<div class="no-data">Non ancora registrato</div>';}
-  html+=`<div class="sonno-inputs">
-    <div><span class="label-sm">Ore dormite</span><input type="number" class="num-input" id="sonno-ore-input" placeholder="es. 7.5" step="0.5" min="2" max="14" value="${todaySonno?.ore||''}" onkeydown="if(event.key==='Enter')logSonno()"></div>
-    <div><span class="label-sm">Qualità</span><select class="sonno-select" id="sonno-qualita-input">
-      <option value="">—</option>
-      <option value="ottimo"${todaySonno?.qualita==='ottimo'?' selected':''}>ottimo</option>
-      <option value="buono"${todaySonno?.qualita==='buono'?' selected':''}>buono</option>
-      <option value="scarso"${todaySonno?.qualita==='scarso'?' selected':''}>scarso</option>
-    </select></div>
-  </div>
-  <button class="save-btn" onclick="logSonno()">Salva</button>
-  </div></div>`;
-
-  html+=`<div class="card">
-    <div class="card-header"><span class="card-title">Settimana · riepilogo sonno</span></div>
-    <div class="card-body">`;
-  weekRows.forEach(({day,entry})=>{
-    if(entry&&entry.ore){html+=`<div class="week-sonno-row"><span class="week-day-name">${day}</span><span class="week-day-val">${entry.ore}h${qBadge(entry.qualita)}</span></div>`;}
-    else{html+=`<div class="week-sonno-row"><span class="week-day-name">${day}</span><span class="week-day-none">—</span></div>`;}
-  });
-  html+=`<div class="week-avg">
-    <span class="week-avg-label">Media (${countNotti} notti)</span>
-    <span class="week-avg-val">${avg?avg+'h':'—'}</span>
-  </div></div></div>`;
-  container.innerHTML=html;
-}
-
-async function logSonno(){
-  const oreInput=document.getElementById('sonno-ore-input');
-  const ore=parseFloat(oreInput?.value||'');
-  const qualita=document.getElementById('sonno-qualita-input')?.value||'';
-  if(!ore||ore<2||ore>14){oreInput?.focus();return;}
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+todayStr()+'.json',{
-      method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ore,qualita,data:todayStr(),ts:tsISO()})
-    });
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    showToast('✓ Sonno salvato');renderSonnoTab();
-  }catch(e){
-    if(oreInput){oreInput.style.borderColor='var(--red)';setTimeout(()=>{oreInput.style.borderColor='';},2000);}
-  }
-}
-
-// ═══ FIREBASE SESSION ═══
-function saveMsg(ruolo,testo){
-  const path='/coach_ai_conversations/'+slugify(trainerName)+'/'+slugify(clienteName)+'/'+Date.now()+'.json';
-  fetch(FB_URL+path,{method:'PUT',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ruolo,testo:testo.substring(0,2000),ts:tsISO(),trainer:trainerName,cliente:clienteName})
-  }).catch(()=>{});
-}
-function saveSessione(){
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  fetch(FB_URL+'/coach_ai_sessioni/'+key+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ts:tsISO(),trainer:trainerName,cliente:clienteName,messaggi:history.slice(-20)})
-  }).catch(()=>{});
-}
-async function loadSessione(){
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  try{
-    const res=await fetch(FB_URL+'/coach_ai_sessioni/'+key+'.json');
-    const data=await res.json();
-    if(!data||!data.ts)return;
-    const ore=(Date.now()-new Date(data.ts).getTime())/3600000;
-    if(ore>168)return;
-    if(data.messaggi&&data.messaggi.length>0){
-      history=data.messaggi;
-      document.getElementById('msgs').innerHTML='';
-      history.forEach(m=>addMsg(m.content,m.role==='user'?'user':'bot'));
-      addMsg('Bentornato Fabrizio. Sessione ripristinata. Continua da dove eri rimasto.','bot');
+    const url=e.target.result;
+    const base64=url.split(',')[1];
+    const mtype=file.type||'image/jpeg';
+    if(tipo==='prima'){
+      fotoPrima={url,base64,mtype};
+      document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`;
+    } else {
+      fotoDopo={url,base64,mtype};
+      document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`;
     }
-  }catch(e){}
+    document.getElementById('confronta-btn').style.display=(fotoPrima||fotoDopo)?'block':'none';
+  };
+  reader.readAsDataURL(file);
 }
 
-// ═══ INIT ═══
-function initSession(){
-  const params=new URLSearchParams(window.location.search);
-  const tn=params.get('trainer');const cn=params.get('cliente');
-  trainerName=tn?tn.trim():'fabrizio';
-  clienteName=cn?cn.trim():'test';
+async function confrontaFoto() {
+  if(busy) return;
+  const btn=document.getElementById('confronta-btn');
+  btn.disabled=true;
+  document.getElementById('escalate-banner').style.display='none';
+  let content=[], msgText='';
+
+  if(fotoPrima && fotoDopo) {
+    msgText='Analisi confronto prima/dopo';
+    addMsg(msgText,'user',fotoPrima.url);
+    content=[
+      { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
+      { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
+      { type:'text', text:'Prima foto = inizio percorso, seconda foto = aggiornamento. Solo corpo senza volto per privacy. Analizza i progressi visibili: composizione corporea, massa muscolare, definizione, postura. Sii specifico, incoraggiante e concreto. Concludi con una frase motivazionale potente.' }
+    ];
+  } else if(fotoPrima) {
+    msgText='Analisi foto iniziale';
+    addMsg(msgText,'user',fotoPrima.url);
+    content=[
+      { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
+      { type:'text', text:'Foto iniziale del cliente (solo corpo, senza volto). Valutazione oggettiva della composizione corporea attuale: punti di forza visibili, aree su cui lavorare, postura. Tono professionale e motivante — è il punto di partenza del percorso.' }
+    ];
+  } else {
+    msgText='Analisi foto aggiornamento';
+    addMsg(msgText,'user',fotoDopo.url);
+    content=[
+      { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
+      { type:'text', text:'Foto di aggiornamento (solo corpo, senza volto). Analizza composizione corporea: massa muscolare, definizione, postura. Specifico e incoraggiante.' }
+    ];
+  }
+
+  saveMsg('cliente', msgText);
+  busy=true; document.getElementById('send-btn').disabled=true; showTyping();
+
+  try {
+    const res=await fetch(WORKER_URL,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, system:getSystem(), messages:[{role:'user',content}] })
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Errore.';
+    history.push({role:'user',content:msgText});
+    history.push({role:'assistant',content:reply});
+    saveMsg('agente', reply);
+    removeTyping(); addMsg(reply,'bot');
+  } catch(e){
+    removeTyping();
+    addMsg('Errore di connessione. Riprova.','bot');
+  }
+  busy=false; document.getElementById('send-btn').disabled=false; btn.disabled=false;
+}
+
+function handleFile(input) {
+  const file=input.files[0]; if(!file) return;
+  if(file.type==='application/pdf'){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const bytes=new Uint8Array(e.target.result);
+      let binary=''; for(let i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
+      applyPDF(file.name.replace('.pdf',''),btoa(binary));
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader=new FileReader();
+    reader.onload=function(e){ applyTesto(file.name,e.target.result); };
+    reader.readAsText(file);
+  }
+}
+
+function applyPDF(nome,base64){
+  const tl=trainerName&&trainerName!='demo'?' di '+trainerName:'';
+  pdfBase64=base64; history=[];
+  customSystem=`Sei un assistente AI per il personal training${tl}. Hai letto la scheda dal PDF allegato. Rispondi in italiano, tono diretto e amichevole. Max 5-6 righe. REGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" 4) Non inventare nulla fuori dal PDF 5) Concludi SEMPRE con una frase motivazionale breve e autentica 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
+  aggiornaUI(nome,'PDF reale','Letto da Claude');
+}
+
+function applyTesto(nome,contenuto){
+  const tl=trainerName&&trainerName!='demo'?' di '+trainerName:'';
+  pdfBase64=null; history=[];
+  customSystem=`Sei un assistente AI per il personal training${tl}. Conosci la scheda del cliente. Rispondi in italiano, tono diretto e amichevole. Max 5-6 righe.\n\nSCHEDA — ${nome}:\n${contenuto.substring(0,4000)}\n\nREGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" 4) Non inventare nulla fuori dalla scheda 5) Concludi SEMPRE con una frase motivazionale breve e autentica 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
+  aggiornaUI(nome,'Scheda reale','Caricata ora');
+}
+
+function aggiornaUI(nome,t1,t2){
+  const eta = document.getElementById('p-eta')?.value;
+  const obiettivo = document.getElementById('p-obiettivo')?.value;
+  const sport = document.getElementById('p-sport')?.value.trim();
+  let tags = `<span class="tag">${t1}</span><span class="tag">${t2}</span>`;
+  if(eta) tags += `<span class="tag">${eta} anni</span>`;
+  if(obiettivo) tags += `<span class="tag">${obiettivo.split(' ')[0]}</span>`;
+  if(sport) tags += `<span class="tag">${sport}</span>`;
+  document.getElementById('scheda-name').textContent = nome;
+  document.getElementById('scheda-meta').innerHTML = tags;
+  document.getElementById('scheda-badge').textContent='Attiva';
+  document.getElementById('scheda-badge').className='badge badge-custom';
+  document.getElementById('msgs').innerHTML='';
+  const nomeCliente = document.getElementById('p-nome')?.value.trim() || nome;
+  addMsg(`Perfetto! Ho letto la scheda di "${nomeCliente}" e il suo profilo. Sono pronto — scrivi come faresti su WhatsApp.`,'bot');
+  document.getElementById('escalate-banner').style.display='none';
+  saveMsg('sistema','Scheda caricata: '+nome);
+}
+
+function openPaste(){document.getElementById('paste-overlay').classList.add('open');setTimeout(()=>document.getElementById('paste-txt').focus(),100);}
+function closePaste(){document.getElementById('paste-overlay').classList.remove('open');document.getElementById('paste-txt').value='';}
+function handleOverlayClick(e){if(e.target===document.getElementById('paste-overlay'))closePaste();}
+function loadPastedScheda(){
+  const txt=document.getElementById('paste-txt').value.trim();
+  if(txt.length<50){alert('Incolla almeno un po\' di testo della scheda.');return;}
+  closePaste(); applyTesto('Scheda personalizzata',txt);
+}
+
+// SALVATAGGIO SESSIONE SU FIREBASE
+function getProfiloData() {
+  return {
+    nome: document.getElementById('p-nome')?.value.trim()||'',
+    eta: document.getElementById('p-eta')?.value||'',
+    peso: document.getElementById('p-peso')?.value||'',
+    altezza: document.getElementById('p-altezza')?.value||'',
+    sesso: document.getElementById('p-sesso')?.value||'',
+    esperienza: document.getElementById('p-esperienza')?.value||'',
+    obiettivo: document.getElementById('p-obiettivo')?.value||'',
+    sport: document.getElementById('p-sport')?.value.trim()||'',
+    limitazioni: document.getElementById('p-limitazioni')?.value.trim()||'',
+    stile: document.getElementById('p-stile')?.value||''
+  };
+}
+
+function setProfiloData(p) {
+  if(!p) return;
+  if(p.nome) document.getElementById('p-nome').value=p.nome;
+  if(p.eta) document.getElementById('p-eta').value=p.eta;
+  if(p.peso) document.getElementById('p-peso').value=p.peso;
+  if(p.altezza) document.getElementById('p-altezza').value=p.altezza;
+  if(p.sesso) document.getElementById('p-sesso').value=p.sesso;
+  if(p.esperienza) document.getElementById('p-esperienza').value=p.esperienza;
+  if(p.obiettivo) document.getElementById('p-obiettivo').value=p.obiettivo;
+  if(p.sport) document.getElementById('p-sport').value=p.sport;
+  if(p.limitazioni) document.getElementById('p-limitazioni').value=p.limitazioni;
+  if(p.stile) document.getElementById('p-stile').value=p.stile;
+}
+
+function saveSessione() {
+  if(!trainerName || !clienteName) return;
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  const data = {
+    ts: tsISO(),
+    trainer: trainerName,
+    cliente: clienteName,
+    profilo: getProfiloData(),
+    customSystem: customSystem||'',
+    schedaNome: document.getElementById('scheda-name')?.textContent||'',
+    messaggi: history.slice(-20)
+  };
+  fetch(FB_URL+'/coach_ai_sessioni/'+key+'.json',{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  }).catch(()=>{});
+}
+
+async function loadSessione() {
+  if(!trainerName || !clienteName || trainerName==='demo') return;
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_sessioni/'+key+'.json');
+    const data = await res.json();
+    if(!data || !data.ts) return;
+    const ore = (Date.now() - new Date(data.ts).getTime()) / 3600000;
+    if(ore > 72) return;
+    if(data.profilo) setProfiloData(data.profilo);
+    if(data.customSystem) customSystem = data.customSystem;
+    if(data.messaggi && data.messaggi.length > 0) {
+      history = data.messaggi;
+      document.getElementById('msgs').innerHTML = '';
+      history.forEach(m => addMsg(m.content, m.role==='user'?'user':'bot'));
+      const nome = data.schedaNome || data.cliente;
+      document.getElementById('scheda-name').textContent = nome;
+      document.getElementById('scheda-badge').textContent = 'Attiva';
+      document.getElementById('scheda-badge').className = 'badge badge-custom';
+      document.getElementById('scheda-meta').innerHTML = `<span class="tag">Sessione ripristinata</span><span class="tag">${Math.round(ore)}h fa</span>`;
+      addMsg('Bentornato! Ho ripristinato la tua sessione precedente. Continua pure da dove avevamo lasciato.','bot');
+    }
+  } catch(e) {}
+}
+
+// TRAINING LOG — estrazione automatica da messaggi liberi
+async function estraiLog(testo) {
+  if(trainerName==='demo' || !clienteName) return;
+  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body'];
+  const hasKeyword = paroleChiave.some(k => testo.toLowerCase().includes(k));
+  if(!hasKeyword) return;
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:400,
+        system:`Sei un estrattore di dati di allenamento. Ricevi un messaggio di un atleta e devi estrarre i dati strutturati degli esercizi eseguiti. Rispondi SOLO con JSON valido, nessun testo prima o dopo. Formato: {"data":"${new Date().toISOString().split('T')[0]}","sessione":"","esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":""}. Se non ci sono dati di allenamento rispondi con {"data":"","esercizi":[]}. Per carico_kg usa 0 se non specificato.`,
+        messages:[{role:'user', content:'Estrai i dati di allenamento da questo messaggio: '+testo}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text||'';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const log = JSON.parse(clean);
+    if(!log.esercizi || log.esercizi.length===0) return;
+    const key = slugify(trainerName)+'_'+slugify(clienteName);
+    const logKey = Date.now();
+    fetch(FB_URL+'/coach_ai_log/'+key+'/'+logKey+'.json',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...log, trainer:trainerName, cliente:clienteName})
+    }).catch(()=>{});
+    trainingLog.push(log);
+  } catch(e) {}
+}
+
+async function getTrainingLog() {
+  if(trainerName==='demo' || !clienteName) return '';
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_log/'+key+'.json');
+    const data = await res.json();
+    if(!data) return '';
+    const entries = Object.values(data).sort((a,b)=>new Date(a.data)-new Date(b.data)).slice(-8);
+    if(entries.length===0) return '';
+    let log = '\n\nSTORICO ALLENAMENTI (ultime sessioni):\n';
+    entries.forEach(e=>{
+      if(!e.esercizi||e.esercizi.length===0) return;
+      log += `\n${e.data}${e.sessione?' · '+e.sessione:''}:\n`;
+      e.esercizi.forEach(ex=>{
+        if(ex.nome) log += `  - ${ex.nome}: ${ex.serie||'?'}x${ex.rip||'?'}${ex.carico_kg>0?' @ '+ex.carico_kg+'kg':''}${ex.note?' ('+ex.note+')':''}\n`;
+      });
+      if(e.note_generali) log += `  Note: ${e.note_generali}\n`;
+    });
+    return log;
+  } catch(e) { return ''; }
 }
 
 initSession();
-updateDayBadge();
-restoreFotos();
 loadSessione();
 </script>
 </body>
