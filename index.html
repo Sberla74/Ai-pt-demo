@@ -632,7 +632,7 @@ async function callAI(text, extraContent) {
     });
     const data = await res.json();
     const rawReply = data.content?.[0]?.text || 'Errore nella risposta.';
-    const nutriMatch = rawReply.match(/<<NUTRI:(\w+)\|(\d+)\|(\d+)\|(\d+)\|(\d+)>>/);
+    const nutriMatch = rawReply.match(/<<NUTRI:(\w+)\|([\d.]+)\|([\d.]+)\|([\d.]+)\|([\d.]+)>>/);
     const reply = rawReply.replace(/<<NUTRI:[^>]+>>/g, '').trim();
     removeTyping();
     addMsg(reply, 'bot');
@@ -908,7 +908,7 @@ function salvaFromMarker(match) {
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      tipo_pasto, proteine:+p, carbo:+c, grassi:+g, kcal:+k,
+      tipo_pasto, proteine:Math.round(+p), carbo:Math.round(+c), grassi:Math.round(+g), kcal:Math.round(+k),
       ts:tsISO(), trainer:trainerName, cliente:clienteName
     })
   }).catch(()=>{});
