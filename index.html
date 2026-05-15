@@ -686,7 +686,7 @@ async function loadSessione() {
 // TRAINING LOG — estrazione automatica da messaggi liberi
 async function estraiLog(testo) {
   if(trainerName==='demo' || !clienteName) return;
-  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body'];
+  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body','fb-a','fb-b','fb-c','fb-d','hiit','minuti','min ','fatto'];
   const hasKeyword = paroleChiave.some(k => testo.toLowerCase().includes(k));
   if(!hasKeyword) return;
 
@@ -695,8 +695,8 @@ async function estraiLog(testo) {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',
-        max_tokens:400,
-        system:`Sei un estrattore di dati di allenamento. Ricevi un messaggio di un atleta e devi estrarre i dati strutturati degli esercizi eseguiti. Rispondi SOLO con JSON valido, nessun testo prima o dopo. Formato: {"data":"${new Date().toISOString().split('T')[0]}","sessione":"","esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":""}. Se non ci sono dati di allenamento rispondi con {"data":"","esercizi":[]}. Per carico_kg usa 0 se non specificato.`,
+        max_tokens:500,
+        system:`Sei un estrattore di dati di allenamento. Ricevi un messaggio di un atleta e devi estrarre i dati strutturati. Rispondi SOLO con JSON valido, nessun testo prima o dopo. Formato: {"data":"${new Date().toISOString().split('T')[0]}","sessione":"","durata_min":0,"esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":""}. Regole: sessione = tipo di allenamento (es. "FB-A","FB-B","FB-C","FB-D","HIIT","Riposo"); durata_min = minuti totali allenamento (0 se non specificato); carico_kg = 0 se non specificato. Se non ci sono dati di allenamento rispondi con {"data":"","esercizi":[]}.`,
         messages:[{role:'user', content:'Estrai i dati di allenamento da questo messaggio: '+testo}]
       })
     });
