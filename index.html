@@ -180,25 +180,25 @@
       </div>
     </div>
     <div class="foto-section">
-      <span class="foto-label">Confronto foto progressi</span>
-      <span class="foto-disclaimer">Solo corpo, senza volto. Le foto non vengono salvate.</span>
+      <span class="foto-label">La tua sfida personale</span>
+      <span class="foto-disclaimer">Solo corpo. Niente bugie, niente filtri. Foto private, non salvate.</span>
       <div class="foto-row">
         <div class="foto-slot">
           <div class="foto-thumb" onclick="document.getElementById('foto-prima-input').click()" id="thumb-prima">
-            <span class="placeholder">+ Prima</span>
+            <span class="placeholder">il tuo meglio</span>
           </div>
           <input type="file" id="foto-prima-input" accept="image/*" onchange="loadFoto(this,'prima')">
-          <div class="foto-slot-label">Prima <span>inizio</span></div>
+          <div class="foto-slot-label">Best <span>forma migliore</span></div>
         </div>
         <div class="foto-slot">
           <div class="foto-thumb" onclick="document.getElementById('foto-dopo-input').click()" id="thumb-dopo">
-            <span class="placeholder">+ Dopo</span>
+            <span class="placeholder">oggi</span>
           </div>
           <input type="file" id="foto-dopo-input" accept="image/*" onchange="loadFoto(this,'dopo')">
-          <div class="foto-slot-label">Dopo <span>aggiornamento</span></div>
+          <div class="foto-slot-label">Oggi <span>la realtà</span></div>
         </div>
       </div>
-      <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()">Analizza progressi con AI</button>
+      <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()">Dimmi la verità, Coach</button>
     </div>
   </div>
 
@@ -540,26 +540,26 @@ async function confrontaFoto() {
   let content=[], msgText='';
 
   if(fotoPrima && fotoDopo) {
-    msgText='Analisi confronto prima/dopo';
+    msgText='Confronto: il mio meglio vs oggi';
     addMsg(msgText,'user',fotoPrima.url);
     content=[
       { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
       { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
-      { type:'text', text:'Prima foto = inizio percorso, seconda foto = aggiornamento. Solo corpo senza volto per privacy. Analizza i progressi visibili: composizione corporea, massa muscolare, definizione, postura. Sii specifico, incoraggiante e concreto. Concludi con una frase motivazionale potente.' }
+      { type:'text', text:'Prima foto = Fabrizio nella sua forma migliore. Seconda foto = Fabrizio oggi. Solo corpo, senza volto. Fai un confronto brutalmente onesto: cosa ha perso in definizione, massa, postura. Non edulcorare nulla — il gap deve bruciare. Poi trasforma quella frustrazione in carburante: digli esattamente perché può tornare lì e superarsi. Chiudi con una sfida diretta e provocatoria che lo faccia alzare dalla sedia adesso.' }
     ];
   } else if(fotoPrima) {
-    msgText='Analisi foto iniziale';
+    msgText='Questa è la mia forma migliore';
     addMsg(msgText,'user',fotoPrima.url);
     content=[
       { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
-      { type:'text', text:'Foto iniziale del cliente (solo corpo, senza volto). Valutazione oggettiva della composizione corporea attuale: punti di forza visibili, aree su cui lavorare, postura. Tono professionale e motivante — è il punto di partenza del percorso.' }
+      { type:'text', text:'Questa è la foto di Fabrizio nella sua forma migliore (solo corpo, senza volto). Descrivi cosa vedi in modo provocatorio e sfidante: questa è la versione di lui che esiste, che è già stata raggiunta. Non è un sogno — è già successo. Digli con durezza e rispetto che questa forma lo aspetta, che il lavoro che deve fare non è impossibile ma richiede scelte precise ogni giorno. Sfidalo a fare la foto "oggi" per vedere la distanza reale.' }
     ];
   } else {
-    msgText='Analisi foto aggiornamento';
+    msgText='Questa sono io oggi';
     addMsg(msgText,'user',fotoDopo.url);
     content=[
       { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
-      { type:'text', text:'Foto di aggiornamento (solo corpo, senza volto). Analizza composizione corporea: massa muscolare, definizione, postura. Specifico e incoraggiante.' }
+      { type:'text', text:'Questa è la foto di Fabrizio oggi (solo corpo, senza volto). Sii onesto e diretto: descrivi la composizione corporea attuale senza pietà ma senza cattiveria. Questo è il punto di partenza reale — non il punto più basso, ma il punto da cui si riparte. Sfidalo: digli cosa può cambiare in 30, 60, 90 giorni se segue il piano senza deroghe. Chiudi con una frase che gli bruci dentro e lo faccia alzare adesso.' }
     ];
   }
 
