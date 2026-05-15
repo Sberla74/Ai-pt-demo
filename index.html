@@ -628,7 +628,7 @@ async function callAI(text, extraContent) {
   try {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:system, messages })
+      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, system:system, messages })
     });
     const data = await res.json();
     const rawReply = data.content?.[0]?.text || 'Errore nella risposta.';
@@ -720,7 +720,7 @@ async function confrontaFoto() {
   try {
     const res=await fetch(WORKER_URL,{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:customSystem||DEMO_SYSTEM, messages:[{role:'user',content}] })
+      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, system:customSystem||DEMO_SYSTEM, messages:[{role:'user',content}] })
     });
     const data=await res.json();
     const reply=data.content?.[0]?.text||'Errore.';
@@ -761,7 +761,7 @@ async function applyPDF(nome, base64){
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-6',
         max_tokens:2000,
         system:'Estrai tutto il testo da questo PDF mantenendo la struttura originale. Rispondi SOLO con il testo estratto, niente altro.',
         messages:[{role:'user', content:[
@@ -924,7 +924,7 @@ async function estraiNutri(testo) {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-6',
         max_tokens:300,
         system:`Sei un estrattore di dati nutrizionali. Ricevi un messaggio e devi estrarre i macro del pasto descritto. Rispondi SOLO con JSON valido. Formato: {"tipo_pasto":"colazione|spuntino_matt|pranzo|spuntino_pom|cena|spuntino_serale","alimenti":"descrizione breve","proteine":0,"carbo":0,"grassi":0,"kcal":0}. Classifica tipo_pasto dal contesto: colazione=mattina/sveglia/post-workout, spuntino_matt=spuntino mattutino/11h, pranzo=pranzo/12-14h, spuntino_pom=pomeriggio/16h, cena=cena/19-21h, spuntino_serale=dopo cena. Calcola i macro usando valori nutrizionali standard italiani. Se non c'è nessun pasto rispondi con {"tipo_pasto":""}. Arrotonda a interi.`,
         messages:[{role:'user', content:'Estrai i dati nutrizionali da: '+testo}]
@@ -953,7 +953,7 @@ async function estraiNutriDaRisposta(risposta) {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-6',
         max_tokens:300,
         system:`Sei un estrattore di dati nutrizionali. Ricevi la risposta di un coach AI che ha analizzato un pasto del cliente. Estrai i macro del pasto discusso. Rispondi SOLO con JSON valido. Formato: {"tipo_pasto":"colazione|spuntino_matt|pranzo|spuntino_pom|cena|spuntino_serale","alimenti":"descrizione breve","proteine":0,"carbo":0,"grassi":0,"kcal":0}. Se non ci sono macro chiari rispondi con {"tipo_pasto":""}. Arrotonda a interi.`,
         messages:[{role:'user', content:'Estrai i dati nutrizionali dalla seguente risposta del coach: '+risposta}]
@@ -987,7 +987,7 @@ async function estraiLog(testo) {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-6',
         max_tokens:400,
         system:`Sei un estrattore di dati di allenamento. Ricevi un messaggio di un atleta e devi estrarre i dati strutturati degli esercizi eseguiti. Rispondi SOLO con JSON valido, nessun testo prima o dopo. Formato: {"data":"${new Date().toISOString().split('T')[0]}","sessione":"","esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":""}. Se non ci sono dati di allenamento rispondi con {"data":"","esercizi":[]}. Per carico_kg usa 0 se non specificato.`,
         messages:[{role:'user', content:'Estrai i dati di allenamento da questo messaggio: '+testo}]
