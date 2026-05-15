@@ -122,6 +122,28 @@
   .paste-actions{display:flex;gap:8px;}
   .btn-primary{flex:1;padding:11px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
   .btn-secondary{padding:11px 18px;border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-size:14px;font-family:'DM Sans',sans-serif;border:1px solid var(--border2);cursor:pointer;}
+  .meal-row{padding:9px 0;border-bottom:1px solid var(--border);}
+  .meal-row:last-child{border-bottom:none;}
+  .meal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .meal-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);font-family:'DM Mono',monospace;}
+  .meal-macro{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;}
+  .meal-wrap{display:flex;gap:6px;align-items:center;}
+  .meal-ta{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;padding:7px 10px;resize:none;height:36px;outline:none;line-height:1.4;-webkit-appearance:none;}
+  .meal-ta:focus{border-color:rgba(200,245,100,0.35);}
+  .meal-ta::placeholder{color:var(--text3);}
+  .calc-btn{padding:7px 10px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(200,245,100,0.25);color:var(--accent);font-size:13px;cursor:pointer;flex-shrink:0;font-family:'DM Mono',monospace;line-height:1;}
+  .calc-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .totali-bar{display:flex;border-top:1px solid var(--border);padding:12px 0 4px;margin-top:2px;}
+  .tot-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .tot-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-family:'DM Mono',monospace;}
+  .tot-num{font-size:15px;font-weight:600;color:var(--accent);font-family:'DM Mono',monospace;}
+  .ps-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid var(--border);padding-top:12px;margin-top:4px;}
+  .ps-lbl{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:5px;display:block;}
+  .ps-row{display:flex;gap:6px;}
+  .ps-num{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:16px;font-family:'DM Mono',monospace;padding:7px 8px;outline:none;min-width:0;-webkit-appearance:none;}
+  .ps-num:focus{border-color:rgba(200,245,100,0.35);}
+  .ps-save{padding:7px 10px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(200,245,100,0.25);color:var(--accent);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'DM Mono',monospace;}
+  .ps-saved{background:rgba(200,245,100,0.2)!important;border-color:var(--accent)!important;}
 </style>
 </head>
 <body>
@@ -157,77 +179,6 @@
         <button class="paste-btn" onclick="openPaste()">Incolla testo</button>
       </div>
     </div>
-
-    <!-- PROFILO CLIENTE -->
-    <div class="upload-area" id="profilo-section">
-      <span class="upload-label">Profilo cliente <span style="color:var(--text3);font-weight:400;">(opzionale ma consigliato)</span></span>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-        <div class="profilo-field">
-          <label class="profilo-label">Nome</label>
-          <input type="text" id="p-nome" placeholder="es. Marco" class="profilo-input">
-        </div>
-        <div class="profilo-field">
-          <label class="profilo-label">Età</label>
-          <input type="number" id="p-eta" placeholder="es. 35" class="profilo-input" min="16" max="80">
-        </div>
-        <div class="profilo-field">
-          <label class="profilo-label">Peso (kg)</label>
-          <input type="number" id="p-peso" placeholder="es. 82" class="profilo-input">
-        </div>
-        <div class="profilo-field">
-          <label class="profilo-label">Altezza (cm)</label>
-          <input type="number" id="p-altezza" placeholder="es. 178" class="profilo-input">
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-        <div class="profilo-field">
-          <label class="profilo-label">Sesso</label>
-          <select id="p-sesso" class="profilo-input">
-            <option value="">—</option>
-            <option value="uomo">Uomo</option>
-            <option value="donna">Donna</option>
-          </select>
-        </div>
-        <div class="profilo-field">
-          <label class="profilo-label">Esperienza</label>
-          <select id="p-esperienza" class="profilo-input">
-            <option value="">—</option>
-            <option value="principiante (meno di 1 anno)">Principiante</option>
-            <option value="intermedio (1-3 anni)">Intermedio</option>
-            <option value="avanzato (3+ anni)">Avanzato</option>
-          </select>
-        </div>
-        <div class="profilo-field">
-          <label class="profilo-label">Obiettivo</label>
-          <select id="p-obiettivo" class="profilo-input">
-            <option value="">—</option>
-            <option value="dimagrimento e riduzione del grasso corporeo">Dimagrimento</option>
-            <option value="aumento massa muscolare">Massa muscolare</option>
-            <option value="tonificazione e definizione">Tonificazione</option>
-            <option value="performance sportiva">Performance sportiva</option>
-            <option value="riabilitazione e recupero">Riabilitazione</option>
-            <option value="salute e benessere generale">Salute generale</option>
-          </select>
-        </div>
-        <div class="profilo-field">
-          <label class="profilo-label">Sport / attività</label>
-          <input type="text" id="p-sport" placeholder="es. triathlon, calcio..." class="profilo-input">
-        </div>
-      </div>
-      <div class="profilo-field" style="margin-bottom:8px;">
-        <label class="profilo-label">Limitazioni fisiche o note mediche</label>
-        <input type="text" id="p-limitazioni" placeholder="es. lombalgia cronica, protesi ginocchio..." class="profilo-input">
-      </div>
-      <div class="profilo-field">
-        <label class="profilo-label">Stile di vita</label>
-        <select id="p-stile" class="profilo-input">
-          <option value="">—</option>
-          <option value="sedentario (poco movimento fuori dall'allenamento)">Sedentario</option>
-          <option value="attivo (movimento regolare durante la giornata)">Attivo</option>
-          <option value="molto attivo (sport quotidiano o lavoro fisico intenso)">Molto attivo</option>
-        </select>
-      </div>
-    </div>
     <div class="foto-section">
       <span class="foto-label">Confronto foto progressi</span>
       <span class="foto-disclaimer">Solo corpo, senza volto. Le foto non vengono salvate.</span>
@@ -248,6 +199,71 @@
         </div>
       </div>
       <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()">Analizza progressi con AI</button>
+    </div>
+  </div>
+
+  <!-- DIARIO GIORNALIERO -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Diario giornaliero</span>
+      <span class="badge badge-demo" id="data-badge">oggi</span>
+    </div>
+    <div style="padding:10px 14px;">
+
+      <div class="meal-row">
+        <div class="meal-top"><span class="meal-lbl">Colazione</span><span class="meal-macro" id="macro-colazione">—</span></div>
+        <div class="meal-wrap"><textarea class="meal-ta" id="input-colazione" placeholder="es. 3 uova sode, 10g mandorle, 60g fragole..."></textarea><button class="calc-btn" id="btn-colazione" onclick="calcolaMacro('colazione')">✓</button></div>
+      </div>
+
+      <div class="meal-row">
+        <div class="meal-top"><span class="meal-lbl">Spuntino Matt.</span><span class="meal-macro" id="macro-spuntino_matt">—</span></div>
+        <div class="meal-wrap"><textarea class="meal-ta" id="input-spuntino_matt" placeholder="es. tonno 80g, carote, 5 mandorle..."></textarea><button class="calc-btn" id="btn-spuntino_matt" onclick="calcolaMacro('spuntino_matt')">✓</button></div>
+      </div>
+
+      <div class="meal-row">
+        <div class="meal-top"><span class="meal-lbl">Pranzo</span><span class="meal-macro" id="macro-pranzo">—</span></div>
+        <div class="meal-wrap"><textarea class="meal-ta" id="input-pranzo" placeholder="es. pollo 180g, patata dolce 150g, insalata, EVO..."></textarea><button class="calc-btn" id="btn-pranzo" onclick="calcolaMacro('pranzo')">✓</button></div>
+      </div>
+
+      <div class="meal-row">
+        <div class="meal-top"><span class="meal-lbl">Spuntino Pm</span><span class="meal-macro" id="macro-spuntino_pm">—</span></div>
+        <div class="meal-wrap"><textarea class="meal-ta" id="input-spuntino_pm" placeholder="es. bresaola 40g, mela piccola..."></textarea><button class="calc-btn" id="btn-spuntino_pm" onclick="calcolaMacro('spuntino_pm')">✓</button></div>
+      </div>
+
+      <div class="meal-row">
+        <div class="meal-top"><span class="meal-lbl">Cena</span><span class="meal-macro" id="macro-cena">—</span></div>
+        <div class="meal-wrap"><textarea class="meal-ta" id="input-cena" placeholder="es. pesce bianco 200g, verdure, zucca 200g, EVO..."></textarea><button class="calc-btn" id="btn-cena" onclick="calcolaMacro('cena')">✓</button></div>
+      </div>
+
+      <div class="meal-row">
+        <div class="meal-top"><span class="meal-lbl">Spuntino Sera</span><span class="meal-macro" id="macro-spuntino_sera">—</span></div>
+        <div class="meal-wrap"><textarea class="meal-ta" id="input-spuntino_sera" placeholder="es. frutti di bosco 100g..."></textarea><button class="calc-btn" id="btn-spuntino_sera" onclick="calcolaMacro('spuntino_sera')">✓</button></div>
+      </div>
+
+      <div class="totali-bar">
+        <div class="tot-col"><span class="tot-lbl">Proteine</span><span class="tot-num" id="tot-p">0g</span></div>
+        <div class="tot-col"><span class="tot-lbl">Carboidrati</span><span class="tot-num" id="tot-c">0g</span></div>
+        <div class="tot-col"><span class="tot-lbl">Grassi</span><span class="tot-num" id="tot-g">0g</span></div>
+        <div class="tot-col"><span class="tot-lbl">Kcal</span><span class="tot-num" id="tot-kcal">0</span></div>
+      </div>
+
+      <div class="ps-grid">
+        <div>
+          <span class="ps-lbl">Peso <span style="color:var(--text3)">(ogni venerdì)</span></span>
+          <div class="ps-row">
+            <input type="number" class="ps-num" id="input-peso" placeholder="kg" step="0.1" min="50" max="200">
+            <button class="ps-save" id="btn-peso" onclick="salvaPeso()">Salva</button>
+          </div>
+        </div>
+        <div>
+          <span class="ps-lbl">Sonno <span style="color:var(--text3)">(ore)</span></span>
+          <div class="ps-row">
+            <input type="number" class="ps-num" id="input-sonno" placeholder="ore" step="0.5" min="1" max="14">
+            <button class="ps-save" id="btn-sonno" onclick="salvaSonno()">Salva</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -353,36 +369,9 @@ let trainingLog = [];
 
 function getSystem() { return customSystem || DEMO_SYSTEM; }
 
-function getProfilo() {
-  const nome = document.getElementById('p-nome')?.value.trim();
-  const eta = document.getElementById('p-eta')?.value;
-  const peso = document.getElementById('p-peso')?.value;
-  const altezza = document.getElementById('p-altezza')?.value;
-  const sesso = document.getElementById('p-sesso')?.value;
-  const esperienza = document.getElementById('p-esperienza')?.value;
-  const obiettivo = document.getElementById('p-obiettivo')?.value;
-  const sport = document.getElementById('p-sport')?.value.trim();
-  const limitazioni = document.getElementById('p-limitazioni')?.value.trim();
-  const stile = document.getElementById('p-stile')?.value;
-  const parts = [];
-  if(nome) parts.push('Nome: ' + nome);
-  if(eta) parts.push('Età: ' + eta + ' anni');
-  if(sesso) parts.push('Sesso: ' + sesso);
-  if(peso && altezza) parts.push('Corporatura: ' + peso + 'kg, ' + altezza + 'cm');
-  else if(peso) parts.push('Peso: ' + peso + 'kg');
-  else if(altezza) parts.push('Altezza: ' + altezza + 'cm');
-  if(obiettivo) parts.push('Obiettivo: ' + obiettivo);
-  if(esperienza) parts.push('Esperienza: ' + esperienza);
-  if(sport) parts.push('Sport/attività: ' + sport);
-  if(stile) parts.push('Stile di vita: ' + stile);
-  if(limitazioni) parts.push('Limitazioni/note mediche: ' + limitazioni);
-  return parts.length > 0 ? '\n\nPROFILO CLIENTE:\n' + parts.join('\n') : '';
-}
-
 async function getSystemWithLog() {
-  const profilo = getProfilo();
   const log = await getTrainingLog();
-  return getSystem() + profilo + log;
+  return getSystem() + log;
 }
 
 function now() { return new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); }
@@ -627,20 +616,13 @@ function applyTesto(nome,contenuto){
 }
 
 function aggiornaUI(nome,t1,t2){
-  const eta = document.getElementById('p-eta')?.value;
-  const obiettivo = document.getElementById('p-obiettivo')?.value;
-  const sport = document.getElementById('p-sport')?.value.trim();
   let tags = `<span class="tag">${t1}</span><span class="tag">${t2}</span>`;
-  if(eta) tags += `<span class="tag">${eta} anni</span>`;
-  if(obiettivo) tags += `<span class="tag">${obiettivo.split(' ')[0]}</span>`;
-  if(sport) tags += `<span class="tag">${sport}</span>`;
   document.getElementById('scheda-name').textContent = nome;
   document.getElementById('scheda-meta').innerHTML = tags;
   document.getElementById('scheda-badge').textContent='Attiva';
   document.getElementById('scheda-badge').className='badge badge-custom';
   document.getElementById('msgs').innerHTML='';
-  const nomeCliente = document.getElementById('p-nome')?.value.trim() || nome;
-  addMsg(`Perfetto! Ho letto la scheda di "${nomeCliente}" e il suo profilo. Sono pronto — scrivi come faresti su WhatsApp.`,'bot');
+  addMsg(`Perfetto! Ho letto la scheda "${nome}". Sono pronto — scrivi come faresti su WhatsApp.`,'bot');
   document.getElementById('escalate-banner').style.display='none';
   saveMsg('sistema','Scheda caricata: '+nome);
 }
@@ -655,35 +637,6 @@ function loadPastedScheda(){
 }
 
 // SALVATAGGIO SESSIONE SU FIREBASE
-function getProfiloData() {
-  return {
-    nome: document.getElementById('p-nome')?.value.trim()||'',
-    eta: document.getElementById('p-eta')?.value||'',
-    peso: document.getElementById('p-peso')?.value||'',
-    altezza: document.getElementById('p-altezza')?.value||'',
-    sesso: document.getElementById('p-sesso')?.value||'',
-    esperienza: document.getElementById('p-esperienza')?.value||'',
-    obiettivo: document.getElementById('p-obiettivo')?.value||'',
-    sport: document.getElementById('p-sport')?.value.trim()||'',
-    limitazioni: document.getElementById('p-limitazioni')?.value.trim()||'',
-    stile: document.getElementById('p-stile')?.value||''
-  };
-}
-
-function setProfiloData(p) {
-  if(!p) return;
-  if(p.nome) document.getElementById('p-nome').value=p.nome;
-  if(p.eta) document.getElementById('p-eta').value=p.eta;
-  if(p.peso) document.getElementById('p-peso').value=p.peso;
-  if(p.altezza) document.getElementById('p-altezza').value=p.altezza;
-  if(p.sesso) document.getElementById('p-sesso').value=p.sesso;
-  if(p.esperienza) document.getElementById('p-esperienza').value=p.esperienza;
-  if(p.obiettivo) document.getElementById('p-obiettivo').value=p.obiettivo;
-  if(p.sport) document.getElementById('p-sport').value=p.sport;
-  if(p.limitazioni) document.getElementById('p-limitazioni').value=p.limitazioni;
-  if(p.stile) document.getElementById('p-stile').value=p.stile;
-}
-
 function saveSessione() {
   if(!trainerName || !clienteName) return;
   const key = slugify(trainerName)+'_'+slugify(clienteName);
@@ -691,7 +644,6 @@ function saveSessione() {
     ts: tsISO(),
     trainer: trainerName,
     cliente: clienteName,
-    profilo: getProfiloData(),
     customSystem: customSystem||'',
     schedaNome: document.getElementById('scheda-name')?.textContent||'',
     messaggi: history.slice(-20)
@@ -712,7 +664,6 @@ async function loadSessione() {
     if(!data || !data.ts) return;
     const ore = (Date.now() - new Date(data.ts).getTime()) / 3600000;
     if(ore > 72) return;
-    if(data.profilo) setProfiloData(data.profilo);
     if(data.customSystem) customSystem = data.customSystem;
     if(data.messaggi && data.messaggi.length > 0) {
       history = data.messaggi;
@@ -783,7 +734,95 @@ async function getTrainingLog() {
   } catch(e) { return ''; }
 }
 
+// DIARIO GIORNALIERO
+const MEALS = ['colazione','spuntino_matt','pranzo','spuntino_pm','cena','spuntino_sera'];
+let macroData = {};
+MEALS.forEach(m => macroData[m] = {desc:'',p:0,c:0,g:0,kcal:0,ok:false});
+
+async function calcolaMacro(pasto) {
+  const input = document.getElementById('input-'+pasto);
+  const btn = document.getElementById('btn-'+pasto);
+  const desc = input.value.trim();
+  if(!desc) return;
+  btn.disabled=true; btn.textContent='…';
+  try {
+    const res = await fetch(WORKER_URL,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001', max_tokens:150,
+        system:'Sei un nutrizionista. Calcola i macronutrienti per la lista di alimenti. Rispondi SOLO con JSON: {"p":0,"c":0,"g":0,"kcal":0} dove p=proteine g, c=carboidrati g, g=grassi g, kcal=calorie. Arrotonda a interi.',
+        messages:[{role:'user',content:'Calcola macronutrienti per: '+desc}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text||'{}';
+    const m = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    macroData[pasto] = {desc, p:m.p||0, c:m.c||0, g:m.g||0, kcal:m.kcal||0, ok:true};
+    document.getElementById('macro-'+pasto).textContent = `P:${m.p}g C:${m.c}g G:${m.g}g (${m.kcal}kcal)`;
+    aggiornaTotali();
+    salvaNutri();
+  } catch(e) {
+    document.getElementById('macro-'+pasto).textContent = 'errore';
+  }
+  btn.disabled=false; btn.textContent='✓';
+}
+
+function aggiornaTotali() {
+  let p=0,c=0,g=0,kcal=0;
+  MEALS.forEach(m=>{p+=macroData[m].p;c+=macroData[m].c;g+=macroData[m].g;kcal+=macroData[m].kcal;});
+  document.getElementById('tot-p').textContent=p+'g';
+  document.getElementById('tot-c').textContent=c+'g';
+  document.getElementById('tot-g').textContent=g+'g';
+  document.getElementById('tot-kcal').textContent=kcal;
+}
+
+function salvaNutri() {
+  if(trainerName==='demo'||!clienteName) return;
+  const today=new Date().toISOString().split('T')[0];
+  const key=slugify(trainerName)+'_'+slugify(clienteName);
+  const payload={};
+  MEALS.forEach(m=>{if(macroData[m].ok) payload[m]=macroData[m];});
+  fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+today+'.json',{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  }).catch(()=>{});
+}
+
+function salvaPeso() {
+  const input=document.getElementById('input-peso');
+  const btn=document.getElementById('btn-peso');
+  const val=parseFloat(input.value);
+  if(!val||val<40||val>250) return;
+  const today=new Date().toISOString().split('T')[0];
+  const key=slugify(trainerName)+'_'+slugify(clienteName);
+  fetch(FB_URL+'/coach_ai_peso/'+key+'/'+today.replace(/-/g,'')+'.json',{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({data:today,peso:val,ts:tsISO()})
+  }).then(()=>{btn.classList.add('ps-saved');setTimeout(()=>btn.classList.remove('ps-saved'),2000);}).catch(()=>{});
+}
+
+function salvaSonno() {
+  const input=document.getElementById('input-sonno');
+  const btn=document.getElementById('btn-sonno');
+  const val=parseFloat(input.value);
+  if(!val||val<1||val>24) return;
+  const today=new Date().toISOString().split('T')[0];
+  const key=slugify(trainerName)+'_'+slugify(clienteName);
+  fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+today.replace(/-/g,'')+'.json',{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({data:today,ore:val,ts:tsISO()})
+  }).then(()=>{btn.classList.add('ps-saved');setTimeout(()=>btn.classList.remove('ps-saved'),2000);}).catch(()=>{});
+}
+
+function initDiarioBadge() {
+  const d=new Date();
+  const giorni=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  const mesi=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  document.getElementById('data-badge').textContent=giorni[d.getDay()]+' '+d.getDate()+' '+mesi[d.getMonth()];
+}
+
 initSession();
+initDiarioBadge();
 loadSessione();
 </script>
 </body>
