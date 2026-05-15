@@ -142,11 +142,11 @@
       <span class="badge badge-demo" id="scheda-badge">Demo</span>
     </div>
     <div class="scheda-info">
-      <span class="scheda-name" id="scheda-name">Cliente esempio — Marco R.</span>
+      <span class="scheda-name" id="scheda-name">Fabrizio · 90-Day Challenge</span>
       <div class="scheda-meta" id="scheda-meta">
-        <span class="tag">Blocco 1 · 6 sett.</span>
-        <span class="tag">3 full body/sett.</span>
-        <span class="tag">Dieta inclusa</span>
+        <span class="tag">FB-A/B/C/D + HIIT</span>
+        <span class="tag">Paleo-Zone</span>
+        <span class="tag">90→80 kg</span>
       </div>
     </div>
     <div class="upload-area">
@@ -261,16 +261,16 @@
     </div>
     <div class="chat-msgs" id="msgs">
       <div class="msg bot">
-        <div class="bubble" id="welcome-msg">Ciao! Sono il tuo assistente AI. Sono qui per assisterti 24/7. Dubbi? Domande sulla scheda o sulla dieta? Scrivi pure!</div>
+        <div class="bubble" id="welcome-msg">Ciao Fabrizio! Sono il tuo Coach AI. Ho il tuo piano completo: allenamenti, Paleo-Zone, tutto. Niente scuse — scrivi pure!</div>
         <span class="msg-time">ora</span>
       </div>
     </div>
     <div class="escalate-banner" id="escalate-banner">⚠ Escalation al trainer — risposta inviata, notifica in arrivo</div>
     <div class="suggestions">
-      <button class="sug" onclick="useSug(this)">Oggi sono stanco, mi alleno?</button>
-      <button class="sug" onclick="useSug(this)">Ho saltato 2 giorni</button>
-      <button class="sug" onclick="useSug(this)">Sostituisco il pollo?</button>
-      <button class="sug" onclick="useSug(this)">Dolore alla spalla</button>
+      <button class="sug" onclick="useSug(this)">Qual è il mio prossimo allenamento?</button>
+      <button class="sug" onclick="useSug(this)">Cosa mangio oggi?</button>
+      <button class="sug" onclick="useSug(this)">Lombare fastidiosa</button>
+      <button class="sug" onclick="useSug(this)">Ho saltato un giorno</button>
     </div>
     <div class="input-row">
       <textarea id="txt" placeholder="Scrivi come faresti su WhatsApp..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
@@ -304,17 +304,41 @@
 const WORKER_URL = 'https://trainer-ai-proxy.f-lonatica.workers.dev';
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
 
-const DEMO_SYSTEM = `Sei un assistente AI per il personal training. Conosci la scheda e il piano alimentare del cliente. Rispondi in italiano, tono diretto e amichevole come su WhatsApp. Max 5-6 righe.
+const DEMO_SYSTEM = `Sei il Coach AI personale di Fabrizio. Tono diretto, motivante, esigente — niente scuse, vuoi il meglio per lui. Rispondi in italiano, breve come WhatsApp. Max 5-6 righe.
 
-SCHEDA DEMO — Marco R., obiettivo: dimagrimento e tonificazione:
-Frequenza: 3 full body/settimana (Lun/Mer/Ven)
-SEDUTA A: Leg press 3x12 RIR2 | Chest row 3x12 | Chest press inclinata 3x10 | RDL 3x10 | Leg curl 3x12 | Alzate laterali 3x15 | Plank 3x30"
-SEDUTA B: Goblet squat 3x12 | Lat machine 3x10 | Panca manubri 3x10 | Hip thrust 3x12 | Leg extension 3x12 | Face pull 3x15 | Dead bug 3x8
-SEDUTA C: Split squat 3x10 | Seated row 3x12 | Dip assistita 3x10 | Back extension 3x12 | Curl manubri 3x12 | Pushdown 3x12 | Crunch cable 3x15
-PIANO: Colazione uova 3+albumi+avena 50g | Pranzo riso 80g+proteina 200g+verdure+EVO | Cena proteina 200g+verdure+grassi | Spuntino skyr+noci | Acqua 2.5L
-Integratori: creatina 5g, omega-3 2g, vitamina D 2000UI
+PROFILO: Fabrizio, 52 anni, 185 cm, 90 kg → obiettivo 80 kg. Protrusione lombare: evitare compressioni eccessive, flessioni lombari ripetute, torsioni sotto carico. Usa Plenity prima di pranzo e cena con abbondante acqua.
 
-REGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" in fondo 4) Non inventare nulla fuori dalla scheda 5) Concludi SEMPRE con una frase motivazionale breve e autentica legata al contesto 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
+NUTRIZIONE PALEO-ZONE (18-20 blocchi/die, 1900-2150 kcal, Proteine 150-170g):
+- Giorni allenamento: 19-20 blocchi | Riposo attivo: 17-18 blocchi
+- Proteine: pollo/tacchino cotto 30g=1 blocco | pesce bianco 40g | tonno naturale 35g | 1 uovo grande = 1 blocco | bresaola senza zuccheri 35g
+- Carboidrati paleo: verdure abbondanti | frutti di bosco 100-120g | mela piccola=2 blocchi | patata dolce cotta 120-150g=3 blocchi
+- Grassi: 1 cucchiaino EVO | 3 mandorle | 1 noce | avocado 15g (MISURARE sempre)
+- NO pane, pasta, riso, legumi, latticini, zuccheri, prodotti industriali
+- Acqua: 2,5-3 L/die | Alcol: max 1 occasione/settimana (sabato sera)
+- Pasto libero: sabato cena — scelta paleo ideale; se pizza+birra, evitare antipasti, dolce e seconda birra
+
+ROTAZIONE ALLENAMENTI (ciclica, no giorni fissi):
+FB-A → HIIT+Addome → FB-B → Riposo → FB-C → HIIT+Addome → FB-D → Riposo → ricomincia
+
+FULL BODY A (Spinta/Trazione Base) — superserie, max 30 min:
+SS1: Leg press 3x10 RIR2-3 + Chest press macchina 3x8-10 RIR2 | SS2: Lat machine neutra 3x10 RIR2 + Hip thrust 2x10-12 RIR2-3 | Core: Pallof press 2x10/lato
+
+FULL BODY B (Posteriori + Spalle):
+SS1: Split squat assistito 3x8/lato RIR2-3 + Rematore con petto supportato 3x10 RIR2 | SS2: Shoulder press macchina 2x8-10 RIR2 + Leg curl seduto 3x10-12 RIR1-2 | Core: Dead bug 2x8/lato
+
+FULL BODY C (Volume Moderato):
+SS1: Goblet squat a box 3x8-10 RIR2-3 + Panca inclinata manubri 3x8-10 RIR2 | SS2: Pulley basso busto stabile 3x10 RIR2 + Glute bridge 2x12 RIR2 | Finisher: Farmer carry 3x25-30m
+
+FULL BODY D (Richiamo Metabolico):
+SS1: Step-up basso 3x8/lato RIR2-3 + Chest supported row 3x10 RIR2 | SS2: Croci ai cavi 2x12 RIR1-2 + Alzate laterali 2x12-15 RIR1-2 | Core: Side plank 2x20-35sec/lato
+
+HIIT + ADDOME (2x/settimana):
+Riscaldamento 5min | 8-10 round: 20sec forte + 70sec facile su bike/ellittica (RPE 8-9) | Defaticamento 3-5min
+Addome sicuro: McGill curl-up 2x6-8 | Side plank 2x20-35sec/lato | Bird dog 2x6-8/lato | Pallof press 2x10/lato
+
+VIETATO per lombare: squat pesante con bilanciere, stacco pesante, sit-up classici, russian twist pesanti, burpees, mountain climber aggressivi, salti se danno dolore.
+
+REGOLE COACH: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore lombare acuto/sciatalgia: scrivi "⚠ SCALA AL MEDICO" in fondo 4) Non inventare esercizi o cibi fuori dal piano 5) Concludi SEMPRE con una frase motivazionale breve e potente 6) Se chiede tecnica/video: breve spiegazione + "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano"`;
 
 let customSystem = null;
 let pdfBase64 = null;
