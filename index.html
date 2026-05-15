@@ -98,12 +98,25 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
 .saved-badge{font-size:10px;color:var(--accent);font-family:'DM Mono',monospace;}
 .meal-desc-saved{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:5px;font-style:italic;}
 
-/* ═══ FOTO BAR (in Chat) ═══ */
-.foto-bar{display:flex;gap:6px;padding:5px 12px;flex-shrink:0;align-items:center;}
-.fbar-btn{flex:1;padding:7px 6px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;text-align:center;touch-action:manipulation;white-space:nowrap;}
-.fbar-btn.loaded{border-color:rgba(200,245,100,0.25);color:var(--accent);}
-.fbar-btn.ai{background:var(--accent-dim2);color:var(--accent);border-color:rgba(200,245,100,0.2);flex:1.5;}
-.fbar-btn:disabled{opacity:0.3;cursor:not-allowed;}
+/* ═══ FOTO SECTION (top of Chat) ═══ */
+.foto-section{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.foto-pair{display:flex;gap:10px;flex-shrink:0;}
+.foto-slot-sm{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.foto-thumb-sm{width:50px;height:67px;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;touch-action:manipulation;}
+.foto-thumb-sm img{width:100%;height:100%;object-fit:cover;}
+.foto-label-sm{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.04em;}
+.foto-placeholder-sm{font-size:18px;color:var(--text3);}
+.ai-btn{flex:1;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid rgba(200,245,100,0.25);background:var(--accent-dim2);color:var(--accent);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;line-height:1.4;}
+.ai-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* ═══ MACRO PREVIEW (Pasti) ═══ */
+.macro-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 0;}
+.mp-item{text-align:center;}
+.mp-lbl{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;display:block;margin-bottom:3px;text-transform:uppercase;}
+.mp-val{font-size:17px;font-weight:600;color:var(--accent);}
+.mp-kcal .mp-val{color:var(--text2);}
+.outline-btn{padding:9px 16px;border-radius:var(--radius-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;}
+.outline-btn:active{opacity:0.7;}
 
 /* ═══ PESO TAB ═══ */
 .peso-big{font-size:44px;font-weight:600;line-height:1;color:var(--text);}
@@ -166,12 +179,24 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
     <button class="sug" onclick="useSug(this)">Quanto manca all'obiettivo?</button>
     <button class="sug" onclick="useSug(this)">Cosa mangio adesso?</button>
   </div>
-  <div class="foto-bar">
-    <button class="fbar-btn" id="fbar-prima" onclick="document.getElementById('foto-prima-input').click()">Best —</button>
-    <button class="fbar-btn" id="fbar-dopo" onclick="document.getElementById('foto-dopo-input').click()">Oggi —</button>
-    <button class="fbar-btn ai" id="confronta-btn" onclick="confrontaFoto()" disabled>Confronta AI →</button>
+  <div class="foto-section">
     <input type="file" id="foto-prima-input" accept="image/*" style="display:none" onchange="loadFoto(this,'prima')">
     <input type="file" id="foto-dopo-input" accept="image/*" style="display:none" onchange="loadFoto(this,'dopo')">
+    <div class="foto-pair">
+      <div class="foto-slot-sm">
+        <div class="foto-thumb-sm" id="thumb-prima" onclick="document.getElementById('foto-prima-input').click()">
+          <span class="foto-placeholder-sm">+</span>
+        </div>
+        <div class="foto-label-sm">Best</div>
+      </div>
+      <div class="foto-slot-sm">
+        <div class="foto-thumb-sm" id="thumb-dopo" onclick="document.getElementById('foto-dopo-input').click()">
+          <span class="foto-placeholder-sm">+</span>
+        </div>
+        <div class="foto-label-sm">Oggi</div>
+      </div>
+    </div>
+    <button class="ai-btn" id="confronta-btn" onclick="confrontaFoto()" disabled>Analisi AI<br>confronto →</button>
   </div>
   <div class="input-row">
     <textarea id="txt" placeholder="Scrivi al coach..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
@@ -320,6 +345,8 @@ let history = [];
 let busy = false;
 let fotoPrima = null;
 let fotoDopo = null;
+const pastiCalcolati = {};
+const pastiEditMode = new Set();
 
 // ═══ UTILS ═══
 function slugify(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');}
@@ -526,9 +553,8 @@ async function renderPastiTab(){
   const saved=await loadPastiOggi();
   let totP=0,totC=0,totG=0,totK=0;
   Object.values(saved).forEach(m=>{totP+=m.proteine||0;totC+=m.carbo||0;totG+=m.grassi||0;totK+=m.kcal||0;});
-  const tP=rot.type==='fb'?170:rot.type==='hiit'?170:170;
-  const tC=rot.type==='fb'?210:rot.type==='hiit'?185:170;
-  const tG=65,tK=rot.type==='fb'?2050:rot.type==='hiit'?1950:1850;
+  Object.entries(pastiCalcolati).forEach(([mk,m])=>{if(!saved[mk]){totP+=m.proteine||0;totC+=m.carbo||0;totG+=m.grassi||0;totK+=m.kcal||0;}});
+  const tP=170,tC=rot.type==='fb'?210:rot.type==='hiit'?185:170,tG=65,tK=rot.type==='fb'?2050:rot.type==='hiit'?1950:1850;
   function ptCls(v,t){return v>t*1.1?'pt-over':v>=t*0.6?'pt-ok':'pt-low';}
   let html=`<div class="pasti-total">
     <div><div class="pt-val ${ptCls(totP,tP)}">${Math.round(totP)}</div><div class="pt-label">P / ${tP}g</div></div>
@@ -538,51 +564,78 @@ async function renderPastiTab(){
   </div>`;
   MEAL_ORDER.forEach(mk=>{
     const tgt=targets[mk];const sv=saved[mk];const lbl=MEAL_LABELS[mk];
-    html+=`<div class="card">
-      <div class="card-header">
-        <span class="card-title">${lbl}</span>
-        ${sv?'<span class="saved-badge">salvato</span>':''}
-      </div>
-      <div class="card-body">
-        <div class="meal-target-row">Target: P${tgt.p}g · C${tgt.c}g · G${tgt.g}g · ${tgt.k}kcal</div>
-        <div class="macro-grid">
-          <div><span class="label-sm">Prot (g)</span><input type="number" class="num-input" id="mp-p-${mk}" placeholder="${tgt.p}" min="0" max="300" value="${sv?.proteine||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-          <div><span class="label-sm">Carbo (g)</span><input type="number" class="num-input" id="mp-c-${mk}" placeholder="${tgt.c}" min="0" max="500" value="${sv?.carbo||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-          <div><span class="label-sm">Grassi (g)</span><input type="number" class="num-input" id="mp-g-${mk}" placeholder="${tgt.g}" min="0" max="200" value="${sv?.grassi||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-          <div><span class="label-sm">Kcal</span><input type="number" class="num-input" id="mp-k-${mk}" placeholder="${tgt.k}" min="0" max="5000" value="${sv?.kcal||''}" onkeydown="if(event.key==='Enter')salvaPasto('${mk}')"></div>
-        </div>
-        <input type="text" class="text-input" id="mp-desc-${mk}" placeholder="Descrizione (es. 2 uova, 10g mandorle)" style="margin-bottom:10px;" value="${sv?.descrizione||''}">
-        <button class="save-btn" onclick="salvaPasto('${mk}')">Salva</button>
-        ${sv?`<div class="meal-saved-chips">
-          <span class="chip">P ${sv.proteine}g</span>
-          <span class="chip">C ${sv.carbo}g</span>
-          <span class="chip">G ${sv.grassi}g</span>
-          <span class="chip">${sv.kcal} kcal</span>
-        </div>${sv.descrizione?`<div class="meal-desc-saved">${sv.descrizione}</div>`:''}`:''}</div></div>`;
+    const calc=pastiCalcolati[mk];const editing=pastiEditMode.has(mk);
+    html+=`<div class="card"><div class="card-header"><span class="card-title">${lbl}</span>${sv&&!editing&&!calc?'<span class="saved-badge">✓ salvato</span>':''}</div><div class="card-body">`;
+    html+=`<div class="meal-target-row">Target: P${tgt.p}g · C${tgt.c}g · G${tgt.g}g · ${tgt.k}kcal</div>`;
+    if(sv&&!editing&&!calc){
+      html+=`<div class="meal-saved-chips"><span class="chip">P ${sv.proteine}g</span><span class="chip">C ${sv.carbo}g</span><span class="chip">G ${sv.grassi}g</span><span class="chip">${sv.kcal} kcal</span></div>`;
+      if(sv.descrizione)html+=`<div class="meal-desc-saved">${sv.descrizione}</div>`;
+      html+=`<button class="outline-btn" style="margin-top:10px;" onclick="editPasto('${mk}')">Modifica</button>`;
+    }else if(calc&&!editing){
+      html+=`<div class="macro-preview">
+        <div class="mp-item"><span class="mp-lbl">Prot</span><span class="mp-val">${calc.proteine}g</span></div>
+        <div class="mp-item"><span class="mp-lbl">Carbo</span><span class="mp-val">${calc.carbo}g</span></div>
+        <div class="mp-item"><span class="mp-lbl">Grassi</span><span class="mp-val">${calc.grassi}g</span></div>
+        <div class="mp-item mp-kcal"><span class="mp-lbl">Kcal</span><span class="mp-val">${calc.kcal}</span></div>
+      </div>`;
+      if(calc.descrizione)html+=`<div class="meal-desc-saved" style="margin-bottom:10px;">${calc.descrizione}</div>`;
+      html+=`<div style="display:flex;gap:8px;"><button class="save-btn" onclick="salvaPasto('${mk}')">Salva</button><button class="outline-btn" onclick="ricalcolaPasto('${mk}')">Ricalcola</button></div>`;
+    }else{
+      const prefill=(editing&&sv)?escHtml(sv.descrizione||''):'';
+      html+=`<input type="text" class="text-input" id="mp-desc-${mk}" placeholder="es. 100g pasta, 150g pollo, 10g olio" value="${prefill}" style="margin-bottom:10px;">`;
+      html+=`<button class="save-btn" id="mp-calc-${mk}" onclick="calcolaPasto('${mk}')">Calcola macro →</button>`;
+    }
+    html+=`</div></div>`;
   });
   container.innerHTML=html;
 }
 
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+
+async function calcolaPasto(mk){
+  const descInput=document.getElementById('mp-desc-'+mk);
+  const desc=descInput?.value.trim();
+  if(!desc){showToast('Scrivi cosa hai mangiato');return;}
+  const calcBtn=document.getElementById('mp-calc-'+mk);
+  if(calcBtn){calcBtn.textContent='Calcolo...';calcBtn.disabled=true;}
+  try{
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:80,
+        system:'Calcola macro nutrizionali degli alimenti indicati. Rispondi SOLO con JSON valido: {"proteine":X,"carbo":X,"grassi":X,"kcal":X} (numeri interi, nessun testo aggiuntivo).',
+        messages:[{role:'user',content:desc}]})});
+    const data=await res.json();
+    const txt=data.content?.[0]?.text||'';
+    const jsonMatch=txt.match(/\{[\s\S]*?\}/);
+    if(!jsonMatch)throw new Error('no json');
+    const m=JSON.parse(jsonMatch[0]);
+    if(m.proteine==null||m.carbo==null||m.grassi==null||m.kcal==null)throw new Error('invalid');
+    pastiCalcolati[mk]={proteine:Math.round(+m.proteine),carbo:Math.round(+m.carbo),grassi:Math.round(+m.grassi),kcal:Math.round(+m.kcal),descrizione:desc};
+    pastiEditMode.delete(mk);
+    renderPastiTab();
+  }catch(e){
+    showToast('Errore calcolo — riprova');
+    if(calcBtn){calcBtn.textContent='Calcola macro →';calcBtn.disabled=false;}
+  }
+}
+
 async function salvaPasto(mk){
-  const p=Math.round(parseFloat(document.getElementById('mp-p-'+mk)?.value||'0')||0);
-  const c=Math.round(parseFloat(document.getElementById('mp-c-'+mk)?.value||'0')||0);
-  const g=Math.round(parseFloat(document.getElementById('mp-g-'+mk)?.value||'0')||0);
-  let k=Math.round(parseFloat(document.getElementById('mp-k-'+mk)?.value||'0')||0);
-  const desc=document.getElementById('mp-desc-'+mk)?.value.trim()||'';
-  if(!p&&!c&&!g&&!k){showToast('Inserisci almeno un valore');return;}
-  if(!k)k=Math.round(p*4+c*4+g*9);
+  const calc=pastiCalcolati[mk];if(!calc)return;
   const key=slugify(trainerName)+'_'+slugify(clienteName);
   const logKey=mk+'_'+Date.now();
   try{
     const res=await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+todayStr()+'/'+logKey+'.json',{
       method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({tipo_pasto:mk,proteine:p,carbo:c,grassi:g,kcal:k,descrizione:desc,ts:tsISO(),trainer:trainerName,cliente:clienteName})
+      body:JSON.stringify({tipo_pasto:mk,proteine:calc.proteine,carbo:calc.carbo,grassi:calc.grassi,kcal:calc.kcal,descrizione:calc.descrizione,ts:tsISO(),trainer:trainerName,cliente:clienteName})
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
+    delete pastiCalcolati[mk];pastiEditMode.delete(mk);
     showToast('✓ '+MEAL_LABELS[mk]+' salvata');
     renderPastiTab();
   }catch(e){showToast('Errore salvataggio');}
 }
+
+function editPasto(mk){delete pastiCalcolati[mk];pastiEditMode.add(mk);renderPastiTab();setTimeout(()=>document.getElementById('mp-desc-'+mk)?.focus(),100);}
+function ricalcolaPasto(mk){delete pastiCalcolati[mk];renderPastiTab();setTimeout(()=>document.getElementById('mp-desc-'+mk)?.focus(),100);}
 
 // ═══ FOTO (in Chat) ═══
 function loadFoto(input,tipo){
@@ -590,29 +643,23 @@ function loadFoto(input,tipo){
   const reader=new FileReader();
   reader.onload=function(e){
     const url=e.target.result;const base64=url.split(',')[1];const mtype=file.type||'image/jpeg';
-    if(tipo==='prima')fotoPrima={url,base64,mtype};
-    else fotoDopo={url,base64,mtype};
+    if(tipo==='prima'){fotoPrima={url,base64,mtype};const t=document.getElementById('thumb-prima');if(t)t.innerHTML=`<img src="${url}">`;}
+    else{fotoDopo={url,base64,mtype};const t=document.getElementById('thumb-dopo');if(t)t.innerHTML=`<img src="${url}">`;}
     saveFotoToStorage(tipo,base64,mtype);
-    updateFotoBar();
+    const btn=document.getElementById('confronta-btn');if(btn)btn.disabled=!fotoPrima&&!fotoDopo;
   };reader.readAsDataURL(file);
 }
 function saveFotoToStorage(tipo,base64,mtype){try{localStorage.setItem('coach_foto_'+tipo,JSON.stringify({base64,mtype}));}catch(e){}}
-function updateFotoBar(){
-  const pb=document.getElementById('fbar-prima');const db=document.getElementById('fbar-dopo');const ab=document.getElementById('confronta-btn');
-  if(pb){pb.textContent=fotoPrima?'Best ✓':'Best —';pb.classList.toggle('loaded',!!fotoPrima);}
-  if(db){db.textContent=fotoDopo?'Oggi ✓':'Oggi —';db.classList.toggle('loaded',!!fotoDopo);}
-  if(ab)ab.disabled=!fotoPrima&&!fotoDopo;
-}
 function restoreFotos(){
   ['prima','dopo'].forEach(tipo=>{
     try{
       const saved=localStorage.getItem('coach_foto_'+tipo);if(!saved)return;
       const{base64,mtype}=JSON.parse(saved);const url=`data:${mtype};base64,${base64}`;
-      if(tipo==='prima')fotoPrima={url,base64,mtype};
-      else fotoDopo={url,base64,mtype};
+      if(tipo==='prima'){fotoPrima={url,base64,mtype};const t=document.getElementById('thumb-prima');if(t)t.innerHTML=`<img src="${url}">`;}
+      else{fotoDopo={url,base64,mtype};const t=document.getElementById('thumb-dopo');if(t)t.innerHTML=`<img src="${url}">`;}
     }catch(e){}
   });
-  updateFotoBar();
+  const btn=document.getElementById('confronta-btn');if(btn)btn.disabled=!fotoPrima&&!fotoDopo;
 }
 
 async function confrontaFoto(){
