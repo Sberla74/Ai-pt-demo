@@ -158,6 +158,8 @@
   .sonno-select{flex:1;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
   .sonno-select:focus{border-color:rgba(200,245,100,0.35);}
   .sonno-select option{background:var(--surface2);}
+  .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--accent);color:#0f0f0f;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;padding:8px 20px;border-radius:20px;opacity:0;transition:opacity 0.25s,transform 0.25s;pointer-events:none;z-index:999;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
@@ -346,6 +348,7 @@
 </div>
 
 <div class="footer" id="footer-txt">coach-ai · fabrizio · obiettivo 80 kg · 9 agosto 2026</div>
+<div class="toast" id="toast"></div>
 
 <script>
 const WORKER_URL = 'https://trainer-ai-proxy.f-lonatica.workers.dev';
@@ -429,13 +432,13 @@ Sett 1-2 Adattamento: tecnica, zero dolore | Sett 3-6 Costruzione: +carico gradu
 Aumento carico: quando completi tutte le serie al range alto con RIR corretto → +2,5-5%
 
 STILE DI RISPOSTA:
-- Max 5-6 righe, breve come WhatsApp
+- Max 5-6 righe di testo (escluse tabella macro e marker NUTRI che sono sempre obbligatori)
 - Diretto e aggressivo: sfida Fabrizio, non lo giustifica mai
 - Stanco → "Tutti lo sono. Vai."
 - Ha sgarrato → analizza, correggi, avanti senza sensi di colpa ma senza passarci sopra
 - Ogni risposta finisce con micro-sfida o azione immediata
-- Pasto descritto → calcola macro subito con tabella P/C/G/Kcal + delta vs target
-- Dopo la tabella macro di un pasto aggiungi SEMPRE (obbligatorio) questa riga esatta su una nuova riga: <<NUTRI:TIPO|P|C|G|KCAL>> dove TIPO è uno tra: colazione, spuntino_matt, pranzo, spuntino_pom, cena, spuntino_serale. Esempio: <<NUTRI:pranzo|45|80|18|668>>. Sostituisci i valori con i numeri reali. Non usare testo intorno al marcatore.
+- Pasto descritto → calcola macro subito con tabella P/C/G/Kcal + delta vs target del giorno
+- OBBLIGATORIO — dopo la tabella macro aggiungi SEMPRE su una riga separata il marker: <<NUTRI:TIPO|P|C|G|KCAL>> (TIPO: colazione / spuntino_matt / pranzo / spuntino_pom / cena / spuntino_serale). Esempio: <<NUTRI:colazione|14|3|15|198>>. Solo il marker, nessun testo intorno. MAI ometterlo.
 
 REGOLE HARD:
 1) Dolore lombare acuto, sciatalgia, intorpidimento → "→ SCALA AL MEDICO" — stop immediato
@@ -897,21 +900,33 @@ async function loadSessione() {
   } catch(e) {}
 }
 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
 // NUTRI LOG — estrazione automatica pasti
-function salvaFromMarker(match) {
+async function salvaFromMarker(match) {
   if(!clienteName || trainerName==='demo') return;
   const [, tipo_pasto, p, c, g, k] = match;
   const key = slugify(trainerName)+'_'+slugify(clienteName);
   const oggi = new Date().toISOString().split('T')[0];
   const logKey = tipo_pasto+'_'+Date.now();
-  fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+oggi+'/'+logKey+'.json', {
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      tipo_pasto, proteine:Math.round(+p), carbo:Math.round(+c), grassi:Math.round(+g), kcal:Math.round(+k),
-      ts:tsISO(), trainer:trainerName, cliente:clienteName
-    })
-  }).catch(()=>{});
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+oggi+'/'+logKey+'.json', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        tipo_pasto, proteine:Math.round(+p), carbo:Math.round(+c), grassi:Math.round(+g), kcal:Math.round(+k),
+        ts:tsISO(), trainer:trainerName, cliente:clienteName
+      })
+    });
+    if(res.ok) showToast('✓ ' + tipo_pasto.replace('_',' ') + ' tracciata');
+  } catch(e) {}
 }
 
 async function estraiNutri(testo) {
