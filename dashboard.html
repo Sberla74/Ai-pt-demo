@@ -25,7 +25,7 @@
 
   #view-prog{padding:20px 24px;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
 
-  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
   .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
   .kpi-val{font-size:26px;font-weight:600;color:var(--accent);line-height:1;}
   .kpi-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:5px;}
@@ -139,8 +139,11 @@
   .empty-state{color:var(--text3);font-size:13px;text-align:center;margin-top:40px;}
 
   @media(max-width:900px){
-    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .kpi-row{grid-template-columns:repeat(3,1fr);}
     .meals-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media(max-width:650px){
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
   }
   @media(max-width:600px){
     .meals-grid{grid-template-columns:1fr 1fr;}
@@ -192,6 +195,11 @@
       <div class="kpi-label">Sessioni settimana</div>
       <div class="kpi-sub">target 6/sett.</div>
     </div>
+    <div class="kpi-card">
+      <div class="kpi-val" id="kpi-sonno" style="color:var(--text);">—</div>
+      <div class="kpi-label">Sonno medio</div>
+      <div class="kpi-sub">ultimi 7 giorni</div>
+    </div>
   </div>
 
   <!-- Peso chart -->
@@ -231,6 +239,18 @@
     <div id="weekly-macros"></div>
   </div>
 
+  <!-- Sonno -->
+  <div class="chart-card">
+    <div class="chart-title">Sonno · ore per notte</div>
+    <div id="sonno-chart-wrap"><canvas id="sonnoChart" height="80"></canvas></div>
+  </div>
+
+  <!-- Progressione pesi -->
+  <div class="chart-card">
+    <div class="chart-title">Progressione pesi · esercizi</div>
+    <div id="exprog-wrap"></div>
+  </div>
+
 </div>
 
 <!-- CONVERSAZIONI VIEW -->
@@ -251,16 +271,16 @@ const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedat
 const CLIENT_KEYS = ['fabrizio_test', 'fabrizio_fabrizio'];
 const ROTATION_START = '2026-05-11';
 const ROTATION = [
-  {label:'Full Body 1', type:'fb',   p:170, c:210, g:65, k:2050},
+  {label:'FB-A', type:'fb',   p:170, c:210, g:65, k:2050},
   {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
   {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
-  {label:'Full Body 2', type:'fb',   p:170, c:210, g:65, k:2050},
+  {label:'FB-B', type:'fb',   p:170, c:210, g:65, k:2050},
   {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
   {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
-  {label:'Full Body 3', type:'fb',   p:170, c:210, g:65, k:2050},
+  {label:'FB-C', type:'fb',   p:170, c:210, g:65, k:2050},
   {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
   {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
-  {label:'Full Body 4', type:'fb',   p:170, c:210, g:65, k:2050},
+  {label:'FB-D', type:'fb',   p:170, c:210, g:65, k:2050},
   {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
   {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
 ];
@@ -304,9 +324,12 @@ let activeKey = null;
 let pesoChart = null;
 let mealCharts = {};
 let weeklyChart = null;
+let sonnoChart = null;
+let exProgChart = null;
 let selectedDate = todayStr();
 let nutriAll = {};
 let logAll = [];
+let sonnoAll = [];
 
 function todayStr() {
   const d = new Date();
@@ -362,16 +385,19 @@ async function reload() {
 // ─── PROGRESSI ────────────────────────────────────────────
 
 async function loadProgressi() {
-  const [peso, nutri, log] = await Promise.all([fetchPeso(), fetchNutri(), fetchLog()]);
+  const [peso, nutri, log, sonno] = await Promise.all([fetchPeso(), fetchNutri(), fetchLog(), fetchSonno()]);
   nutriAll = nutri;
   logAll = log;
-  renderKPI(peso, log);
+  sonnoAll = sonno;
+  renderKPI(peso, log, sonno);
   renderPesoChart(peso);
   updateDateNav();
   renderMealsGiorno();
   renderWorkoutGiorno();
   renderTrainingWeek(log);
   renderWeeklyMacros();
+  renderSonnoChart(sonno);
+  renderExProgChart(log);
 }
 
 async function fetchFromKeys(path) {
@@ -396,6 +422,9 @@ async function fetchPeso() {
   } catch(e){return[];}
 }
 
+const NEW_MEAL_KEYS = ['colazione','spuntino_matt','pranzo','spuntino_pm','cena','spuntino_sera'];
+const MEAL_KEY_MAP = {spuntino_pm:'spuntino_pom', spuntino_sera:'spuntino_serale'};
+
 async function fetchNutri() {
   try {
     const results = await fetchFromKeys('coach_ai_nutri');
@@ -404,11 +433,41 @@ async function fetchNutri() {
       if(!d) return;
       Object.entries(d).forEach(([date, meals]) => {
         if(!merged[date]) merged[date] = {};
-        Object.assign(merged[date], meals);
+        Object.entries(meals).forEach(([k, m]) => {
+          if(!m) return;
+          if(NEW_MEAL_KEYS.includes(k) && m.p != null) {
+            // nuovo formato: chiave = nome pasto, valori p/c/g
+            const mappedKey = MEAL_KEY_MAP[k] || k;
+            merged[date][mappedKey] = {
+              tipo_pasto: mappedKey,
+              proteine: m.p || 0,
+              carbo: m.c || 0,
+              grassi: m.g || 0,
+              kcal: m.kcal || 0,
+              desc: m.desc || ''
+            };
+          } else {
+            merged[date][k] = m;
+          }
+        });
       });
     });
     return merged;
   } catch(e){return{};}
+}
+
+async function fetchSonno() {
+  try {
+    const results = await fetchFromKeys('coach_ai_sonno');
+    const byDate = {};
+    results.forEach(d => {
+      if(!d) return;
+      Object.values(d).forEach(e => {
+        if(e && e.data && e.ore != null) byDate[e.data] = e;
+      });
+    });
+    return Object.values(byDate).sort((a,b)=>new Date(a.data)-new Date(b.data));
+  } catch(e){return[];}
 }
 
 async function fetchLog() {
@@ -427,7 +486,7 @@ function getMonday(d) {
 }
 
 // KPI
-function renderKPI(peso, log) {
+function renderKPI(peso, log, sonno) {
   const last = peso[peso.length-1];
   if(last&&last.peso!=null&&!isNaN(last.peso)){
     const perso=+(90-last.peso).toFixed(1);
@@ -446,6 +505,17 @@ function renderKPI(peso, log) {
   const se=document.getElementById('kpi-sessioni');
   se.textContent=sess+'/6';
   se.style.color=sess>=4?'var(--accent)':'var(--text)';
+  // sonno medio ultimi 7 giorni
+  const sevenDaysAgo=new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7); sevenDaysAgo.setHours(0,0,0,0);
+  const recentSonno=(sonno||[]).filter(s=>new Date(s.data+'T12:00:00')>=sevenDaysAgo);
+  const se2=document.getElementById('kpi-sonno');
+  if(se2){
+    if(recentSonno.length>0){
+      const avg=(recentSonno.reduce((s,e)=>s+(parseFloat(e.ore)||0),0)/recentSonno.length).toFixed(1);
+      se2.textContent=avg+'h';
+      se2.style.color=parseFloat(avg)>=7?'var(--accent)':parseFloat(avg)>=6?'var(--text)':'var(--red)';
+    } else { se2.textContent='—'; }
+  }
 }
 
 // PESO CHART
@@ -607,9 +677,9 @@ function mapPasto(key) {
   if(key.includes('colazione')) return 'colazione';
   if(key.includes('spuntino_matt')||key.includes('spuntino matt')||(key.includes('spuntino')&&(key.includes('matt')||key.includes('morn')))) return 'spuntino_matt';
   if(key==='pranzo'||key.includes('pranzo')) return 'pranzo';
-  if(key.includes('spuntino_pom')||key.includes('spuntino pom')||(key.includes('spuntino')&&key.includes('pom'))) return 'spuntino_pom';
+  if(key.includes('spuntino_pom')||key.includes('spuntino pom')||key==='spuntino_pm'||(key.includes('spuntino')&&(key.includes('pom')||key.includes('pm')))) return 'spuntino_pom';
   if(key==='cena'||key.includes('cena')) return 'cena';
-  if(key.includes('spuntino_serale')||key.includes('serale')) return 'spuntino_serale';
+  if(key.includes('spuntino_serale')||key.includes('serale')||key==='spuntino_sera'||key.includes('spuntino_sera')) return 'spuntino_serale';
   if(key.includes('spuntino')) return 'spuntino_pom';
   return 'altro';
 }
@@ -628,7 +698,8 @@ function renderWorkoutGiorno() {
   }
   let html='';
   entries.forEach(entry=>{
-    html+=`<div class="wo-header"><span class="wo-tipo">${entry.sessione||entry.tipo||'Allenamento'}</span><span class="wo-ora">${entry.ora||''}</span></div><div class="wo-exercises">`;
+    const durStr=entry.durata_min>0?` · ${entry.durata_min} min`:'';
+    html+=`<div class="wo-header"><span class="wo-tipo">${entry.sessione||entry.tipo||'Allenamento'}${durStr}</span><span class="wo-ora">${entry.ora||''}</span></div><div class="wo-exercises">`;
     entry.esercizi.forEach(ex=>{
       const d=[ex.serie?ex.serie+'×':null,ex.rip||ex.reps?((ex.rip||ex.reps)+' rip'):null,ex.carico_kg>0?ex.carico_kg+' kg':ex.kg?ex.kg+' kg':null].filter(Boolean).join(' ');
       html+=`<div class="wo-ex"><span class="wo-ex-nome">${ex.nome||'Esercizio'}</span><span class="wo-ex-detail">${d}</span></div>`;
@@ -797,6 +868,110 @@ function renderWeeklyMacros() {
       }
     }
   });
+}
+
+// SONNO CHART
+function renderSonnoChart(sonno) {
+  const wrap = document.getElementById('sonno-chart-wrap');
+  if(!wrap) return;
+  if(sonnoChart){try{sonnoChart.destroy();}catch(e){} sonnoChart=null;}
+  if(!sonno||sonno.length===0){
+    wrap.innerHTML='<div class="chart-empty">Nessun dato sonno · Registra le ore ogni mattina nell\'app</div>';
+    return;
+  }
+  if(!wrap.querySelector('canvas')) wrap.innerHTML='<canvas id="sonnoChart" height="80"></canvas>';
+  const ctx = document.getElementById('sonnoChart');
+  const recent = sonno.slice(-30);
+  const labels = recent.map(s=>{const d=new Date(s.data+'T12:00:00');return d.getDate()+'/'+(d.getMonth()+1);});
+  const vals = recent.map(s=>parseFloat(s.ore)||0);
+  const avg = vals.length>0 ? +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : 0;
+  const colors = vals.map(v=>v>=7?'rgba(200,245,100,0.8)':v>=6?'rgba(139,139,139,0.8)':'rgba(255,107,107,0.8)');
+  sonnoChart = new Chart(ctx, {
+    type:'bar',
+    data:{labels, datasets:[
+      {label:'Ore sonno', data:vals, backgroundColor:colors, borderRadius:4, borderSkipped:false},
+      {label:'Media '+avg+'h', data:Array(vals.length).fill(avg), type:'line',
+        borderColor:'rgba(200,245,100,0.4)', borderWidth:1.5, borderDash:[5,5], pointRadius:0, fill:false}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      plugins:{
+        legend:{display:true, position:'bottom', labels:{font:{family:'DM Mono',size:11},color:'#8a8780',boxWidth:16,padding:16}},
+        tooltip:{backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f0ede8',bodyColor:'#8a8780',padding:10,
+          callbacks:{label:c=>c.dataset.type==='line'?null:' '+c.parsed.y+'h'}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350'}},
+        y:{min:0,max:10,grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350',callback:v=>v+'h',stepSize:1}}
+      }
+    }
+  });
+}
+
+// PROGRESSIONE PESI
+function renderExProgChart(log) {
+  const wrap = document.getElementById('exprog-wrap');
+  if(!wrap) return;
+  const exMap = {};
+  log.forEach(entry=>{
+    if(!entry.esercizi||!entry.data) return;
+    entry.esercizi.forEach(ex=>{
+      if(!ex.nome||!(ex.carico_kg>0)) return;
+      if(!exMap[ex.nome]) exMap[ex.nome]=[];
+      exMap[ex.nome].push({data:entry.data, kg:ex.carico_kg});
+    });
+  });
+  const names = Object.keys(exMap).sort();
+  if(names.length===0){
+    if(exProgChart){try{exProgChart.destroy();}catch(e){} exProgChart=null;}
+    wrap.innerHTML='<div class="chart-empty">Nessun dato pesi · Allena e registra sulla chat</div>';
+    return;
+  }
+  const currentSel = wrap.dataset.selected||names[0];
+  const selName = names.includes(currentSel)?currentSel:names[0];
+  const entries = exMap[selName].sort((a,b)=>new Date(a.data)-new Date(b.data));
+  const labels = entries.map(e=>{const d=new Date(e.data+'T12:00:00');return d.getDate()+'/'+(d.getMonth()+1);});
+  const vals = entries.map(e=>e.kg);
+  if(exProgChart){try{exProgChart.destroy();}catch(e){} exProgChart=null;}
+  const optionsHtml = names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"${n===selName?' selected':''}>${n}</option>`).join('');
+  wrap.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <select id="ex-selector" onchange="onExSelect(this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);cursor:pointer;width:100%;outline:none;">
+        ${optionsHtml}
+      </select>
+    </div>
+    <canvas id="exProgChart" height="80"></canvas>
+  `;
+  wrap.dataset.selected = selName;
+  const ctx = document.getElementById('exProgChart');
+  const maxVal = vals.length>0?Math.max(...vals):50;
+  exProgChart = new Chart(ctx, {
+    type:'line',
+    data:{labels, datasets:[{
+      label:selName, data:vals,
+      borderColor:'#c8f564', backgroundColor:'rgba(200,245,100,0.07)',
+      borderWidth:2, pointBackgroundColor:'#c8f564', pointBorderColor:'#0f0f0f',
+      pointBorderWidth:1.5, pointRadius:5, tension:0.3, fill:true
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f0ede8',bodyColor:'#8a8780',padding:10,
+          callbacks:{label:c=>' '+c.parsed.y+' kg'}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350'}},
+        y:{min:0,suggestedMax:maxVal+5,grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350',callback:v=>v+' kg'}}
+      }
+    }
+  });
+}
+
+function onExSelect(name) {
+  const wrap = document.getElementById('exprog-wrap');
+  if(wrap) wrap.dataset.selected = name;
+  renderExProgChart(logAll);
 }
 
 // ─── CONVERSAZIONI ─────────────────────────────────────────
