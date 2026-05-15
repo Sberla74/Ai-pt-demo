@@ -693,11 +693,13 @@ async function loadSessione() {
       history = data.messaggi;
       document.getElementById('msgs').innerHTML = '';
       history.forEach(m => addMsg(m.content, m.role==='user'?'user':'bot'));
-      const nome = data.schedaNome || data.cliente;
-      document.getElementById('scheda-name').textContent = nome;
-      document.getElementById('scheda-badge').textContent = 'Attiva';
-      document.getElementById('scheda-badge').className = 'badge badge-custom';
-      document.getElementById('scheda-meta').innerHTML = `<span class="tag">Sessione ripristinata</span><span class="tag">${Math.round(ore)}h fa</span>`;
+      if(customSystemSource) {
+        const nome = data.schedaNome || data.cliente;
+        document.getElementById('scheda-name').textContent = nome;
+        document.getElementById('scheda-badge').textContent = 'Attiva';
+        document.getElementById('scheda-badge').className = 'badge badge-custom';
+        document.getElementById('scheda-meta').innerHTML = `<span class="tag">Sessione ripristinata</span><span class="tag">${Math.round(ore)}h fa</span>`;
+      }
       addMsg('Bentornato! Ho ripristinato la tua sessione precedente. Continua pure da dove avevamo lasciato.','bot');
     }
   } catch(e) {}
