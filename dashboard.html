@@ -86,6 +86,20 @@
   .day-dot.missed{background:rgba(255,107,107,0.06);border-color:rgba(255,107,107,0.15);color:var(--text3);}
   .day-type{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;line-height:1.3;}
 
+  /* WEEKLY MACROS */
+  .week-macro-table{width:100%;border-collapse:collapse;}
+  .week-macro-table th{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-align:right;padding:6px 8px;border-bottom:1px solid var(--border2);}
+  .week-macro-table th:first-child{text-align:left;}
+  .week-macro-table td{font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:8px 8px;border-bottom:1px solid rgba(255,255,255,0.03);}
+  .week-macro-table td:first-child{text-align:left;}
+  .week-macro-table tr.today-row td:first-child{color:var(--accent);}
+  .week-macro-table tr.total-row td{border-top:1px solid var(--border2);padding-top:10px;font-weight:600;color:var(--text);}
+  .wm-tgt{color:var(--text3);font-size:9px;}
+  .wm-ok{color:var(--accent);}
+  .wm-over{color:var(--red);}
+  .wm-low{color:var(--text2);}
+  .wm-none{color:var(--text3);}
+
   /* CONVERSAZIONI */
   #view-conv{height:calc(100vh - 57px);display:none;}
   .layout{display:flex;height:100%;}
@@ -205,6 +219,12 @@
   <div class="chart-card">
     <div class="chart-title">Settimana corrente · allenamenti</div>
     <div id="training-week"></div>
+  </div>
+
+  <!-- Recap macro settimanale -->
+  <div class="chart-card">
+    <div class="chart-title">Settimana corrente · macro totali</div>
+    <div id="weekly-macros"></div>
   </div>
 
 </div>
@@ -346,6 +366,7 @@ async function loadProgressi() {
   renderMealsGiorno();
   renderWorkoutGiorno();
   renderTrainingWeek(log);
+  renderWeeklyMacros();
 }
 
 async function fetchFromKeys(path) {
@@ -654,6 +675,93 @@ function renderTrainingWeek(log) {
   }
   html+='</div>';
   el.innerHTML=html;
+}
+
+// WEEKLY MACROS RECAP
+function renderWeeklyMacros() {
+  const el = document.getElementById('weekly-macros');
+  if(!el) return;
+  const monday = getMonday(new Date());
+  const today = todayStr();
+  const dayNames = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+
+  let weekP=0, weekC=0, weekG=0, weekK=0;
+  let weekTP=0, weekTC=0, weekTG=0, weekTK=0;
+  let hasAnyData = false;
+  let rows = '';
+
+  for(let i=0;i<7;i++){
+    const d = new Date(monday);
+    d.setDate(d.getDate()+i);
+    const ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const rot = getRotationDay(ds);
+    const isToday = ds === today;
+    const isFuture = ds > today;
+    const typeLabel = rot.label.replace('Full Body','FB').replace('Riposo attivo','Riposo').replace('HIIT+Addome','HIIT');
+
+    const dayMeals = nutriAll[ds] || {};
+    let totP=0, totC=0, totG=0, totK=0, hasData=false;
+    Object.values(dayMeals).forEach(m=>{
+      totP+=m.proteine||0; totC+=m.carbo||0; totG+=m.grassi||0; totK+=m.kcal||0;
+      hasData=true;
+    });
+
+    if(hasData){ weekP+=totP; weekC+=totC; weekG+=totG; weekK+=totK; hasAnyData=true; }
+    weekTP+=rot.p; weekTC+=rot.c; weekTG+=rot.g; weekTK+=rot.k;
+
+    function cell(val, tgt) {
+      if(isFuture||!hasData) return '<td class="wm-none">—</td>';
+      const r = Math.round(val);
+      const pct = tgt>0 ? val/tgt : 0;
+      const cls = pct>1.1?'wm-over':pct>=0.75?'wm-ok':'wm-low';
+      return `<td class="${cls}">${r}<span class="wm-tgt">/${tgt}</span></td>`;
+    }
+
+    rows += `<tr class="${isToday?'today-row':''}">
+      <td>
+        <span style="font-weight:${isToday?'600':'400'}">${dayNames[i]}</span>
+        <span style="font-size:9px;color:var(--text3);margin-left:5px;">${typeLabel}</span>
+      </td>
+      ${cell(totP,rot.p)}
+      ${cell(totC,rot.c)}
+      ${cell(totG,rot.g)}
+      ${cell(totK,rot.k)}
+    </tr>`;
+  }
+
+  if(!hasAnyData){
+    el.innerHTML='<div class="chart-empty">Nessun dato nutrizionale questa settimana</div>';
+    return;
+  }
+
+  function totalCell(val, tgt) {
+    const r = Math.round(val);
+    const pct = tgt>0 ? val/tgt : 0;
+    const cls = pct>1.1?'wm-over':pct>=0.75?'wm-ok':'wm-low';
+    return `<td class="${cls}">${r}<span class="wm-tgt">/${tgt}</span></td>`;
+  }
+
+  el.innerHTML = `<div style="overflow-x:auto;">
+    <table class="week-macro-table">
+      <thead><tr>
+        <th>Giorno</th>
+        <th>Prot (g)</th>
+        <th>Carbo (g)</th>
+        <th>Grassi (g)</th>
+        <th>Kcal</th>
+      </tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="total-row">
+          <td>Totale sett.</td>
+          ${totalCell(weekP,weekTP)}
+          ${totalCell(weekC,weekTC)}
+          ${totalCell(weekG,weekTG)}
+          ${totalCell(weekK,weekTK)}
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
 }
 
 // ─── CONVERSAZIONI ─────────────────────────────────────────
