@@ -181,7 +181,7 @@
     </div>
     <div class="foto-section">
       <span class="foto-label">La tua sfida personale</span>
-      <span class="foto-disclaimer">Solo corpo. Niente bugie, niente filtri. Foto private, non salvate.</span>
+      <span class="foto-disclaimer">Solo corpo. Niente bugie, niente filtri. Salvate solo su questo dispositivo.</span>
       <div class="foto-row">
         <div class="foto-slot">
           <div class="foto-thumb" onclick="document.getElementById('foto-prima-input').click()" id="thumb-prima">
@@ -521,16 +521,32 @@ function loadFoto(input, tipo) {
     const url=e.target.result;
     const base64=url.split(',')[1];
     const mtype=file.type||'image/jpeg';
+    const fotoObj={url,base64,mtype};
     if(tipo==='prima'){
-      fotoPrima={url,base64,mtype};
+      fotoPrima=fotoObj;
       document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`;
     } else {
-      fotoDopo={url,base64,mtype};
+      fotoDopo=fotoObj;
       document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`;
     }
     document.getElementById('confronta-btn').style.display=(fotoPrima||fotoDopo)?'block':'none';
+    try { localStorage.setItem('coach_foto_'+tipo, JSON.stringify(fotoObj)); } catch(e) {}
   };
   reader.readAsDataURL(file);
+}
+
+function loadFotoFromStorage() {
+  ['prima','dopo'].forEach(tipo => {
+    try {
+      const saved = localStorage.getItem('coach_foto_'+tipo);
+      if(!saved) return;
+      const f = JSON.parse(saved);
+      if(!f||!f.url) return;
+      if(tipo==='prima'){ fotoPrima=f; document.getElementById('thumb-prima').innerHTML=`<img src="${f.url}">`; }
+      else { fotoDopo=f; document.getElementById('thumb-dopo').innerHTML=`<img src="${f.url}">`; }
+      document.getElementById('confronta-btn').style.display='block';
+    } catch(e) {}
+  });
 }
 
 async function confrontaFoto() {
@@ -780,6 +796,27 @@ function aggiornaTotali() {
   document.getElementById('tot-kcal').textContent=kcal;
 }
 
+async function caricaNutri() {
+  if(trainerName==='demo'||!clienteName) return;
+  const today=new Date().toISOString().split('T')[0];
+  const key=slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res=await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+today+'.json');
+    const data=await res.json();
+    if(!data) return;
+    MEALS.forEach(meal=>{
+      const stored=data[meal];
+      if(!stored||!stored.ok) return;
+      macroData[meal]={desc:stored.desc||'',p:stored.p||0,c:stored.c||0,g:stored.g||0,kcal:stored.kcal||0,ok:true};
+      const input=document.getElementById('input-'+meal);
+      if(input&&stored.desc) input.value=stored.desc;
+      const macro=document.getElementById('macro-'+meal);
+      if(macro) macro.textContent=`P:${stored.p}g C:${stored.c}g G:${stored.g}g (${stored.kcal}kcal)`;
+    });
+    aggiornaTotali();
+  } catch(e) {}
+}
+
 function salvaNutri() {
   if(trainerName==='demo'||!clienteName) return;
   const today=new Date().toISOString().split('T')[0];
@@ -828,6 +865,8 @@ function initDiarioBadge() {
 initSession();
 initDiarioBadge();
 loadSessione();
+loadFotoFromStorage();
+caricaNutri();
 </script>
 </body>
 </html>
