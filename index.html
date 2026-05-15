@@ -1119,16 +1119,24 @@ async function getSonnoLog() {
 }
 
 async function logSonno() {
-  const ore = parseFloat(document.getElementById('sonno-ore-input')?.value||'');
+  const oreInput = document.getElementById('sonno-ore-input');
+  const ore = parseFloat(oreInput?.value||'');
   const qualita = document.getElementById('sonno-qualita-input')?.value||'';
-  if(!ore||ore<2||ore>14) { document.getElementById('sonno-ore-input')?.focus(); return; }
+  if(!ore||ore<2||ore>14) { oreInput?.focus(); return; }
   const key = slugify(trainerName)+'_'+slugify(clienteName);
   const oggi = new Date().toISOString().split('T')[0];
-  await fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+oggi+'.json',{
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ore, qualita, data:oggi, ts:tsISO()})
-  }).catch(()=>{});
-  renderSonnoSection();
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+oggi+'.json',{
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ore, qualita, data:oggi, ts:tsISO()})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const area = document.getElementById('sonno-input-area');
+    if(area) area.style.display = 'none';
+    renderSonnoSection();
+  } catch(e) {
+    if(oreInput) { oreInput.style.borderColor='var(--red)'; setTimeout(()=>{oreInput.style.borderColor='';},2000); }
+  }
 }
 
 function toggleSonnoInput() {
@@ -1211,12 +1219,20 @@ async function logPeso() {
   if(!val || val < 40 || val > 200) { input.focus(); return; }
   const key = slugify(trainerName)+'_'+slugify(clienteName);
   const oggi = new Date().toISOString().split('T')[0];
-  await fetch(FB_URL+'/coach_ai_peso/'+key+'/'+oggi+'.json', {
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({peso:val, data:oggi, ts:tsISO()})
-  }).catch(()=>{});
-  input.value = '';
-  renderPesoSection();
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_peso/'+key+'/'+oggi+'.json', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({peso:val, data:oggi, ts:tsISO()})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    input.value = '';
+    const area = document.getElementById('peso-input-area');
+    if(area) area.style.display = 'none';
+    renderPesoSection();
+  } catch(e) {
+    input.style.borderColor = 'var(--red)';
+    setTimeout(()=>{ input.style.borderColor = ''; }, 2000);
+  }
 }
 
 function togglePesoInput() {
