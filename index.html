@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Coach AI</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,9 +38,9 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
 .tab-btn.active .tab-indicator{background:var(--accent);}
 
 /* TAB CONTENT */
-.tab-content{position:fixed;top:var(--hh);bottom:var(--tbh);left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;flex-direction:column;}
+.tab-content{position:fixed;top:var(--hh);bottom:var(--tbh);left:0;right:0;overflow:hidden;display:none;flex-direction:column;}
 .tab-content.active{display:flex;}
-.tab-scroll{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+.tab-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
 
 /* CARD */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
@@ -48,9 +48,9 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
 .card-title{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;}
 .card-body{padding:13px 15px;}
 .label-sm{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;display:block;margin-bottom:3px;}
-.num-input{width:100%;padding:8px 6px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:15px;font-family:'DM Mono',monospace;outline:none;-webkit-appearance:none;text-align:center;}
+.num-input{width:100%;padding:8px 6px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'DM Mono',monospace;outline:none;-webkit-appearance:none;text-align:center;touch-action:manipulation;}
 .num-input:focus{border-color:rgba(200,245,100,0.4);}
-.text-input{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
+.text-input{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;touch-action:manipulation;}
 .text-input:focus{border-color:rgba(200,245,100,0.4);}
 .text-input::placeholder{color:var(--text3);}
 .save-btn{padding:9px 20px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
@@ -98,15 +98,12 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
 .saved-badge{font-size:10px;color:var(--accent);font-family:'DM Mono',monospace;}
 .meal-desc-saved{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:5px;font-style:italic;}
 
-/* ═══ FOTO TAB ═══ */
-.foto-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-.foto-slot{display:flex;flex-direction:column;gap:6px;}
-.foto-slot-label{font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;text-align:center;text-transform:uppercase;letter-spacing:0.05em;}
-.foto-thumb{width:100%;aspect-ratio:3/4;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
-.foto-thumb img{width:100%;height:100%;object-fit:cover;}
-.foto-placeholder{font-size:11px;color:var(--text3);text-align:center;padding:8px;font-family:'DM Mono',monospace;line-height:1.5;}
-.confronta-btn{width:100%;padding:12px;border-radius:var(--radius-sm);border:1px solid rgba(200,245,100,0.3);background:var(--accent-dim2);color:var(--accent);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;}
-.confronta-btn:disabled{opacity:0.3;cursor:not-allowed;}
+/* ═══ FOTO BAR (in Chat) ═══ */
+.foto-bar{display:flex;gap:6px;padding:5px 12px;flex-shrink:0;align-items:center;}
+.fbar-btn{flex:1;padding:7px 6px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;text-align:center;touch-action:manipulation;white-space:nowrap;}
+.fbar-btn.loaded{border-color:rgba(200,245,100,0.25);color:var(--accent);}
+.fbar-btn.ai{background:var(--accent-dim2);color:var(--accent);border-color:rgba(200,245,100,0.2);flex:1.5;}
+.fbar-btn:disabled{opacity:0.3;cursor:not-allowed;}
 
 /* ═══ PESO TAB ═══ */
 .peso-big{font-size:44px;font-weight:600;line-height:1;color:var(--text);}
@@ -128,7 +125,7 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
 .quality-badge.buono{background:rgba(100,180,255,0.1);color:var(--blue);}
 .quality-badge.scarso{background:var(--red-dim);color:var(--red);}
 .sonno-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 10px;}
-.sonno-select{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
+.sonno-select{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;touch-action:manipulation;}
 .sonno-select:focus{border-color:rgba(200,245,100,0.4);}
 .week-sonno-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
 .week-sonno-row:last-child{border-bottom:none;}
@@ -169,6 +166,13 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
     <button class="sug" onclick="useSug(this)">Quanto manca all'obiettivo?</button>
     <button class="sug" onclick="useSug(this)">Cosa mangio adesso?</button>
   </div>
+  <div class="foto-bar">
+    <button class="fbar-btn" id="fbar-prima" onclick="document.getElementById('foto-prima-input').click()">Best —</button>
+    <button class="fbar-btn" id="fbar-dopo" onclick="document.getElementById('foto-dopo-input').click()">Oggi —</button>
+    <button class="fbar-btn ai" id="confronta-btn" onclick="confrontaFoto()" disabled>Confronta AI →</button>
+    <input type="file" id="foto-prima-input" accept="image/*" style="display:none" onchange="loadFoto(this,'prima')">
+    <input type="file" id="foto-dopo-input" accept="image/*" style="display:none" onchange="loadFoto(this,'dopo')">
+  </div>
   <div class="input-row">
     <textarea id="txt" placeholder="Scrivi al coach..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
     <button class="send-btn" id="send-btn" onclick="send()">Invia</button>
@@ -179,35 +183,6 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
 <div class="tab-content" id="tab-pasti">
   <div class="tab-scroll" id="pasti-container">
     <div style="text-align:center;padding:24px;color:var(--text3);font-family:'DM Mono',monospace;font-size:12px;">Caricamento...</div>
-  </div>
-</div>
-
-<!-- FOTO -->
-<div class="tab-content" id="tab-foto">
-  <div class="tab-scroll">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Confronto foto</span></div>
-      <div class="card-body">
-        <div class="foto-grid">
-          <div class="foto-slot">
-            <div class="foto-thumb" id="thumb-prima" onclick="document.getElementById('foto-prima-input').click()">
-              <div class="foto-placeholder">Foto migliore<br>(standard)</div>
-            </div>
-            <div class="foto-slot-label">Best</div>
-          </div>
-          <div class="foto-slot">
-            <div class="foto-thumb" id="thumb-dopo" onclick="document.getElementById('foto-dopo-input').click()">
-              <div class="foto-placeholder">Foto oggi<br>(attuale)</div>
-            </div>
-            <div class="foto-slot-label">Oggi</div>
-          </div>
-        </div>
-        <input type="file" id="foto-prima-input" accept="image/*" style="display:none" onchange="loadFoto(this,'prima')">
-        <input type="file" id="foto-dopo-input" accept="image/*" style="display:none" onchange="loadFoto(this,'dopo')">
-        <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()" disabled>Analisi AI confronto</button>
-        <p style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:8px;text-align:center;">Le foto rimangono sul dispositivo</p>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -231,9 +206,6 @@ html,body{overflow:hidden;width:100%;height:100%;background:var(--bg);color:var(
   </button>
   <button class="tab-btn" id="nav-pasti" onclick="switchTab('pasti')">
     <div class="tab-indicator"></div>Pasti
-  </button>
-  <button class="tab-btn" id="nav-foto" onclick="switchTab('foto')">
-    <div class="tab-indicator"></div>Foto
   </button>
   <button class="tab-btn" id="nav-peso" onclick="switchTab('peso')">
     <div class="tab-indicator"></div>Peso
@@ -612,34 +584,39 @@ async function salvaPasto(mk){
   }catch(e){showToast('Errore salvataggio');}
 }
 
-// ═══ FOTO TAB ═══
+// ═══ FOTO (in Chat) ═══
 function loadFoto(input,tipo){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=function(e){
     const url=e.target.result;const base64=url.split(',')[1];const mtype=file.type||'image/jpeg';
-    if(tipo==='prima'){fotoPrima={url,base64,mtype};document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`;}
-    else{fotoDopo={url,base64,mtype};document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`;}
+    if(tipo==='prima')fotoPrima={url,base64,mtype};
+    else fotoDopo={url,base64,mtype};
     saveFotoToStorage(tipo,base64,mtype);
-    document.getElementById('confronta-btn').disabled=false;
+    updateFotoBar();
   };reader.readAsDataURL(file);
 }
 function saveFotoToStorage(tipo,base64,mtype){try{localStorage.setItem('coach_foto_'+tipo,JSON.stringify({base64,mtype}));}catch(e){}}
+function updateFotoBar(){
+  const pb=document.getElementById('fbar-prima');const db=document.getElementById('fbar-dopo');const ab=document.getElementById('confronta-btn');
+  if(pb){pb.textContent=fotoPrima?'Best ✓':'Best —';pb.classList.toggle('loaded',!!fotoPrima);}
+  if(db){db.textContent=fotoDopo?'Oggi ✓':'Oggi —';db.classList.toggle('loaded',!!fotoDopo);}
+  if(ab)ab.disabled=!fotoPrima&&!fotoDopo;
+}
 function restoreFotos(){
   ['prima','dopo'].forEach(tipo=>{
     try{
       const saved=localStorage.getItem('coach_foto_'+tipo);if(!saved)return;
       const{base64,mtype}=JSON.parse(saved);const url=`data:${mtype};base64,${base64}`;
-      if(tipo==='prima'){fotoPrima={url,base64,mtype};document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`;}
-      else{fotoDopo={url,base64,mtype};document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`;}
-      document.getElementById('confronta-btn').disabled=false;
+      if(tipo==='prima')fotoPrima={url,base64,mtype};
+      else fotoDopo={url,base64,mtype};
     }catch(e){}
   });
+  updateFotoBar();
 }
 
 async function confrontaFoto(){
   if(busy)return;
-  switchTab('chat');
   const btn=document.getElementById('confronta-btn');btn.disabled=true;
   let content=[],msgText='';
   if(fotoPrima&&fotoDopo){
@@ -724,13 +701,17 @@ async function logPeso(){
 // ═══ SONNO TAB ═══
 async function renderSonnoTab(){
   const container=document.getElementById('sonno-container');if(!container)return;
+  const existingDateSel=document.getElementById('sonno-data-sel');
+  const targetDate=existingDateSel?existingDateSel.value:todayStr();
   const key=slugify(trainerName)+'_'+slugify(clienteName);
   let allSonno={};
   try{
     const res=await fetch(FB_URL+'/coach_ai_sonno/'+key+'.json');
     const data=await res.json();if(data)allSonno=data;
   }catch(e){}
-  const todaySonno=allSonno[todayStr()]||null;
+  const targetSonno=allSonno[targetDate]||null;
+  const[ty,tm,td]=targetDate.split('-');
+  const dateLabel=td+'/'+tm+'/'+ty;
   const monday=getMonday(new Date());
   const dayNames=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
   let totalOre=0,countNotti=0;
@@ -746,21 +727,23 @@ async function renderSonnoTab(){
   function qBadge(q){if(!q)return'';const cls=q==='ottimo'?'ottimo':q==='buono'?'buono':'scarso';return`<span class="quality-badge ${cls}">${q}</span>`;}
 
   let html=`<div class="card">
-    <div class="card-header"><span class="card-title">Sonno di stanotte</span></div>
-    <div class="card-body">`;
-  if(todaySonno){html+=`<div class="sonno-big">${todaySonno.ore}<span class="sonno-unit"> h</span>${qBadge(todaySonno.qualita)}</div><div class="sonno-sub">Registrato oggi</div>`;}
-  else{html+='<div class="no-data">Non ancora registrato</div>';}
-  html+=`<div class="sonno-inputs">
-    <div><span class="label-sm">Ore dormite</span><input type="number" class="num-input" id="sonno-ore-input" placeholder="es. 7.5" step="0.5" min="2" max="14" value="${todaySonno?.ore||''}" onkeydown="if(event.key==='Enter')logSonno()"></div>
-    <div><span class="label-sm">Qualità</span><select class="sonno-select" id="sonno-qualita-input">
-      <option value="">—</option>
-      <option value="ottimo"${todaySonno?.qualita==='ottimo'?' selected':''}>ottimo</option>
-      <option value="buono"${todaySonno?.qualita==='buono'?' selected':''}>buono</option>
-      <option value="scarso"${todaySonno?.qualita==='scarso'?' selected':''}>scarso</option>
-    </select></div>
-  </div>
-  <button class="save-btn" onclick="logSonno()">Salva</button>
-  </div></div>`;
+    <div class="card-header"><span class="card-title">Registra sonno</span></div>
+    <div class="card-body">
+    <div style="margin-bottom:12px;"><span class="label-sm">Data</span>
+      <input type="date" class="text-input" id="sonno-data-sel" value="${targetDate}" max="${todayStr()}" onchange="renderSonnoTab()" style="font-family:'DM Mono',monospace;">
+    </div>
+    ${targetSonno?`<div class="sonno-big">${targetSonno.ore}<span class="sonno-unit"> h</span>${qBadge(targetSonno.qualita)}</div><div class="sonno-sub">${dateLabel}</div>`:'<div class="no-data">Non ancora registrato</div>'}
+    <div class="sonno-inputs">
+      <div><span class="label-sm">Ore dormite</span><input type="number" class="num-input" id="sonno-ore-input" placeholder="es. 7.5" step="0.5" min="2" max="14" value="${targetSonno?.ore||''}" onkeydown="if(event.key==='Enter')logSonno()"></div>
+      <div><span class="label-sm">Qualità</span><select class="sonno-select" id="sonno-qualita-input">
+        <option value="">—</option>
+        <option value="ottimo"${targetSonno?.qualita==='ottimo'?' selected':''}>ottimo</option>
+        <option value="buono"${targetSonno?.qualita==='buono'?' selected':''}>buono</option>
+        <option value="scarso"${targetSonno?.qualita==='scarso'?' selected':''}>scarso</option>
+      </select></div>
+    </div>
+    <button class="save-btn" onclick="logSonno()">Salva</button>
+    </div></div>`;
 
   html+=`<div class="card">
     <div class="card-header"><span class="card-title">Settimana · riepilogo sonno</span></div>
@@ -778,14 +761,16 @@ async function renderSonnoTab(){
 
 async function logSonno(){
   const oreInput=document.getElementById('sonno-ore-input');
+  const dateSel=document.getElementById('sonno-data-sel');
+  const targetDate=dateSel?dateSel.value:todayStr();
   const ore=parseFloat(oreInput?.value||'');
   const qualita=document.getElementById('sonno-qualita-input')?.value||'';
   if(!ore||ore<2||ore>14){oreInput?.focus();return;}
   const key=slugify(trainerName)+'_'+slugify(clienteName);
   try{
-    const res=await fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+todayStr()+'.json',{
+    const res=await fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+targetDate+'.json',{
       method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ore,qualita,data:todayStr(),ts:tsISO()})
+      body:JSON.stringify({ore,qualita,data:targetDate,ts:tsISO()})
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
     showToast('✓ Sonno salvato');renderSonnoTab();
