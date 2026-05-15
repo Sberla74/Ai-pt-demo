@@ -86,19 +86,23 @@
   .day-dot.missed{background:rgba(255,107,107,0.06);border-color:rgba(255,107,107,0.15);color:var(--text3);}
   .day-type{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;line-height:1.3;}
 
-  /* WEEKLY MACROS */
-  .week-macro-table{width:100%;border-collapse:collapse;}
-  .week-macro-table th{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-align:right;padding:6px 8px;border-bottom:1px solid var(--border2);}
-  .week-macro-table th:first-child{text-align:left;}
-  .week-macro-table td{font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:8px 8px;border-bottom:1px solid rgba(255,255,255,0.03);}
-  .week-macro-table td:first-child{text-align:left;}
-  .week-macro-table tr.today-row td:first-child{color:var(--accent);}
-  .week-macro-table tr.total-row td{border-top:1px solid var(--border2);padding-top:10px;font-weight:600;color:var(--text);}
-  .wm-tgt{color:var(--text3);font-size:9px;}
+  /* WEEKLY MACROS PIE */
+  .wm-layout{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+  .wm-chart-wrap{position:relative;width:160px;height:160px;flex-shrink:0;}
+  .wm-chart-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+  .wm-kcal-val{font-size:18px;font-weight:600;color:var(--text);line-height:1;}
+  .wm-kcal-unit{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
+  .wm-table{border-collapse:collapse;flex:1;min-width:180px;}
+  .wm-table th{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-align:right;padding:5px 8px;border-bottom:1px solid var(--border);}
+  .wm-table th:first-child{text-align:left;}
+  .wm-table td{font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.03);}
+  .wm-table td:first-child{text-align:left;display:flex;align-items:center;gap:6px;}
+  .wm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
   .wm-ok{color:var(--accent);}
   .wm-over{color:var(--red);}
   .wm-low{color:var(--text2);}
-  .wm-none{color:var(--text3);}
+  .wm-neutral{color:var(--text3);}
+  @media(max-width:500px){.wm-layout{flex-direction:column;align-items:flex-start;}}
 
   /* CONVERSAZIONI */
   #view-conv{height:calc(100vh - 57px);display:none;}
@@ -299,6 +303,7 @@ let allData = {};
 let activeKey = null;
 let pesoChart = null;
 let mealCharts = {};
+let weeklyChart = null;
 let selectedDate = todayStr();
 let nutriAll = {};
 let logAll = [];
@@ -677,91 +682,121 @@ function renderTrainingWeek(log) {
   el.innerHTML=html;
 }
 
-// WEEKLY MACROS RECAP
+// WEEKLY MACROS PIE
 function renderWeeklyMacros() {
   const el = document.getElementById('weekly-macros');
   if(!el) return;
   const monday = getMonday(new Date());
   const today = todayStr();
-  const dayNames = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
 
   let weekP=0, weekC=0, weekG=0, weekK=0;
   let weekTP=0, weekTC=0, weekTG=0, weekTK=0;
   let hasAnyData = false;
-  let rows = '';
 
   for(let i=0;i<7;i++){
     const d = new Date(monday);
     d.setDate(d.getDate()+i);
     const ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(ds > today) { const rot=getRotationDay(ds); weekTP+=rot.p;weekTC+=rot.c;weekTG+=rot.g;weekTK+=rot.k; continue; }
     const rot = getRotationDay(ds);
-    const isToday = ds === today;
-    const isFuture = ds > today;
-    const typeLabel = rot.label.replace('Full Body','FB').replace('Riposo attivo','Riposo').replace('HIIT+Addome','HIIT');
-
-    const dayMeals = nutriAll[ds] || {};
-    let totP=0, totC=0, totG=0, totK=0, hasData=false;
-    Object.values(dayMeals).forEach(m=>{
-      totP+=m.proteine||0; totC+=m.carbo||0; totG+=m.grassi||0; totK+=m.kcal||0;
-      hasData=true;
-    });
-
-    if(hasData){ weekP+=totP; weekC+=totC; weekG+=totG; weekK+=totK; hasAnyData=true; }
     weekTP+=rot.p; weekTC+=rot.c; weekTG+=rot.g; weekTK+=rot.k;
-
-    function cell(val, tgt) {
-      if(isFuture||!hasData) return '<td class="wm-none">—</td>';
-      const r = Math.round(val);
-      const pct = tgt>0 ? val/tgt : 0;
-      const cls = pct>1.1?'wm-over':pct>=0.75?'wm-ok':'wm-low';
-      return `<td class="${cls}">${r}<span class="wm-tgt">/${tgt}</span></td>`;
-    }
-
-    rows += `<tr class="${isToday?'today-row':''}">
-      <td>
-        <span style="font-weight:${isToday?'600':'400'}">${dayNames[i]}</span>
-        <span style="font-size:9px;color:var(--text3);margin-left:5px;">${typeLabel}</span>
-      </td>
-      ${cell(totP,rot.p)}
-      ${cell(totC,rot.c)}
-      ${cell(totG,rot.g)}
-      ${cell(totK,rot.k)}
-    </tr>`;
+    const dayMeals = nutriAll[ds] || {};
+    Object.values(dayMeals).forEach(m=>{
+      weekP+=m.proteine||0; weekC+=m.carbo||0; weekG+=m.grassi||0; weekK+=m.kcal||0;
+      hasAnyData=true;
+    });
   }
+
+  if(weeklyChart){ try{weeklyChart.destroy();}catch(e){} weeklyChart=null; }
 
   if(!hasAnyData){
     el.innerHTML='<div class="chart-empty">Nessun dato nutrizionale questa settimana</div>';
     return;
   }
 
-  function totalCell(val, tgt) {
-    const r = Math.round(val);
-    const pct = tgt>0 ? val/tgt : 0;
-    const cls = pct>1.1?'wm-over':pct>=0.75?'wm-ok':'wm-low';
-    return `<td class="${cls}">${r}<span class="wm-tgt">/${tgt}</span></td>`;
+  const rP=Math.round(weekP), rC=Math.round(weekC), rG=Math.round(weekG), rK=Math.round(weekK);
+  const tP=Math.round(weekTP), tC=Math.round(weekTC), tG=Math.round(weekTG), tK=Math.round(weekTK);
+
+  // kcal equivalenti per la torta
+  const kP=rP*4, kC=rC*4, kG=rG*9;
+  const kTotal = kP+kC+kG;
+
+  function deltaHtml(real, tgt) {
+    const d = real - tgt;
+    if(d===0) return `<td class="wm-ok">=</td>`;
+    const cls = d>0?'wm-over':'wm-low';
+    return `<td class="${cls}">${d>0?'+':''}${d}g</td>`;
+  }
+  function deltaKcal(real, tgt) {
+    const d = real - tgt;
+    if(d===0) return `<td class="wm-ok">=</td>`;
+    const cls = d>0?'wm-over':'wm-low';
+    return `<td class="${cls}">${d>0?'+':''}${d}</td>`;
   }
 
-  el.innerHTML = `<div style="overflow-x:auto;">
-    <table class="week-macro-table">
+  el.innerHTML = `<div class="wm-layout">
+    <div class="wm-chart-wrap">
+      <canvas id="weeklyPieChart" width="160" height="160"></canvas>
+      <div class="wm-chart-center">
+        <div class="wm-kcal-val">${rK}</div>
+        <div class="wm-kcal-unit">kcal</div>
+        <div class="wm-kcal-unit" style="margin-top:2px;">/ ${tK}</div>
+      </div>
+    </div>
+    <table class="wm-table">
       <thead><tr>
-        <th>Giorno</th>
-        <th>Prot (g)</th>
-        <th>Carbo (g)</th>
-        <th>Grassi (g)</th>
-        <th>Kcal</th>
+        <th></th><th>Target</th><th>Reale</th><th>Δ</th>
       </tr></thead>
       <tbody>
-        ${rows}
-        <tr class="total-row">
-          <td>Totale sett.</td>
-          ${totalCell(weekP,weekTP)}
-          ${totalCell(weekC,weekTC)}
-          ${totalCell(weekG,weekTG)}
-          ${totalCell(weekK,weekTK)}
+        <tr>
+          <td><span class="wm-dot" style="background:var(--cp);"></span>Proteine</td>
+          <td class="wm-neutral">${tP}g</td><td>${rP}g</td>${deltaHtml(rP,tP)}
+        </tr>
+        <tr>
+          <td><span class="wm-dot" style="background:var(--cc);"></span>Carboidrati</td>
+          <td class="wm-neutral">${tC}g</td><td>${rC}g</td>${deltaHtml(rC,tC)}
+        </tr>
+        <tr>
+          <td><span class="wm-dot" style="background:var(--cg);"></span>Grassi</td>
+          <td class="wm-neutral">${tG}g</td><td>${rG}g</td>${deltaHtml(rG,tG)}
+        </tr>
+        <tr style="border-top:1px solid var(--border2);">
+          <td style="color:var(--text2);">Kcal</td>
+          <td class="wm-neutral">${tK}</td><td>${rK}</td>${deltaKcal(rK,tK)}
         </tr>
       </tbody>
     </table>
   </div>`;
+
+  const ctx = document.getElementById('weeklyPieChart');
+  if(!ctx) return;
+  weeklyChart = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels:['Proteine','Carboidrati','Grassi'],
+      datasets:[{
+        data: kTotal>0 ? [kP,kC,kG] : [1,1,1],
+        backgroundColor:['rgba(200,245,100,0.85)','rgba(100,181,246,0.85)','rgba(255,183,77,0.85)'],
+        borderColor:'#1a1a1a',
+        borderWidth:2,
+        hoverOffset:4
+      }]
+    },
+    options:{
+      responsive:false,
+      cutout:'62%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{enabled:kTotal>0,backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+          titleColor:'#f0ede8',bodyColor:'#8a8780',padding:8,
+          callbacks:{label:c=>{
+            const pct=Math.round(c.parsed/kTotal*100);
+            return ' '+c.label+': '+Math.round(c.parsed/4)+'g ('+pct+'%)';
+          }}
+        }
+      }
+    }
+  });
 }
 
 // ─── CONVERSAZIONI ─────────────────────────────────────────
