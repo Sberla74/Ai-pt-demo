@@ -705,28 +705,49 @@ async function loadSessione() {
   } catch(e) {}
 }
 
+function addInfoMsg(text) {
+  const msgs = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.style.cssText = 'text-align:center;padding:4px 14px;';
+  d.innerHTML = `<span style="font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;opacity:0.75;">${text}</span>`;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function localDateStr() {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 // TRAINING LOG — estrazione automatica da messaggi liberi
 async function estraiLog(testo) {
   if(trainerName==='demo' || !clienteName) return;
-  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body','fb-a','fb-b','fb-c','fb-d','hiit','minuti','min ','fatto'];
+  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body','fb-a','fb-b','fb-c','fb-d','hiit','minuti','min','fatto','rematore','alzate','step-up','farmer','carry','bird','pallof','goblet','split','thrust'];
   const hasKeyword = paroleChiave.some(k => testo.toLowerCase().includes(k));
   if(!hasKeyword) return;
+
+  const oggi = localDateStr();
 
   try {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',
-        max_tokens:500,
-        system:`Sei un estrattore di dati di allenamento. Ricevi un messaggio di un atleta e devi estrarre i dati strutturati. Rispondi SOLO con JSON valido, nessun testo prima o dopo. Formato: {"data":"${new Date().toISOString().split('T')[0]}","sessione":"","durata_min":0,"esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":""}. Regole: sessione = tipo di allenamento (es. "FB-A","FB-B","FB-C","FB-D","HIIT","Riposo"); durata_min = minuti totali allenamento (0 se non specificato); carico_kg = 0 se non specificato. Se non ci sono dati di allenamento rispondi con {"data":"","esercizi":[]}.`,
+        max_tokens:600,
+        system:`Sei un estrattore di dati di allenamento. Ricevi un messaggio di un atleta e devi estrarre i dati strutturati. Rispondi SOLO con JSON valido, senza markdown, senza testo prima o dopo. Formato esatto: {"data":"${oggi}","sessione":"","durata_min":0,"esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":""}. Regole: sessione = tipo di allenamento (es. "FB-A","FB-B","FB-C","FB-D","HIIT","Riposo"); durata_min = minuti totali allenamento (0 se non specificato); carico_kg = 0 se non specificato; la data deve essere sempre "${oggi}". Se nel messaggio non ci sono dati di esercizi specifici rispondi con {"data":"","esercizi":[]}.`,
         messages:[{role:'user', content:'Estrai i dati di allenamento da questo messaggio: '+testo}]
       })
     });
     const data = await res.json();
     const raw = data.content?.[0]?.text||'';
-    const clean = raw.replace(/```json|```/g,'').trim();
-    const log = JSON.parse(clean);
+    // estrazione JSON robusta: cerca il primo oggetto JSON anche se ci sono testi extra
+    let jsonStr = raw.replace(/```json|```/g,'').trim();
+    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+    if(jsonMatch) jsonStr = jsonMatch[0];
+    const log = JSON.parse(jsonStr);
     if(!log.esercizi || log.esercizi.length===0) return;
+    // normalizza la data alla data locale (Haiku potrebbe aver usato formato diverso)
+    log.data = oggi;
     const key = slugify(trainerName)+'_'+slugify(clienteName);
     const logKey = Date.now();
     fetch(FB_URL+'/coach_ai_log/'+key+'/'+logKey+'.json',{
@@ -735,7 +756,10 @@ async function estraiLog(testo) {
       body:JSON.stringify({...log, trainer:trainerName, cliente:clienteName})
     }).catch(()=>{});
     trainingLog.push(log);
-  } catch(e) {}
+    addInfoMsg('✓ Allenamento salvato — '+(log.sessione||'Sessione')+' · '+log.esercizi.length+' esercizi'+(log.durata_min>0?' · '+log.durata_min+' min':''));
+  } catch(e) {
+    console.error('[estraiLog] errore estrazione:', e);
+  }
 }
 
 async function getTrainingLog() {
