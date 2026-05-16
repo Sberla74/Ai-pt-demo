@@ -501,7 +501,7 @@ function renderKPI(peso, log, sonno) {
     re.style.color=rim<=2?'var(--accent)':'var(--text)';
   }
   const monday=getMonday(new Date());
-  const sess=log.filter(e=>e.data&&new Date(e.data)>=monday&&e.esercizi&&e.esercizi.length>0).length;
+  const sess=log.filter(e=>e.data&&new Date(normDate(e.data)+'T12:00:00')>=monday&&e.esercizi&&e.esercizi.length>0).length;
   const se=document.getElementById('kpi-sessioni');
   se.textContent=sess+'/6';
   se.style.color=sess>=4?'var(--accent)':'var(--text)';
@@ -684,16 +684,18 @@ function mapPasto(key) {
   return 'altro';
 }
 
+function normDate(d) { return (d||'').substring(0,10); }
+
 // WORKOUT GIORNALIERO
 function renderWorkoutGiorno() {
   const el = document.getElementById('workout-giorno');
   if(!el) return;
-  const entries = logAll.filter(e=>e.data===selectedDate&&e.esercizi&&e.esercizi.length>0);
+  const entries = logAll.filter(e=>normDate(e.data)===selectedDate&&e.esercizi&&e.esercizi.length>0);
   if(entries.length===0){
     const rot = getRotationDay(selectedDate);
     el.innerHTML = rot.type==='rest'
       ? '<div class="chart-empty">Giorno di riposo · Recupero attivo</div>'
-      : '<div class="chart-empty">Nessun allenamento registrato per questo giorno</div>';
+      : '<div class="chart-empty">Nessun allenamento registrato · Scrivi il resoconto in chat (es. "Ho fatto FB-A in 35 min: leg press 60kg 3x10...")</div>';
     return;
   }
   let html='';
@@ -720,7 +722,7 @@ function renderTrainingWeek(log) {
   const logByDate = {};
   log.forEach(e=>{
     if(e.data&&e.esercizi&&e.esercizi.length>0){
-      logByDate[e.data] = e.sessione||e.tipo||'✓';
+      logByDate[normDate(e.data)] = e.sessione||e.tipo||'✓';
     }
   });
 
@@ -918,13 +920,13 @@ function renderExProgChart(log) {
     entry.esercizi.forEach(ex=>{
       if(!ex.nome||!(ex.carico_kg>0)) return;
       if(!exMap[ex.nome]) exMap[ex.nome]=[];
-      exMap[ex.nome].push({data:entry.data, kg:ex.carico_kg});
+      exMap[ex.nome].push({data:normDate(entry.data), kg:ex.carico_kg});
     });
   });
   const names = Object.keys(exMap).sort();
   if(names.length===0){
     if(exProgChart){try{exProgChart.destroy();}catch(e){} exProgChart=null;}
-    wrap.innerHTML='<div class="chart-empty">Nessun dato pesi · Allena e registra sulla chat</div>';
+    wrap.innerHTML='<div class="chart-empty">Nessun dato pesi · Scrivi in chat il resoconto con kg (es. "leg press 60kg 3x10")</div>';
     return;
   }
   const currentSel = wrap.dataset.selected||names[0];
