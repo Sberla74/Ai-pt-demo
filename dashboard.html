@@ -25,7 +25,7 @@
 
   #view-prog{padding:20px 24px;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
 
-  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
   .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
   .kpi-val{font-size:26px;font-weight:600;color:var(--accent);line-height:1;}
   .kpi-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:5px;}
@@ -138,6 +138,9 @@
   .stat-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
   .empty-state{color:var(--text3);font-size:13px;text-align:center;margin-top:40px;}
 
+  @media(max-width:1100px){
+    .kpi-row{grid-template-columns:repeat(3,1fr);}
+  }
   @media(max-width:900px){
     .kpi-row{grid-template-columns:repeat(3,1fr);}
     .meals-grid{grid-template-columns:repeat(2,1fr);}
@@ -200,6 +203,11 @@
       <div class="kpi-label">Sonno medio</div>
       <div class="kpi-sub">ultimi 7 giorni</div>
     </div>
+    <div class="kpi-card">
+      <div class="kpi-val" id="kpi-deficit" style="color:var(--text);">—</div>
+      <div class="kpi-label" id="kpi-deficit-lbl">Deficit oggi</div>
+      <div class="kpi-sub" id="kpi-deficit-sub">vs target piano</div>
+    </div>
   </div>
 
   <!-- Peso chart -->
@@ -237,6 +245,12 @@
   <div class="chart-card">
     <div class="chart-title">Settimana corrente · macro totali</div>
     <div id="weekly-macros"></div>
+  </div>
+
+  <!-- Deficit calorico nel tempo -->
+  <div class="chart-card">
+    <div class="chart-title">Deficit calorico · ultimi 30 giorni</div>
+    <div id="deficit-chart-wrap"><canvas id="deficitChart" height="80"></canvas></div>
   </div>
 
   <!-- Sonno -->
@@ -326,6 +340,7 @@ let mealCharts = {};
 let weeklyChart = null;
 let sonnoChart = null;
 let exProgChart = null;
+let deficitChart = null;
 let selectedDate = todayStr();
 let nutriAll = {};
 let logAll = [];
@@ -396,6 +411,7 @@ async function loadProgressi() {
   renderWorkoutGiorno();
   renderTrainingWeek(log);
   renderWeeklyMacros();
+  renderDeficitChart();
   renderSonnoChart(sonno);
   renderExProgChart(log);
 }
@@ -515,6 +531,27 @@ function renderKPI(peso, log, sonno) {
       se2.textContent=avg+'h';
       se2.style.color=parseFloat(avg)>=7?'var(--accent)':parseFloat(avg)>=6?'var(--text)':'var(--red)';
     } else { se2.textContent='—'; }
+  }
+  // deficit calorico oggi
+  const defEl=document.getElementById('kpi-deficit');
+  const defLbl=document.getElementById('kpi-deficit-lbl');
+  const defSub=document.getElementById('kpi-deficit-sub');
+  if(defEl){
+    const todayMeals=nutriAll[todayStr()]||{};
+    let todayKcal=0;
+    Object.values(todayMeals).forEach(m=>{todayKcal+=m.kcal||0;});
+    const todayRot=getRotationDay(todayStr());
+    if(todayKcal>0){
+      const diff=todayRot.k-todayKcal;
+      defEl.textContent=(diff>=0?'-':'+')+''+Math.abs(diff)+' kcal';
+      defEl.style.color=diff>=0?'var(--accent)':'var(--red)';
+      if(defLbl) defLbl.textContent=diff>=0?'Deficit oggi':'Surplus oggi';
+      if(defSub) defSub.textContent='ingerite '+todayKcal+' · target '+todayRot.k;
+    } else {
+      defEl.textContent='—';
+      defEl.style.color='var(--text)';
+      if(defSub) defSub.textContent='nessun pasto registrato';
+    }
   }
 }
 
@@ -905,6 +942,73 @@ function renderSonnoChart(sonno) {
       scales:{
         x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350'}},
         y:{min:0,max:10,grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350',callback:v=>v+'h',stepSize:1}}
+      }
+    }
+  });
+}
+
+// DEFICIT CALORICO CHART
+function renderDeficitChart() {
+  const wrap = document.getElementById('deficit-chart-wrap');
+  if(!wrap) return;
+  if(deficitChart){try{deficitChart.destroy();}catch(e){} deficitChart=null;}
+
+  const today = new Date();
+  const labels=[], vals=[], colors=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date(today);
+    d.setDate(d.getDate()-i);
+    const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const rot=getRotationDay(ds);
+    const dayMeals=nutriAll[ds]||{};
+    let dayKcal=0;
+    Object.values(dayMeals).forEach(m=>{dayKcal+=m.kcal||0;});
+    if(dayKcal===0) continue;
+    const deficit=rot.k-dayKcal;
+    labels.push(d.getDate()+'/'+(d.getMonth()+1));
+    vals.push(deficit);
+    colors.push(deficit>=0?'rgba(200,245,100,0.8)':'rgba(255,107,107,0.8)');
+  }
+
+  if(vals.length===0){
+    wrap.innerHTML='<div class="chart-empty">Nessun dato · I pasti vengono registrati automaticamente dalla chat</div>';
+    return;
+  }
+  if(!wrap.querySelector('canvas')) wrap.innerHTML='<canvas id="deficitChart" height="80"></canvas>';
+  const ctx=document.getElementById('deficitChart');
+  const maxAbs=Math.max(...vals.map(Math.abs),300);
+
+  deficitChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'Deficit (kcal)',
+      data:vals,
+      backgroundColor:colors,
+      borderRadius:4,
+      borderSkipped:false
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+          titleColor:'#f0ede8',bodyColor:'#8a8780',padding:10,
+          callbacks:{label:c=>{
+            const v=c.parsed.y;
+            return v>=0?' deficit: -'+v+' kcal':' surplus: +'+Math.abs(v)+' kcal';
+          }}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350'}},
+        y:{
+          suggestedMin:-maxAbs,suggestedMax:maxAbs,
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{font:{family:'DM Mono',size:10},color:'#555350',
+            callback:v=>v>0?'-'+v:v<0?'+'+Math.abs(v):'0'
+          }
+        }
       }
     }
   });
