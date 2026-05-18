@@ -65,6 +65,11 @@
   .legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px;}
   .legend-item{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;}
 
+  /* APPLE WATCH STATS */
+  .wo-aw-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);}
+  .wo-aw-stat{font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);}
+  .wo-aw-stat.hi{color:var(--accent);border-color:rgba(200,245,100,0.2);background:var(--accent-dim);}
+
   /* WORKOUT */
   .wo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .wo-tipo{font-size:13px;font-weight:500;color:var(--accent);}
@@ -196,7 +201,7 @@
     <div class="kpi-card">
       <div class="kpi-val" id="kpi-sessioni" style="color:var(--text);">—</div>
       <div class="kpi-label">Sessioni settimana</div>
-      <div class="kpi-sub">target 6/sett.</div>
+      <div class="kpi-sub">target 4/sett.</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-val" id="kpi-sonno" style="color:var(--text);">—</div>
@@ -283,49 +288,29 @@
 <script>
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
 const CLIENT_KEYS = ['fabrizio_test', 'fabrizio_fabrizio'];
-const ROTATION_START = '2026-05-11';
+// Body Transformation 12 sett. — split fisso per giorno della settimana
+// Indice = getDay(): 0=Dom, 1=Lun, 2=Mar, 3=Mer, 4=Gio, 5=Ven, 6=Sab
 const ROTATION = [
-  {label:'FB-A', type:'fb',   p:170, c:210, g:65, k:2050},
-  {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
-  {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
-  {label:'FB-B', type:'fb',   p:170, c:210, g:65, k:2050},
-  {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
-  {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
-  {label:'FB-C', type:'fb',   p:170, c:210, g:65, k:2050},
-  {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
-  {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
-  {label:'FB-D', type:'fb',   p:170, c:210, g:65, k:2050},
-  {label:'HIIT+Addome', type:'hiit', p:170, c:185, g:65, k:1950},
-  {label:'Riposo attivo',type:'rest',p:170, c:170, g:65, k:1850},
+  {label:'Riposo attivo',     type:'rest', p:84, c:99, g:51, k:1191}, // Dom
+  {label:'Lower Body+Core',  type:'lb',   p:84, c:99, g:51, k:1191}, // Lun
+  {label:'Riposo attivo',     type:'rest', p:84, c:99, g:51, k:1191}, // Mar
+  {label:'Upper Pull+Spalle', type:'up',   p:84, c:99, g:51, k:1191}, // Mer
+  {label:'Riposo attivo',     type:'rest', p:84, c:99, g:51, k:1191}, // Gio
+  {label:'Push+Braccia',      type:'push', p:84, c:99, g:51, k:1191}, // Ven
+  {label:'Full Body Metab.',  type:'fb',   p:84, c:99, g:51, k:1191}, // Sab
 ];
 
-// target per singolo pasto (P g, C g, G g, kcal) — FB day / rest day
-const MEAL_TARGETS = {
-  fb: {
-    colazione:     {p:40, c:45, g:15, k:475},
-    spuntino_matt: {p:15, c:20, g:5,  k:185},
-    pranzo:        {p:55, c:85, g:20, k:740},
-    spuntino_pom:  {p:15, c:20, g:5,  k:185},
-    cena:          {p:45, c:35, g:20, k:500},
-    spuntino_serale:{p:0,  c:5,  g:0,  k:0},
-  },
-  hiit: {
-    colazione:     {p:40, c:40, g:14, k:450},
-    spuntino_matt: {p:15, c:18, g:5,  k:177},
-    pranzo:        {p:55, c:75, g:20, k:700},
-    spuntino_pom:  {p:15, c:18, g:5,  k:177},
-    cena:          {p:45, c:30, g:20, k:476},
-    spuntino_serale:{p:0,  c:4,  g:0,  k:0},
-  },
-  rest: {
-    colazione:     {p:35, c:35, g:12, k:390},
-    spuntino_matt: {p:15, c:15, g:5,  k:165},
-    pranzo:        {p:50, c:70, g:18, k:650},
-    spuntino_pom:  {p:15, c:15, g:5,  k:165},
-    cena:          {p:50, c:30, g:20, k:500},
-    spuntino_serale:{p:0,  c:5,  g:0,  k:0},
-  }
+// Paleo-Zona: 12P+11C+17F = 1191 kcal — uguale ogni giorno
+// 1 blocco P=7g | 1 blocco C=9g | 1 blocco F=3g
+const MEAL_PALEO = {
+  colazione:      {p:14, c:18, g:15, k:263}, // 2P+2C+5F
+  spuntino_matt:  {p:7,  c:9,  g:3,  k:91},  // 1P+1C+1F
+  pranzo:         {p:28, c:27, g:18, k:382}, // 4P+3C+6F
+  spuntino_pom:   {p:7,  c:9,  g:3,  k:91},  // 1P+1C+1F
+  cena:           {p:21, c:27, g:9,  k:273}, // 3P+3C+3F
+  spuntino_serale:{p:7,  c:9,  g:3,  k:91},  // 1P+1C+1F (pre-nanna)
 };
+const MEAL_TARGETS = { lb: MEAL_PALEO, up: MEAL_PALEO, push: MEAL_PALEO, fb: MEAL_PALEO, rest: MEAL_PALEO };
 const MEAL_LABELS = {
   colazione:'Colazione', spuntino_matt:'Spuntino matt.',
   pranzo:'Pranzo', spuntino_pom:'Spuntino pom.',
@@ -341,6 +326,7 @@ let weeklyChart = null;
 let sonnoChart = null;
 let exProgChart = null;
 let deficitChart = null;
+let woHwAll = {};
 let selectedDate = todayStr();
 let nutriAll = {};
 let logAll = [];
@@ -359,11 +345,8 @@ function formatDateLabel(dateStr) {
 }
 
 function getRotationDay(dateStr) {
-  const start = new Date(ROTATION_START+'T00:00:00');
   const d = new Date((dateStr||todayStr())+'T00:00:00');
-  d.setHours(0,0,0,0); start.setHours(0,0,0,0);
-  const days = Math.max(0, Math.floor((d - start) / 86400000));
-  return ROTATION[days % 12];
+  return ROTATION[d.getDay()];
 }
 
 function changeDate(delta) {
@@ -400,10 +383,11 @@ async function reload() {
 // ─── PROGRESSI ────────────────────────────────────────────
 
 async function loadProgressi() {
-  const [peso, nutri, log, sonno] = await Promise.all([fetchPeso(), fetchNutri(), fetchLog(), fetchSonno()]);
+  const [peso, nutri, log, sonno, woHw] = await Promise.all([fetchPeso(), fetchNutri(), fetchLog(), fetchSonno(), fetchWoHw()]);
   nutriAll = nutri;
   logAll = log;
   sonnoAll = sonno;
+  woHwAll = woHw;
   renderKPI(peso, log, sonno);
   renderPesoChart(peso);
   updateDateNav();
@@ -495,6 +479,20 @@ async function fetchLog() {
   } catch(e){return[];}
 }
 
+async function fetchWoHw() {
+  try {
+    const results = await fetchFromKeys('coach_ai_wo_hw');
+    const byDate = {};
+    results.forEach(d => {
+      if(!d) return;
+      Object.entries(d).forEach(([date, entry]) => {
+        if(entry && entry.data) byDate[normDate(date)] = entry;
+      });
+    });
+    return byDate;
+  } catch(e){return{};}
+}
+
 function getMonday(d) {
   const day=new Date(d), dow=day.getDay();
   day.setDate(day.getDate()-(dow===0?6:dow-1)); day.setHours(0,0,0,0);
@@ -519,8 +517,8 @@ function renderKPI(peso, log, sonno) {
   const monday=getMonday(new Date());
   const sess=log.filter(e=>e.data&&new Date(normDate(e.data)+'T12:00:00')>=monday&&e.esercizi&&e.esercizi.length>0).length;
   const se=document.getElementById('kpi-sessioni');
-  se.textContent=sess+'/6';
-  se.style.color=sess>=4?'var(--accent)':'var(--text)';
+  se.textContent=sess+'/4';
+  se.style.color=sess>=3?'var(--accent)':'var(--text)';
   // sonno medio ultimi 7 giorni
   const sevenDaysAgo=new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7); sevenDaysAgo.setHours(0,0,0,0);
   const recentSonno=(sonno||[]).filter(s=>new Date(s.data+'T12:00:00')>=sevenDaysAgo);
@@ -540,16 +538,27 @@ function renderKPI(peso, log, sonno) {
     const todayMeals=nutriAll[todayStr()]||{};
     let todayKcal=0;
     Object.values(todayMeals).forEach(m=>{todayKcal+=m.kcal||0;});
-    const todayRot=getRotationDay(todayStr());
-    if(todayKcal>0){
+    const todayAw=woHwAll[todayStr()];
+    const awKcal=todayAw&&todayAw.kcal>0?todayAw.kcal:0;
+    if(awKcal>0 && todayKcal>0){
+      // deficit reale = kcal bruciate Watch - kcal ingerite
+      const diff=awKcal-todayKcal;
+      defEl.textContent=(diff>=0?'-':'+')+''+Math.abs(diff)+' kcal';
+      defEl.style.color=diff>=0?'var(--accent)':'var(--red)';
+      if(defLbl) defLbl.textContent=diff>=0?'Deficit reale':'Surplus reale';
+      if(defSub) defSub.textContent='⌚ '+awKcal+' bruciate · '+todayKcal+' ingerite';
+    } else if(todayKcal>0){
+      // fallback: deficit vs target piano
+      const todayRot=getRotationDay(todayStr());
       const diff=todayRot.k-todayKcal;
       defEl.textContent=(diff>=0?'-':'+')+''+Math.abs(diff)+' kcal';
       defEl.style.color=diff>=0?'var(--accent)':'var(--red)';
-      if(defLbl) defLbl.textContent=diff>=0?'Deficit oggi':'Surplus oggi';
-      if(defSub) defSub.textContent='ingerite '+todayKcal+' · target '+todayRot.k;
+      if(defLbl) defLbl.textContent=diff>=0?'Deficit piano':'Surplus piano';
+      if(defSub) defSub.textContent='ingerite '+todayKcal+' · target '+getRotationDay(todayStr()).k;
     } else {
       defEl.textContent='—';
       defEl.style.color='var(--text)';
+      if(defLbl) defLbl.textContent='Deficit oggi';
       if(defSub) defSub.textContent='nessun pasto registrato';
     }
   }
@@ -735,6 +744,7 @@ function renderWorkoutGiorno() {
       : '<div class="chart-empty">Nessun allenamento registrato · Scrivi il resoconto in chat (es. "Ho fatto FB-A in 35 min: leg press 60kg 3x10...")</div>';
     return;
   }
+  const aw = woHwAll[selectedDate];
   let html='';
   entries.forEach(entry=>{
     const durStr=entry.durata_min>0?` · ${entry.durata_min} min`:'';
@@ -745,6 +755,16 @@ function renderWorkoutGiorno() {
     });
     html+='</div>';
   });
+  if(aw && (aw.kcal>0||aw.fc_media>0)) {
+    html+='<div class="wo-aw-bar">';
+    if(aw.kcal>0)     html+=`<span class="wo-aw-stat hi">⚡ ${aw.kcal} kcal</span>`;
+    if(aw.fc_media>0) html+=`<span class="wo-aw-stat">♥ ${aw.fc_media} bpm avg</span>`;
+    if(aw.fc_max>0)   html+=`<span class="wo-aw-stat">↑ ${aw.fc_max} max</span>`;
+    if(aw.fc_min>0)   html+=`<span class="wo-aw-stat">↓ ${aw.fc_min} min</span>`;
+    html+='</div>';
+  } else if(entries.length>0) {
+    html+='<div class="wo-aw-bar"><span class="wo-aw-stat" style="opacity:0.5;">⌚ Dati Apple Watch non ancora inseriti</span></div>';
+  }
   el.innerHTML=html;
 }
 
@@ -774,10 +794,7 @@ function renderTrainingWeek(log) {
     let cls='day-dot';
     let icon='·';
     if(entry){
-      const low=(entry||'').toLowerCase();
-      if(low.includes('hiit')){cls+=' hiit';icon='H';}
-      else if(rot.type==='rest'){cls+=' rest';icon='—';}
-      else{cls+=' done';icon='✓';}
+      cls+=' done'; icon='✓';
     } else if(rot.type==='rest'){cls+=' rest';icon='—';}
     else if(isPast) cls+=' missed';
     if(isToday) cls+=' today';
