@@ -164,10 +164,10 @@
       <span class="badge badge-demo" id="scheda-badge">Demo</span>
     </div>
     <div class="scheda-info">
-      <span class="scheda-name" id="scheda-name">Fabrizio · 90-Day Challenge</span>
+      <span class="scheda-name" id="scheda-name">Fabrizio · Body Transformation 12 sett.</span>
       <div class="scheda-meta" id="scheda-meta">
-        <span class="tag">FB-A/B/C/D + HIIT</span>
-        <span class="tag">Paleo-Zone</span>
+        <span class="tag">Split 4x/sett</span>
+        <span class="tag">Paleo-Zona 1191 kcal</span>
         <span class="tag">90→80 kg</span>
       </div>
     </div>
@@ -264,6 +264,37 @@
         </div>
       </div>
 
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
+        <span class="ps-lbl" style="display:block;margin-bottom:8px;">Apple Watch · allenamento</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <span class="ps-lbl">Kcal attive</span>
+            <div class="ps-row">
+              <input type="number" class="ps-num" id="input-aw-kcal" placeholder="kcal" min="0" max="2000">
+            </div>
+          </div>
+          <div>
+            <span class="ps-lbl">FC media</span>
+            <div class="ps-row">
+              <input type="number" class="ps-num" id="input-aw-fc-media" placeholder="bpm" min="40" max="220">
+            </div>
+          </div>
+          <div>
+            <span class="ps-lbl">FC min</span>
+            <div class="ps-row">
+              <input type="number" class="ps-num" id="input-aw-fc-min" placeholder="bpm" min="40" max="220">
+            </div>
+          </div>
+          <div>
+            <span class="ps-lbl">FC max</span>
+            <div class="ps-row">
+              <input type="number" class="ps-num" id="input-aw-fc-max" placeholder="bpm" min="40" max="220">
+              <button class="ps-save" id="btn-aw" onclick="salvaAppleWatch()">Salva</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -322,37 +353,42 @@ const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedat
 
 const DEMO_SYSTEM = `Sei il Coach AI personale di Fabrizio. Tono diretto, motivante, esigente — niente scuse, vuoi il meglio per lui. Rispondi in italiano, breve come WhatsApp. Max 5-6 righe.
 
-PROFILO: Fabrizio, 52 anni, 185 cm, 90 kg → obiettivo 80 kg. Protrusione lombare: evitare compressioni eccessive, flessioni lombari ripetute, torsioni sotto carico. Usa Plenity prima di pranzo e cena con abbondante acqua.
+PROFILO: Fabrizio, 52 anni, 185 cm, 90 kg → obiettivo 80 kg entro l'8 agosto 2026. Protrusione lombare: piedi SEMPRE alti in Leg Press, NO squat bilanciere, NO stacchi. Plenity: 3 caps + 500ml acqua, 20 min PRIMA di pranzo (12:40) e cena (19:10) — mai saltare.
 
-NUTRIZIONE PALEO-ZONE (18-20 blocchi/die, 1900-2150 kcal, Proteine 150-170g):
-- Giorni allenamento: 19-20 blocchi | Riposo attivo: 17-18 blocchi
-- Proteine: pollo/tacchino cotto 30g=1 blocco | pesce bianco 40g | tonno naturale 35g | 1 uovo grande = 1 blocco | bresaola senza zuccheri 35g
-- Carboidrati paleo: verdure abbondanti | frutti di bosco 100-120g | mela piccola=2 blocchi | patata dolce cotta 120-150g=3 blocchi
-- Grassi: 1 cucchiaino EVO | 3 mandorle | 1 noce | avocado 15g (MISURARE sempre)
-- NO pane, pasta, riso, legumi, latticini, zuccheri, prodotti industriali
-- Acqua: 2,5-3 L/die | Alcol: max 1 occasione/settimana (sabato sera)
-- Pasto libero: sabato cena — scelta paleo ideale; se pizza+birra, evitare antipasti, dolce e seconda birra
+NUTRIZIONE PALEO-ZONA (12P + 11C + 17F = 1191 kcal/die — uguale ogni giorno):
+Colazione 7:30 (2P+2C+5F): 2 uova sode + 180g mela + 18g mandorle | 400 kcal
+Spuntino matt 10:30 (1P+1C+1F): 1 uovo sodo + 90g mela | 100 kcal
+Pranzo 13:00 (4P+3C+6F): 120g pollo/pesce/carne + abbondante verdura + 90g frutta + 18g olio EVO | ~550 kcal
+Spuntino pm 16:30 (1P+1C+1F): 20g bresaola + 90g mela + 4g noci | 90 kcal
+Cena 19:30 (3P+3C+3F): 90-120g proteina + verdure abbondanti + 90-115g frutta + 9g olio EVO | ~380 kcal
+Pre-nanna 22:00 (1P+1C+1F): 1 albume (o 1 uovo) + 90g mela + 4g noci | 90 kcal
+1 blocco P=7g (30g pollo cotto, 1 uovo, 35g tonno, 20g bresaola) | 1 blocco C=9g (90g mela, 115g kiwi, 130g arancia, 170g fragole) | 1 blocco F=3g (3g olio EVO, 3 mandorle, 1 noce)
+NO: pane, pasta, riso, legumi, latticini, zuccheri, prodotti industriali. Acqua 2,5-3L/die.
 
-ROTAZIONE ALLENAMENTI (ciclica, no giorni fissi):
-FB-A → HIIT+Addome → FB-B → Riposo → FB-C → HIIT+Addome → FB-D → Riposo → ricomincia
+INTEGRATORI (dopo colazione): B Complex + Omega3 + Super Fat Burner. Dopo pranzo: Fat Burner. Dopo cena: Omega3 + Fat Burner. Ore 22:30: Magnesio Supremo in tisana.
 
-FULL BODY A (Spinta/Trazione Base) — superserie, max 30 min:
-SS1: Leg press 3x10 RIR2-3 + Chest press macchina 3x8-10 RIR2 | SS2: Lat machine neutra 3x10 RIR2 + Hip thrust 2x10-12 RIR2-3 | Core: Pallof press 2x10/lato
+PROGRAMMA ALLENAMENTO SPLIT 4x/settimana (ore 6:45, a digiuno, 30-35 min):
+LUNEDÌ — Lower Body + Core (34 min, ~420 kcal):
+Circuito 3 giri, pausa 2' tra giri: Ellittica 2' → Leg Press 15 rip (piedi ALTI!) → Leg Curl seduto 12 rip → Hip Thrust 15 rip → Abduzione 12 rip → Cyclette 1'30" → Leg Extension 12 rip → Plank 1' → Dead Bug 20 rip → Side Plank 30" dx+sx
 
-FULL BODY B (Posteriori + Spalle):
-SS1: Split squat assistito 3x8/lato RIR2-3 + Rematore con petto supportato 3x10 RIR2 | SS2: Shoulder press macchina 2x8-10 RIR2 + Leg curl seduto 3x10-12 RIR1-2 | Core: Dead bug 2x8/lato
+MERCOLEDÌ — Upper Pull + Spalle (31 min, ~380 kcal):
+Circuito 3 giri: Rowing machine 2' → Lat Machine larga 12 rip → Rematore 12 rip → Ellittica 1'30" → Pulley alto presa inversa 10 rip → Face Pull 12 rip → Step veloce 1' → Shoulder Press seduto 12 rip (schienale 80°) → Alzate laterali 10 rip → Plank 1'
 
-FULL BODY C (Volume Moderato):
-SS1: Goblet squat a box 3x8-10 RIR2-3 + Panca inclinata manubri 3x8-10 RIR2 | SS2: Pulley basso busto stabile 3x10 RIR2 + Glute bridge 2x12 RIR2 | Finisher: Farmer carry 3x25-30m
+VENERDÌ — Push + Braccia (31 min, ~380 kcal):
+Circuito 3 giri: Ellittica 2' → Chest Press 12 rip (45°) → Pectoral Machine 12 rip → Cyclette 1'30" → French Press manubri 12 rip → Push-down cavi 12 rip → Rowing machine 1' → Curl manubri 12 rip → Curl martello 12 rip → Plank 1'
 
-FULL BODY D (Richiamo Metabolico):
-SS1: Step-up basso 3x8/lato RIR2-3 + Chest supported row 3x10 RIR2 | SS2: Croci ai cavi 2x12 RIR1-2 + Alzate laterali 2x12-15 RIR1-2 | Core: Side plank 2x20-35sec/lato
+SABATO — Full Body Metabolico (34 min, ~440 kcal):
+Circuito 3 giri: Ellittica 2' → Leg Press 12 rip → Leg Extension 10 rip → Rowing machine 1' → Rowing Back 12 rip → Lat Machine inversa 10 rip → Step veloce 1' → Spinte manubri alto 12 rip → Alzate laterali 10 rip → Plank 1'
 
-HIIT + ADDOME (2x/settimana):
-Riscaldamento 5min | 8-10 round: 20sec forte + 70sec facile su bike/ellittica (RPE 8-9) | Defaticamento 3-5min
-Addome sicuro: McGill curl-up 2x6-8 | Side plank 2x20-35sec/lato | Bird dog 2x6-8/lato | Pallof press 2x10/lato
+MARTEDÌ, GIOVEDÌ, DOMENICA: Riposo attivo.
 
-VIETATO per lombare: squat pesante con bilanciere, stacco pesante, sit-up classici, russian twist pesanti, burpees, mountain climber aggressivi, salti se danno dolore.
+FASI PROGRESSIONE 12 SETTIMANE:
+Fase 1 (sett 1-3, fino 7 giu): 3 giri, pausa 2', focus tecnica
+Fase 2 (sett 4-6, fino 28 giu): 3 giri, pausa 90", carichi +5-10%
+Fase 3 (sett 7-9, fino 19 lug): 4 giri se schiena OK, pausa 90", 40-42 min
+Fase 4 (sett 10-12, fino 8 ago): 4 giri, pausa 60", sprint finali massimi
+
+PROGRESSI ATTESI: sett 4 (15 giu) → 86 kg | sett 8 (13 lug) → 83 kg | sett 12 (8 ago) → 80 kg
 
 REGOLE COACH: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore lombare acuto/sciatalgia: scrivi "⚠ SCALA AL MEDICO" in fondo 4) Non inventare esercizi o cibi fuori dal piano 5) Concludi SEMPRE con una frase motivazionale breve e potente 6) Se chiede tecnica/video: breve spiegazione + "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano"`;
 
@@ -722,7 +758,7 @@ function localDateStr() {
 // TRAINING LOG — estrazione automatica da messaggi liberi
 async function estraiLog(testo) {
   if(trainerName==='demo' || !clienteName) return;
-  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body','fb-a','fb-b','fb-c','fb-d','hiit','minuti','min','fatto','rematore','alzate','step-up','farmer','carry','bird','pallof','goblet','split','thrust'];
+  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body','lower body','upper pull','minuti','min','fatto','rematore','alzate','step','ellittica','cyclette','rowing','abduzione','extension','thrust','dead bug','side plank','face pull','pulley','pectoral','french','martello','spinte','watch','bpm','frequenza','battito','kcal attive'];
   const hasKeyword = paroleChiave.some(k => testo.toLowerCase().includes(k));
   if(!hasKeyword) return;
 
@@ -734,8 +770,8 @@ async function estraiLog(testo) {
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',
         max_tokens:600,
-        system:`Sei un estrattore di dati di allenamento. Ricevi un messaggio di un atleta e devi estrarre i dati strutturati. Rispondi SOLO con JSON valido, senza markdown, senza testo prima o dopo. Formato esatto: {"data":"${oggi}","sessione":"","durata_min":0,"esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":""}. Regole: sessione = tipo di allenamento (es. "FB-A","FB-B","FB-C","FB-D","HIIT","Riposo"); durata_min = minuti totali allenamento (0 se non specificato); carico_kg = 0 se non specificato; la data deve essere sempre "${oggi}". Se nel messaggio non ci sono dati di esercizi specifici rispondi con {"data":"","esercizi":[]}.`,
-        messages:[{role:'user', content:'Estrai i dati di allenamento da questo messaggio: '+testo}]
+        system:`Sei un estrattore di dati fitness. Rispondi SOLO con JSON valido, senza markdown. Formato esatto: {"data":"${oggi}","sessione":"","durata_min":0,"esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":"","watch":{"kcal":0,"fc_media":0,"fc_min":0,"fc_max":0}}. Regole: sessione = tipo allenamento (es. "Lower Body","Upper Pull","Push+Braccia","Full Body Metabolico"); durata_min = minuti totali (0 se non specificato); carico_kg = 0 se non specificato; watch = dati Apple Watch SE presenti (kcal=calorie attive bruciate, fc_media/min/max=frequenza cardiaca in bpm), altrimenti tutti 0; data sempre "${oggi}". Se nessun esercizio specifico: {"data":"","esercizi":[],"watch":{"kcal":0,"fc_media":0,"fc_min":0,"fc_max":0}}.`,
+        messages:[{role:'user', content:'Estrai i dati fitness da questo messaggio: '+testo}]
       })
     });
     const data = await res.json();
@@ -757,6 +793,10 @@ async function estraiLog(testo) {
     }).catch(()=>{});
     trainingLog.push(log);
     addInfoMsg('✓ Allenamento salvato — '+(log.sessione||'Sessione')+' · '+log.esercizi.length+' esercizi'+(log.durata_min>0?' · '+log.durata_min+' min':''));
+    // salva dati Apple Watch se presenti nel messaggio
+    if(log.watch && (log.watch.kcal>0 || log.watch.fc_media>0)) {
+      salvaWatchData(log.watch, oggi);
+    }
   } catch(e) {
     console.error('[estraiLog] errore estrazione:', e);
   }
@@ -892,11 +932,60 @@ function initDiarioBadge() {
   document.getElementById('data-badge').textContent=giorni[d.getDay()]+' '+d.getDate()+' '+mesi[d.getMonth()];
 }
 
+// APPLE WATCH
+function salvaWatchData(watch, data) {
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  fetch(FB_URL+'/coach_ai_wo_hw/'+key+'/'+data+'.json',{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({data, kcal:watch.kcal||0, fc_media:watch.fc_media||0, fc_min:watch.fc_min||0, fc_max:watch.fc_max||0, ts:tsISO()})
+  }).then(()=>{
+    // aggiorna i campi manuali
+    if(watch.kcal) document.getElementById('input-aw-kcal').value=watch.kcal;
+    if(watch.fc_media) document.getElementById('input-aw-fc-media').value=watch.fc_media;
+    if(watch.fc_min) document.getElementById('input-aw-fc-min').value=watch.fc_min;
+    if(watch.fc_max) document.getElementById('input-aw-fc-max').value=watch.fc_max;
+    addInfoMsg('⌚ Watch salvato — '+watch.kcal+'kcal · FC '+watch.fc_media+'bpm avg');
+  }).catch(()=>{});
+}
+
+async function salvaAppleWatch() {
+  if(trainerName==='demo'||!clienteName) return;
+  const kcal = parseInt(document.getElementById('input-aw-kcal').value)||0;
+  const fc_media = parseInt(document.getElementById('input-aw-fc-media').value)||0;
+  const fc_min = parseInt(document.getElementById('input-aw-fc-min').value)||0;
+  const fc_max = parseInt(document.getElementById('input-aw-fc-max').value)||0;
+  if(!kcal && !fc_media) return;
+  const btn = document.getElementById('btn-aw');
+  try {
+    await fetch(FB_URL+'/coach_ai_wo_hw/'+slugify(trainerName)+'_'+slugify(clienteName)+'/'+localDateStr()+'.json',{
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data:localDateStr(), kcal, fc_media, fc_min, fc_max, ts:tsISO()})
+    });
+    btn.classList.add('ps-saved');
+    setTimeout(()=>btn.classList.remove('ps-saved'),2000);
+  } catch(e) {}
+}
+
+async function caricaAppleWatch() {
+  if(trainerName==='demo'||!clienteName) return;
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
+  try {
+    const res = await fetch(FB_URL+'/coach_ai_wo_hw/'+key+'/'+localDateStr()+'.json');
+    const data = await res.json();
+    if(!data||!data.data) return;
+    if(data.kcal) document.getElementById('input-aw-kcal').value=data.kcal;
+    if(data.fc_media) document.getElementById('input-aw-fc-media').value=data.fc_media;
+    if(data.fc_min) document.getElementById('input-aw-fc-min').value=data.fc_min;
+    if(data.fc_max) document.getElementById('input-aw-fc-max').value=data.fc_max;
+  } catch(e) {}
+}
+
 initSession();
 initDiarioBadge();
 loadSessione();
 loadFotoFromStorage();
 caricaNutri();
+caricaAppleWatch();
 </script>
 </body>
 </html>
