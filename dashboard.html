@@ -537,6 +537,8 @@ function renderKPI(peso, log, sonno) {
     } else { se2.textContent='—'; }
   }
   // deficit calorico oggi
+  // TDEE = BMR (1900) + NEAT (300) + kcal attive Watch
+  const BMR=1900, NEAT=300;
   const defEl=document.getElementById('kpi-deficit');
   const defLbl=document.getElementById('kpi-deficit-lbl');
   const defSub=document.getElementById('kpi-deficit-sub');
@@ -546,21 +548,17 @@ function renderKPI(peso, log, sonno) {
     Object.values(todayMeals).forEach(m=>{todayKcal+=m.kcal||0;});
     const todayAw=woHwAll[todayStr()];
     const awKcal=todayAw&&todayAw.kcal>0?todayAw.kcal:0;
-    if(awKcal>0 && todayKcal>0){
-      // deficit reale = kcal bruciate Watch - kcal ingerite
-      const diff=awKcal-todayKcal;
+    if(todayKcal>0){
+      const tdee=BMR+NEAT+awKcal;
+      const diff=tdee-todayKcal;
       defEl.textContent=(diff>=0?'-':'+')+''+Math.abs(diff)+' kcal';
       defEl.style.color=diff>=0?'var(--accent)':'var(--red)';
       if(defLbl) defLbl.textContent=diff>=0?'Deficit reale':'Surplus reale';
-      if(defSub) defSub.textContent='⌚ '+awKcal+' bruciate · '+todayKcal+' ingerite';
-    } else if(todayKcal>0){
-      // fallback: deficit vs target piano
-      const todayRot=getRotationDay(todayStr());
-      const diff=todayRot.k-todayKcal;
-      defEl.textContent=(diff>=0?'-':'+')+''+Math.abs(diff)+' kcal';
-      defEl.style.color=diff>=0?'var(--accent)':'var(--red)';
-      if(defLbl) defLbl.textContent=diff>=0?'Deficit piano':'Surplus piano';
-      if(defSub) defSub.textContent='ingerite '+todayKcal+' · target '+getRotationDay(todayStr()).k;
+      if(awKcal>0){
+        if(defSub) defSub.textContent='TDEE '+tdee+' (BMR+NEAT+'+(awKcal)+' Watch) · ingerite '+todayKcal;
+      } else {
+        if(defSub) defSub.textContent='TDEE '+tdee+' (BMR+NEAT, no Watch) · ingerite '+todayKcal;
+      }
     } else {
       defEl.textContent='—';
       defEl.style.color='var(--text)';
@@ -982,12 +980,13 @@ function renderDeficitChart() {
     const d=new Date(today);
     d.setDate(d.getDate()-i);
     const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const rot=getRotationDay(ds);
     const dayMeals=nutriAll[ds]||{};
     let dayKcal=0;
     Object.values(dayMeals).forEach(m=>{dayKcal+=m.kcal||0;});
     if(dayKcal===0) continue;
-    const deficit=rot.k-dayKcal;
+    const dayAw=woHwAll[ds];
+    const dayAwKcal=dayAw&&dayAw.kcal>0?dayAw.kcal:0;
+    const deficit=(1900+300+dayAwKcal)-dayKcal;
     labels.push(d.getDate()+'/'+(d.getMonth()+1));
     vals.push(deficit);
     colors.push(deficit>=0?'rgba(200,245,100,0.8)':'rgba(255,107,107,0.8)');
