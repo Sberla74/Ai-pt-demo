@@ -388,6 +388,12 @@ async function loadProgressi() {
   logAll = log;
   sonnoAll = sonno;
   woHwAll = woHw;
+  log.forEach(entry => {
+    if(entry && entry.data && entry.watch && (entry.watch.kcal > 0 || entry.watch.fc_media > 0)) {
+      const d = normDate(entry.data);
+      if(!woHwAll[d]) woHwAll[d] = entry.watch;
+    }
+  });
   renderKPI(peso, log, sonno);
   renderPesoChart(peso);
   updateDateNav();
