@@ -955,12 +955,22 @@ async function salvaAppleWatch() {
   const fc_min = parseInt(document.getElementById('input-aw-fc-min').value)||0;
   const fc_max = parseInt(document.getElementById('input-aw-fc-max').value)||0;
   if(!kcal && !fc_media) return;
+  const key = slugify(trainerName)+'_'+slugify(clienteName);
   const btn = document.getElementById('btn-aw');
+  const watchObj = {kcal, fc_media, fc_min, fc_max};
   try {
-    await fetch(FB_URL+'/coach_ai_wo_hw/'+slugify(trainerName)+'_'+slugify(clienteName)+'/'+localDateStr()+'.json',{
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({data:localDateStr(), kcal, fc_media, fc_min, fc_max, ts:tsISO()})
-    });
+    await Promise.all([
+      // path originale (app)
+      fetch(FB_URL+'/coach_ai_wo_hw/'+key+'/'+localDateStr()+'.json',{
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({data:localDateStr(), ...watchObj, ts:tsISO()})
+      }),
+      // path leggibile dalla dashboard (coach_ai_log)
+      fetch(FB_URL+'/coach_ai_log/'+key+'/'+localDateStr()+'_w.json',{
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({data:localDateStr(), watch:watchObj})
+      })
+    ]);
     btn.classList.add('ps-saved');
     setTimeout(()=>btn.classList.remove('ps-saved'),2000);
   } catch(e) {}
