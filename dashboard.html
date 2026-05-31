@@ -291,26 +291,39 @@ const CLIENT_KEYS = ['fabrizio_test', 'fabrizio_fabrizio'];
 // Body Transformation 12 sett. — split fisso per giorno della settimana
 // Indice = getDay(): 0=Dom, 1=Lun, 2=Mar, 3=Mer, 4=Gio, 5=Ven, 6=Sab
 const ROTATION = [
-  {label:'Riposo attivo',     type:'rest', p:84, c:99, g:51, k:1191}, // Dom
-  {label:'Lower Body+Core',  type:'lb',   p:84, c:99, g:51, k:1191}, // Lun
-  {label:'Riposo attivo',     type:'rest', p:84, c:99, g:51, k:1191}, // Mar
-  {label:'Upper Pull+Spalle', type:'up',   p:84, c:99, g:51, k:1191}, // Mer
-  {label:'Riposo attivo',     type:'rest', p:84, c:99, g:51, k:1191}, // Gio
-  {label:'Push+Braccia',      type:'push', p:84, c:99, g:51, k:1191}, // Ven
-  {label:'Full Body Metab.',  type:'fb',   p:84, c:99, g:51, k:1191}, // Sab
+  {label:'Riposo · Semidigiuno', type:'rest', p:120, c:30,  g:33, k:900},  // Dom
+  {label:'Lower Body+Core',      type:'lb',   p:170, c:185, g:65, k:1950}, // Lun
+  {label:'Riposo · Semidigiuno', type:'rest', p:120, c:30,  g:33, k:900},  // Mar
+  {label:'Upper Pull+Spalle',    type:'up',   p:170, c:185, g:65, k:1950}, // Mer
+  {label:'Riposo · Semidigiuno', type:'rest', p:120, c:30,  g:33, k:900},  // Gio
+  {label:'Push+Braccia',         type:'push', p:170, c:185, g:65, k:1950}, // Ven
+  {label:'Full Body Metab.',     type:'fb',   p:170, c:210, g:65, k:2050}, // Sab
 ];
 
-// Paleo-Zona: 12P+11C+17F = 1191 kcal — uguale ogni giorno
-// 1 blocco P=7g | 1 blocco C=9g | 1 blocco F=3g
-const MEAL_PALEO = {
-  colazione:      {p:14, c:18, g:15, k:263}, // 2P+2C+5F
-  spuntino_matt:  {p:7,  c:9,  g:3,  k:91},  // 1P+1C+1F
-  pranzo:         {p:28, c:27, g:18, k:382}, // 4P+3C+6F
-  spuntino_pom:   {p:7,  c:9,  g:3,  k:91},  // 1P+1C+1F
-  cena:           {p:21, c:27, g:9,  k:273}, // 3P+3C+3F
-  spuntino_serale:{p:7,  c:9,  g:3,  k:91},  // 1P+1C+1F (pre-nanna)
+// Body Transformation — Full Body (sabato) 2050 kcal
+const MEAL_FB = {
+  colazione:      {p:40, c:45, g:15, k:475},
+  spuntino_matt:  {p:15, c:20, g:5,  k:185},
+  pranzo:         {p:55, c:85, g:20, k:740},
+  spuntino_pom:   {p:15, c:20, g:5,  k:185},
+  cena:           {p:45, c:35, g:20, k:500},
+  spuntino_serale:{p:0,  c:5,  g:0,  k:20},
 };
-const MEAL_TARGETS = { lb: MEAL_PALEO, up: MEAL_PALEO, push: MEAL_PALEO, fb: MEAL_PALEO, rest: MEAL_PALEO };
+// Body Transformation — giorni allenamento (lun/mer/ven) 1950 kcal
+const MEAL_TRAIN = {
+  colazione:      {p:40, c:40, g:15, k:455},
+  spuntino_matt:  {p:15, c:20, g:5,  k:185},
+  pranzo:         {p:55, c:75, g:20, k:700},
+  spuntino_pom:   {p:15, c:20, g:5,  k:185},
+  cena:           {p:45, c:25, g:20, k:465},
+  spuntino_serale:{p:0,  c:5,  g:0,  k:20},
+};
+// Body Transformation — semidigiuno 16:8 (riposo) 900 kcal · solo 2 pasti
+const MEAL_REST = {
+  pranzo: {p:60, c:15, g:17, k:460},
+  cena:   {p:60, c:15, g:16, k:440},
+};
+const MEAL_TARGETS = { lb: MEAL_TRAIN, up: MEAL_TRAIN, push: MEAL_TRAIN, fb: MEAL_FB, rest: MEAL_REST };
 const MEAL_LABELS = {
   colazione:'Colazione', spuntino_matt:'Spuntino matt.',
   pranzo:'Pranzo', spuntino_pom:'Spuntino pom.',
@@ -603,9 +616,12 @@ function renderMealsGiorno() {
   const targets = MEAL_TARGETS[rot.type] || MEAL_TARGETS.rest;
   const dayMeals = nutriAll[selectedDate] || {};
 
+  // giorni di riposo: solo pranzo e cena
+  const activeMealOrder = rot.type === 'rest' ? ['pranzo','cena'] : MEAL_ORDER;
+
   // group by tipo_pasto
   const grouped = {};
-  MEAL_ORDER.forEach(k => grouped[k] = []);
+  activeMealOrder.forEach(k => grouped[k] = []);
   Object.values(dayMeals).forEach(m => {
     const key = m.tipo_pasto || m.pasto || '';
     const mapped = mapPasto(key);
@@ -617,7 +633,7 @@ function renderMealsGiorno() {
   mealCharts = {};
 
   const grid = document.getElementById('meals-grid');
-  grid.innerHTML = MEAL_ORDER.map(slot => `
+  grid.innerHTML = activeMealOrder.map(slot => `
     <div class="meal-card">
       <div class="meal-card-title">${MEAL_LABELS[slot]}</div>
       <div class="meal-chart-wrap">
@@ -652,7 +668,7 @@ function renderMealsGiorno() {
     </div>
   `).join('');
 
-  MEAL_ORDER.forEach(slot => {
+  activeMealOrder.forEach(slot => {
     const meals = grouped[slot];
     const tgt = targets[slot];
     let totP=0, totC=0, totG=0, totK=0;
@@ -744,7 +760,7 @@ function renderWorkoutGiorno() {
   if(entries.length===0){
     const rot = getRotationDay(selectedDate);
     el.innerHTML = rot.type==='rest'
-      ? '<div class="chart-empty">Giorno di riposo · Recupero attivo</div>'
+      ? '<div class="chart-empty">Giorno di riposo · Semidigiuno 16:8 · Finestra alimentare 13:00–20:00</div>'
       : '<div class="chart-empty">Nessun allenamento registrato · Scrivi il resoconto in chat (es. "Ho fatto FB-A in 35 min: leg press 60kg 3x10...")</div>';
     return;
   }
