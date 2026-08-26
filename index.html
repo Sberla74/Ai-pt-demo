@@ -74,6 +74,13 @@
   .save-btn:disabled{opacity:0.35;cursor:not-allowed;}
   .save-flash{background:var(--green)!important;}
 
+  .scheda-ex{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:8px;}
+  .scheda-ex:last-of-type{border-bottom:none;}
+  .scheda-ex-nome{font-size:13px;color:var(--text);}
+  .scheda-ex-target{font-size:12px;color:var(--accent);font-family:'DM Mono',monospace;white-space:nowrap;}
+  .carica-scheda-btn{width:100%;margin-top:12px;padding:10px;border-radius:var(--radius-sm);border:1px solid rgba(255,143,63,0.35);background:var(--accent-dim2);color:var(--accent);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;}
+  .carica-scheda-btn:hover{background:var(--accent-dim);}
+
   .storico-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .storico-item:last-child{border-bottom:none;}
   .storico-main{display:flex;flex-direction:column;gap:2px;}
@@ -111,7 +118,16 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="scheda-card" style="display:none;">
+    <div class="card-header">
+      <span class="card-title">Scheda assegnata</span>
+      <span class="badge badge-off" id="scheda-nome-badge">—</span>
+    </div>
+    <div class="card-body" id="scheda-body">
+    </div>
+  </div>
+
+  <div class="card" id="log-card">
     <div class="card-header">
       <span class="card-title">Log allenamento forza</span>
     </div>
@@ -196,6 +212,47 @@ async function initSession() {
   addExRow();
   checkPresenza();
   loadStorico();
+  loadScheda();
+}
+
+// ─── SCHEDA ASSEGNATA ───────────────────────────────────────
+
+let schedaCorrente = null;
+
+async function loadScheda() {
+  try {
+    const res = await fetch(FB_URL + '/basket_schede/' + playerId + '.json');
+    const data = await res.json();
+    if(!data || !data.esercizi || data.esercizi.length === 0) return;
+    schedaCorrente = data;
+
+    document.getElementById('scheda-card').style.display = 'block';
+    document.getElementById('scheda-nome-badge').textContent = data.nome || 'scheda';
+
+    const body = document.getElementById('scheda-body');
+    body.innerHTML = data.esercizi.map(ex => `
+      <div class="scheda-ex">
+        <span class="scheda-ex-nome">${ex.nome}</span>
+        <span class="scheda-ex-target">${ex.serie||0}×${ex.rip||0}${ex.carico_kg>0?' @ '+ex.carico_kg+'kg':''}</span>
+      </div>`).join('') + `<button class="carica-scheda-btn" onclick="caricaSchedaNelLog()">Carica nel log di oggi</button>`;
+  } catch(e) {}
+}
+
+function caricaSchedaNelLog() {
+  if(!schedaCorrente) return;
+  document.getElementById('input-sessione').value = schedaCorrente.nome || '';
+  const wrap = document.getElementById('ex-rows');
+  wrap.innerHTML = '';
+  schedaCorrente.esercizi.forEach(ex => {
+    addExRow();
+    const row = wrap.lastElementChild;
+    const inputs = row.querySelectorAll('input');
+    inputs[0].value = ex.nome || '';
+    inputs[1].value = ex.serie || '';
+    inputs[2].value = ex.rip || '';
+    inputs[3].value = ex.carico_kg || '';
+  });
+  document.getElementById('log-card').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 // ─── PRESENZA ───────────────────────────────────────────────
