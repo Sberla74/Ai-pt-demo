@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meerkat Prep · Gestione Roster</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--text2:#8a8780;--text3:#555350;--accent:#ff8f3f;--accent-dim:rgba(255,143,63,0.14);--accent-dim2:rgba(255,143,63,0.07);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);--green:#8fd694;--green-dim:rgba(143,214,148,0.12);--radius:14px;--radius-sm:8px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  .topbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;}
+  .topbar-left{display:flex;align-items:center;gap:10px;}
+  .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .topbar-title{font-size:14px;font-weight:500;color:var(--accent);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;}
+  .link-btn{padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;transition:all 0.15s;}
+  .link-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
+
+  .wrap{padding:20px 24px;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+  .card-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:16px;}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr 1fr 90px 90px;gap:8px;align-items:end;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+  .field-input{width:100%;padding:9px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
+  .field-input:focus{border-color:rgba(255,143,63,0.4);}
+  .add-btn{padding:9px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;grid-column:1/-1;}
+  .add-btn:hover{opacity:0.85;}
+
+  table.roster-table{width:100%;border-collapse:collapse;}
+  table.roster-table th{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.05em;}
+  table.roster-table td{font-size:13px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
+  .link-cell{display:flex;align-items:center;gap:6px;}
+  .link-text{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .copy-btn,.toggle-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;}
+  .copy-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
+  .toggle-btn.active-yes{color:var(--green);border-color:rgba(143,214,148,0.3);}
+  .toggle-btn.active-no{color:var(--text3);}
+  .empty-msg{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;font-family:'DM Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-dot"></div>
+    <span class="topbar-title">Meerkat Prep · Gestione Roster</span>
+  </div>
+  <a class="link-btn" href="dashboard.html">← Dashboard</a>
+</div>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="card-title">Aggiungi giocatore</div>
+    <div class="form-grid">
+      <div class="field"><span class="field-label">Nome</span><input type="text" class="field-input" id="new-nome" placeholder="Mario"></div>
+      <div class="field"><span class="field-label">Cognome</span><input type="text" class="field-input" id="new-cognome" placeholder="Rossi"></div>
+      <div class="field"><span class="field-label">Ruolo</span><input type="text" class="field-input" id="new-ruolo" placeholder="playmaker"></div>
+      <div class="field"><span class="field-label">Altezza (cm)</span><input type="number" class="field-input" id="new-altezza" placeholder="190"></div>
+      <div class="field"><span class="field-label">Peso (kg)</span><input type="number" class="field-input" id="new-peso" placeholder="85"></div>
+      <button class="add-btn" onclick="addPlayer()">+ Aggiungi al roster</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Roster</div>
+    <table class="roster-table">
+      <thead><tr><th>Giocatore</th><th>Ruolo</th><th>Altezza</th><th>Peso</th><th>Link personale</th><th>Stato</th></tr></thead>
+      <tbody id="roster-tbody"><tr><td colspan="6" class="empty-msg">Caricamento...</td></tr></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
+
+function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+}
+
+function playerLink(id) {
+  return location.origin + location.pathname.replace(/admin\.html$/, '') + 'index.html?giocatore=' + id;
+}
+
+async function loadRoster() {
+  const tbody = document.getElementById('roster-tbody');
+  try {
+    const res = await fetch(FB_URL + '/basket_roster.json');
+    const data = await res.json() || {};
+    const ids = Object.keys(data).sort((a,b)=>(data[a].nome||'').localeCompare(data[b].nome||''));
+    if(ids.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Nessun giocatore ancora</td></tr>'; return; }
+    tbody.innerHTML = ids.map(id => {
+      const p = data[id];
+      const attivo = p.attivo !== false;
+      const link = playerLink(id);
+      return `<tr>
+        <td>${p.nome} ${p.cognome||''}</td>
+        <td>${p.ruolo||'—'}</td>
+        <td>${p.altezza_cm?p.altezza_cm+' cm':'—'}</td>
+        <td>${p.peso_kg?p.peso_kg+' kg':'—'}</td>
+        <td><div class="link-cell"><span class="link-text">${link}</span><button class="copy-btn" onclick="copyLink('${link}',this)">copia</button></div></td>
+        <td><button class="toggle-btn ${attivo?'active-yes':'active-no'}" onclick="toggleAttivo('${id}',${attivo})">${attivo?'attivo':'disattivato'}</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Errore caricamento roster</td></tr>';
+  }
+}
+
+async function addPlayer() {
+  const nome = document.getElementById('new-nome').value.trim();
+  const cognome = document.getElementById('new-cognome').value.trim();
+  const ruolo = document.getElementById('new-ruolo').value.trim();
+  const altezza_cm = parseInt(document.getElementById('new-altezza').value) || null;
+  const peso_kg = parseFloat(document.getElementById('new-peso').value) || null;
+
+  if(!nome) { alert('Il nome è obbligatorio.'); return; }
+  const id = slugify(nome + ' ' + cognome);
+
+  await fetch(FB_URL + '/basket_roster/' + id + '.json', {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ nome, cognome, ruolo, altezza_cm, peso_kg, attivo: true, createdAt: Date.now() })
+  }).catch(()=>{});
+
+  document.getElementById('new-nome').value = '';
+  document.getElementById('new-cognome').value = '';
+  document.getElementById('new-ruolo').value = '';
+  document.getElementById('new-altezza').value = '';
+  document.getElementById('new-peso').value = '';
+
+  loadRoster();
+}
+
+async function toggleAttivo(id, currentlyActive) {
+  await fetch(FB_URL + '/basket_roster/' + id + '/attivo.json', {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(!currentlyActive)
+  }).catch(()=>{});
+  loadRoster();
+}
+
+function copyLink(link, btn) {
+  navigator.clipboard.writeText(link).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = 'copiato!';
+    setTimeout(()=>{ btn.textContent = orig; }, 1500);
+  }).catch(()=>{});
+}
+
+loadRoster();
+</script>
+</body>
+</html>
