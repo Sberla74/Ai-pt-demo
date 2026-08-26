@@ -36,11 +36,24 @@
   table.roster-table td{font-size:13px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
   .link-cell{display:flex;align-items:center;gap:6px;}
   .link-text{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .copy-btn,.toggle-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;}
-  .copy-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
+  .copy-btn,.toggle-btn,.scheda-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;}
+  .copy-btn:hover,.scheda-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
   .toggle-btn.active-yes{color:var(--green);border-color:rgba(143,214,148,0.3);}
   .toggle-btn.active-no{color:var(--text3);}
   .empty-msg{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;font-family:'DM Mono',monospace;}
+
+  .scheda-select{width:100%;padding:9px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;}
+  .scheda-row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+  .ex-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;padding:8px 0;border-bottom:1px solid var(--border);align-items:end;}
+  .ex-row:last-of-type{border-bottom:none;}
+  .ex-row input{width:100%;padding:7px 8px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;min-width:0;-webkit-appearance:none;}
+  .ex-row input:focus{border-color:rgba(255,143,63,0.4);}
+  .ex-lbl{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;margin-bottom:3px;display:block;}
+  .ex-del{background:transparent;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;}
+  .ex-del:hover{color:var(--red);}
+  .add-ex-btn{padding:9px;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.18s;margin-top:10px;}
+  .add-ex-btn:hover{border-color:rgba(255,143,63,0.35);color:var(--accent);background:var(--accent-dim2);}
+  .scheda-preview-empty{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;font-family:'DM Mono',monospace;}
 </style>
 </head>
 <body>
@@ -70,9 +83,31 @@
   <div class="card">
     <div class="card-title">Roster</div>
     <table class="roster-table">
-      <thead><tr><th>Giocatore</th><th>Ruolo</th><th>Altezza</th><th>Peso</th><th>Link personale</th><th>Stato</th></tr></thead>
-      <tbody id="roster-tbody"><tr><td colspan="6" class="empty-msg">Caricamento...</td></tr></tbody>
+      <thead><tr><th>Giocatore</th><th>Ruolo</th><th>Altezza</th><th>Peso</th><th>Link personale</th><th>Stato</th><th>Scheda</th></tr></thead>
+      <tbody id="roster-tbody"><tr><td colspan="7" class="empty-msg">Caricamento...</td></tr></tbody>
     </table>
+  </div>
+
+  <div class="card" id="scheda-card">
+    <div class="card-title">Scheda allenamento</div>
+    <div class="field">
+      <span class="field-label">Giocatore</span>
+      <select class="scheda-select" id="scheda-player-select" onchange="loadSchedaForm()">
+        <option value="">— seleziona un giocatore —</option>
+      </select>
+    </div>
+
+    <div id="scheda-editor" style="display:none;margin-top:14px;">
+      <div class="field">
+        <span class="field-label">Nome scheda</span>
+        <input type="text" class="field-input" id="scheda-nome" placeholder="es. Fase 1 - Forza gambe">
+      </div>
+
+      <div id="scheda-ex-rows" style="margin-top:12px;"></div>
+      <button class="add-ex-btn" onclick="addSchedaExRow()">+ Esercizio</button>
+
+      <button class="add-btn" style="margin-top:14px;" onclick="salvaScheda()">Salva scheda</button>
+    </div>
   </div>
 
 </div>
@@ -88,13 +123,16 @@ function playerLink(id) {
   return location.origin + location.pathname.replace(/admin\.html$/, '') + 'index.html?giocatore=' + id;
 }
 
+let rosterCache = {};
+
 async function loadRoster() {
   const tbody = document.getElementById('roster-tbody');
   try {
     const res = await fetch(FB_URL + '/basket_roster.json');
     const data = await res.json() || {};
+    rosterCache = data;
     const ids = Object.keys(data).sort((a,b)=>(data[a].nome||'').localeCompare(data[b].nome||''));
-    if(ids.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Nessun giocatore ancora</td></tr>'; return; }
+    if(ids.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Nessun giocatore ancora</td></tr>'; populateSchedaSelect(ids); return; }
     tbody.innerHTML = ids.map(id => {
       const p = data[id];
       const attivo = p.attivo !== false;
@@ -106,11 +144,21 @@ async function loadRoster() {
         <td>${p.peso_kg?p.peso_kg+' kg':'—'}</td>
         <td><div class="link-cell"><span class="link-text">${link}</span><button class="copy-btn" onclick="copyLink('${link}',this)">copia</button></div></td>
         <td><button class="toggle-btn ${attivo?'active-yes':'active-no'}" onclick="toggleAttivo('${id}',${attivo})">${attivo?'attivo':'disattivato'}</button></td>
+        <td><button class="scheda-btn" onclick="editScheda('${id}')">scheda</button></td>
       </tr>`;
     }).join('');
+    populateSchedaSelect(ids);
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Errore caricamento roster</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Errore caricamento roster</td></tr>';
   }
+}
+
+function populateSchedaSelect(ids) {
+  const sel = document.getElementById('scheda-player-select');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— seleziona un giocatore —</option>' +
+    ids.map(id => `<option value="${id}">${rosterCache[id].nome} ${rosterCache[id].cognome||''}</option>`).join('');
+  if(ids.includes(current)) sel.value = current;
 }
 
 async function addPlayer() {
@@ -143,6 +191,79 @@ async function toggleAttivo(id, currentlyActive) {
     body: JSON.stringify(!currentlyActive)
   }).catch(()=>{});
   loadRoster();
+}
+
+// ─── SCHEDA ALLENAMENTO ─────────────────────────────────────
+
+function addSchedaExRow(ex) {
+  const wrap = document.getElementById('scheda-ex-rows');
+  const row = document.createElement('div');
+  row.className = 'ex-row';
+  row.innerHTML = `
+    <div><span class="ex-lbl">Esercizio</span><input type="text" placeholder="es. Squat" value="${ex&&ex.nome?ex.nome.replace(/"/g,'&quot;'):''}"></div>
+    <div><span class="ex-lbl">Serie</span><input type="number" min="0" max="20" value="${ex&&ex.serie?ex.serie:''}"></div>
+    <div><span class="ex-lbl">Rip</span><input type="number" min="0" max="100" value="${ex&&ex.rip?ex.rip:''}"></div>
+    <div><span class="ex-lbl">Kg target</span><input type="number" min="0" max="500" step="0.5" value="${ex&&ex.carico_kg?ex.carico_kg:''}"></div>
+    <button class="ex-del" onclick="this.closest('.ex-row').remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+
+async function loadSchedaForm() {
+  const playerId = document.getElementById('scheda-player-select').value;
+  const editor = document.getElementById('scheda-editor');
+  const rowsWrap = document.getElementById('scheda-ex-rows');
+  if(!playerId) { editor.style.display = 'none'; return; }
+  editor.style.display = 'block';
+  document.getElementById('scheda-nome').value = '';
+  rowsWrap.innerHTML = '';
+
+  try {
+    const res = await fetch(FB_URL + '/basket_schede/' + playerId + '.json');
+    const data = await res.json();
+    if(data && data.esercizi && data.esercizi.length) {
+      document.getElementById('scheda-nome').value = data.nome || '';
+      data.esercizi.forEach(ex => addSchedaExRow(ex));
+    } else {
+      addSchedaExRow();
+    }
+  } catch(e) {
+    addSchedaExRow();
+  }
+}
+
+function editScheda(playerId) {
+  document.getElementById('scheda-player-select').value = playerId;
+  loadSchedaForm();
+  document.getElementById('scheda-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function salvaScheda() {
+  const playerId = document.getElementById('scheda-player-select').value;
+  if(!playerId) { alert('Seleziona un giocatore.'); return; }
+  const nome = document.getElementById('scheda-nome').value.trim();
+
+  const rows = document.querySelectorAll('#scheda-ex-rows .ex-row');
+  const esercizi = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const exNome = inputs[0].value.trim();
+    if(!exNome) return;
+    esercizi.push({
+      nome: exNome,
+      serie: parseInt(inputs[1].value) || 0,
+      rip: parseInt(inputs[2].value) || 0,
+      carico_kg: parseFloat(inputs[3].value) || 0
+    });
+  });
+
+  if(esercizi.length === 0) { alert('Aggiungi almeno un esercizio con il nome compilato.'); return; }
+
+  await fetch(FB_URL + '/basket_schede/' + playerId + '.json', {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ nome: nome || 'Scheda', esercizi, updatedAt: Date.now() })
+  }).catch(()=>{});
+
+  alert('Scheda salvata.');
 }
 
 function copyLink(link, btn) {
