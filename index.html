@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Coach AI</title>
+<title>Prep Palestra · Meerkat</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Coach AI">
+<meta name="apple-mobile-web-app-title" content="Meerkat Prep">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f0f0f">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,9 +15,9 @@
     --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;
     --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
     --text:#f0ede8;--text2:#8a8780;--text3:#555350;
-    --accent:#c8f564;--accent-dim:rgba(200,245,100,0.12);--accent-dim2:rgba(200,245,100,0.06);
+    --accent:#ff8f3f;--accent-dim:rgba(255,143,63,0.14);--accent-dim2:rgba(255,143,63,0.07);
     --red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);
-    --blue:#64b4ff;--blue-dim:rgba(100,180,255,0.1);
+    --green:#8fd694;--green-dim:rgba(143,214,148,0.12);
     --radius:14px;--radius-sm:8px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -31,8 +31,8 @@
   }
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
   .header{width:100%;max-width:480px;padding:28px 20px 0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
-  .headline{font-size:26px;font-weight:600;line-height:1.2;color:var(--text);margin-top:6px;}
-  .subline{font-size:14px;color:var(--text2);line-height:1.6;margin-top:4px;}
+  .headline{font-size:24px;font-weight:600;line-height:1.2;color:var(--text);margin-top:6px;}
+  .subline{font-size:13px;color:var(--text2);line-height:1.6;margin-top:4px;}
   .logo{display:flex;align-items:center;gap:10px;}
   .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.8)}}
@@ -41,961 +41,284 @@
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
   .card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
   .card-title{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;}
+  .card-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
   .badge{font-size:11px;font-weight:500;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:20px;}
-  .badge-demo{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(200,245,100,0.2);}
-  .badge-custom{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(100,180,255,0.2);}
-  .scheda-info{padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
-  .scheda-name{font-size:15px;font-weight:500;color:var(--text);}
-  .scheda-meta{display:flex;gap:8px;flex-wrap:wrap;}
-  .tag{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-family:'DM Mono',monospace;}
-  .upload-area{padding:14px 16px;border-top:1px solid var(--border);}
-  .upload-label{font-size:12px;color:var(--text2);margin-bottom:10px;display:block;}
-  .upload-row{display:flex;gap:8px;}
-  .upload-btn{flex:1;padding:10px 14px;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.18s;}
-  .upload-btn:hover{border-color:rgba(200,245,100,0.3);color:var(--accent);background:var(--accent-dim2);}
-  .paste-btn{padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;white-space:nowrap;}
-  .paste-btn:hover{border-color:rgba(200,245,100,0.3);color:var(--accent);}
-  #file-input,#foto-prima-input,#foto-dopo-input{display:none;}
-  .profilo-field{display:flex;flex-direction:column;gap:4px;}
-  .profilo-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;letter-spacing:0.04em;}
-  .profilo-input{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
-  .profilo-input:focus{border-color:rgba(200,245,100,0.35);}
-  .profilo-input::placeholder{color:var(--text3);}
-  .profilo-input option{background:var(--surface2);color:var(--text);}
-  .foto-section{padding:14px 16px;border-top:1px solid var(--border);}
-  .foto-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;}
-  .foto-disclaimer{font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5;font-family:'DM Mono',monospace;}
-  .foto-row{display:flex;gap:8px;}
-  .foto-slot{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
-  .foto-thumb{width:100%;aspect-ratio:3/4;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color 0.18s;}
-  .foto-thumb:hover{border-color:rgba(200,245,100,0.3);}
-  .foto-thumb img{width:100%;height:100%;object-fit:cover;}
-  .foto-thumb .placeholder{font-size:11px;color:var(--text3);text-align:center;padding:8px;font-family:'DM Mono',monospace;}
-  .foto-slot-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
-  .foto-slot-label span{font-size:10px;color:var(--text3);}
-  .confronta-btn{width:100%;margin-top:10px;padding:10px;border-radius:var(--radius-sm);border:1px solid rgba(200,245,100,0.3);background:var(--accent-dim2);color:var(--accent);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;display:none;}
-  .confronta-btn:hover{background:var(--accent-dim);}
-  .confronta-btn:disabled{opacity:0.35;cursor:not-allowed;}
-  .chat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;height:440px;overflow:hidden;}
-  .chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  .chat-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(200,245,100,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0;}
-  .chat-name{font-size:14px;font-weight:500;color:var(--text);}
-  .chat-status{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;}
-  .chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
-  .chat-msgs::-webkit-scrollbar{width:3px;}
-  .chat-msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-  .msg{display:flex;flex-direction:column;max-width:82%;}
-  .msg.user{align-self:flex-end;align-items:flex-end;}
-  .msg.bot{align-self:flex-start;align-items:flex-start;}
-  .bubble{padding:9px 13px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
-  .msg.user .bubble{background:var(--accent);color:#0f0f0f;border-radius:16px 16px 4px 16px;}
-  .msg.bot .bubble{background:var(--surface2);color:var(--text);border-radius:16px 16px 16px 4px;border:1px solid var(--border);}
-  .msg-time{font-size:10px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;}
-  .msg-foto{width:120px;border-radius:10px;margin-bottom:4px;opacity:0.8;}
-  .escalate-banner{display:none;margin:0 14px 8px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--red-dim);border:1px solid rgba(255,107,107,0.2);font-size:12px;color:var(--red);font-family:'DM Mono',monospace;flex-shrink:0;}
-  .suggestions{padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border);flex-shrink:0;}
-  .sug{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap;}
-  .sug:hover{border-color:rgba(200,245,100,0.35);color:var(--accent);background:var(--accent-dim2);}
-  .input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0;}
-  .input-row textarea{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;padding:9px 12px;resize:none;height:38px;outline:none;line-height:1.4;transition:border-color 0.15s;}
-  .input-row textarea:focus{border-color:rgba(200,245,100,0.35);}
-  .input-row textarea::placeholder{color:var(--text3);}
-  .send-btn{padding:9px 16px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;}
-  .send-btn:hover{opacity:0.85;}
-  .send-btn:disabled{opacity:0.35;cursor:not-allowed;}
-  .typing{display:flex;gap:4px;align-items:center;padding:10px 14px;}
-  .typing span{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:bounce 1.2s infinite;}
-  .typing span:nth-child(2){animation-delay:.2s}
-  .typing span:nth-child(3){animation-delay:.4s}
-  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
-  .privacy-note{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--text2);line-height:1.5;}
-  .privacy-icon{width:16px;height:16px;flex-shrink:0;opacity:0.5;}
+  .badge-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(143,214,148,0.25);}
+  .badge-off{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+
+  .presenza-btn{width:100%;padding:16px;border-radius:var(--radius-sm);border:1px solid rgba(255,143,63,0.35);background:var(--accent-dim2);color:var(--accent);font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;}
+  .presenza-btn:hover{background:var(--accent-dim);}
+  .presenza-btn.done{background:var(--green-dim);border-color:rgba(143,214,148,0.35);color:var(--green);cursor:default;}
+
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;letter-spacing:0.04em;}
+  .field-input,.field-textarea{width:100%;padding:9px 11px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
+  .field-input:focus,.field-textarea:focus{border-color:rgba(255,143,63,0.4);}
+  .field-input::placeholder{color:var(--text3);}
+  .field-row{display:flex;gap:8px;}
+  .field-row .field{flex:1;}
+
+  .ex-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;padding:8px 0;border-bottom:1px solid var(--border);align-items:end;}
+  .ex-row:last-of-type{border-bottom:none;}
+  .ex-row input{width:100%;padding:7px 8px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;min-width:0;-webkit-appearance:none;}
+  .ex-row input:focus{border-color:rgba(255,143,63,0.4);}
+  .ex-lbl{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;margin-bottom:3px;display:block;}
+  .ex-del{background:transparent;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;}
+  .ex-del:hover{color:var(--red);}
+
+  .add-ex-btn{padding:9px;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.18s;}
+  .add-ex-btn:hover{border-color:rgba(255,143,63,0.35);color:var(--accent);background:var(--accent-dim2);}
+
+  .save-btn{width:100%;padding:12px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;transition:opacity 0.15s;}
+  .save-btn:hover{opacity:0.85;}
+  .save-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .save-flash{background:var(--green)!important;}
+
+  .storico-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .storico-item:last-child{border-bottom:none;}
+  .storico-main{display:flex;flex-direction:column;gap:2px;}
+  .storico-sessione{font-size:13px;color:var(--text);}
+  .storico-data{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+  .storico-count{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;white-space:nowrap;}
+  .empty-msg{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;font-family:'DM Mono',monospace;}
+
+  .error-box{width:100%;max-width:480px;margin:40px 20px;padding:20px;background:var(--surface);border:1px solid var(--red-dim);border-radius:var(--radius);text-align:center;color:var(--text2);font-size:14px;line-height:1.6;}
+
   .footer{width:100%;max-width:480px;padding:16px 20px 32px;text-align:center;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .paste-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:flex-end;justify-content:center;}
-  .paste-overlay.open{display:flex;}
-  .paste-modal{width:100%;max-width:480px;background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border2);padding:20px;display:flex;flex-direction:column;gap:12px;animation:slideup 0.22s ease;}
-  @keyframes slideup{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-  .paste-modal-title{font-size:14px;font-weight:500;color:var(--text);}
-  .paste-modal textarea{width:100%;height:200px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;padding:12px;resize:none;outline:none;line-height:1.6;}
-  .paste-modal textarea:focus{border-color:rgba(200,245,100,0.3);}
-  .paste-modal textarea::placeholder{color:var(--text3);}
-  .paste-actions{display:flex;gap:8px;}
-  .btn-primary{flex:1;padding:11px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;}
-  .btn-secondary{padding:11px 18px;border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-size:14px;font-family:'DM Sans',sans-serif;border:1px solid var(--border2);cursor:pointer;}
-  .meal-row{padding:9px 0;border-bottom:1px solid var(--border);}
-  .meal-row:last-child{border-bottom:none;}
-  .meal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
-  .meal-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);font-family:'DM Mono',monospace;}
-  .meal-macro{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;}
-  .meal-wrap{display:flex;gap:6px;align-items:center;}
-  .meal-ta{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;padding:7px 10px;resize:none;height:36px;outline:none;line-height:1.4;-webkit-appearance:none;}
-  .meal-ta:focus{border-color:rgba(200,245,100,0.35);}
-  .meal-ta::placeholder{color:var(--text3);}
-  .calc-btn{padding:7px 10px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(200,245,100,0.25);color:var(--accent);font-size:13px;cursor:pointer;flex-shrink:0;font-family:'DM Mono',monospace;line-height:1;}
-  .calc-btn:disabled{opacity:0.35;cursor:not-allowed;}
-  .totali-bar{display:flex;border-top:1px solid var(--border);padding:12px 0 4px;margin-top:2px;}
-  .tot-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
-  .tot-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-family:'DM Mono',monospace;}
-  .tot-num{font-size:15px;font-weight:600;color:var(--accent);font-family:'DM Mono',monospace;}
-  .ps-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid var(--border);padding-top:12px;margin-top:4px;}
-  .ps-lbl{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:5px;display:block;}
-  .ps-row{display:flex;gap:6px;}
-  .ps-num{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:16px;font-family:'DM Mono',monospace;padding:7px 8px;outline:none;min-width:0;-webkit-appearance:none;}
-  .ps-num:focus{border-color:rgba(200,245,100,0.35);}
-  .ps-save{padding:7px 10px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(200,245,100,0.25);color:var(--accent);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'DM Mono',monospace;}
-  .ps-saved{background:rgba(200,245,100,0.2)!important;border-color:var(--accent)!important;}
 </style>
 </head>
 <body>
 
+<div id="app" style="width:100%;display:flex;flex-direction:column;align-items:center;">
 <div class="header">
   <div class="logo">
     <div class="logo-dot"></div>
-    <span class="logo-text" id="logo-text">Coach AI · Demo</span>
+    <span class="logo-text">ASD Basket Scicli Meerkat</span>
   </div>
-  <h1 class="headline" id="headline">Il tuo assistente<br>sempre disponibile</h1>
-  <p class="subline">Risponde ai clienti 24/7, li motiva e analizza i loro progressi fotografici.</p>
+  <h1 class="headline" id="headline">Preparazione Palestra</h1>
+  <p class="subline" id="subline">Caricamento profilo...</p>
 </div>
 
 <div class="container">
+
   <div class="card">
     <div class="card-header">
-      <span class="card-title">Scheda attiva</span>
-      <span class="badge badge-demo" id="scheda-badge">Demo</span>
+      <span class="card-title">Presenza oggi</span>
+      <span class="badge badge-off" id="presenza-badge">—</span>
     </div>
-    <div class="scheda-info">
-      <span class="scheda-name" id="scheda-name">Fabrizio · Body Transformation 12 sett.</span>
-      <div class="scheda-meta" id="scheda-meta">
-        <span class="tag">Split 4x/sett</span>
-        <span class="tag">Paleo-Zona 1191 kcal</span>
-        <span class="tag">90→80 kg</span>
-      </div>
-    </div>
-    <div class="upload-area">
-      <span class="upload-label">Vuoi provare con la scheda di un tuo cliente?</span>
-      <div class="upload-row">
-        <label class="upload-btn" for="file-input">Carica PDF</label>
-        <input type="file" id="file-input" accept=".pdf,.txt" onchange="handleFile(this)">
-        <button class="paste-btn" onclick="openPaste()">Incolla testo</button>
-      </div>
-    </div>
-    <div class="foto-section">
-      <span class="foto-label">La tua sfida personale</span>
-      <span class="foto-disclaimer">Solo corpo. Niente bugie, niente filtri. Salvate solo su questo dispositivo.</span>
-      <div class="foto-row">
-        <div class="foto-slot">
-          <div class="foto-thumb" onclick="document.getElementById('foto-prima-input').click()" id="thumb-prima">
-            <span class="placeholder">il tuo meglio</span>
-          </div>
-          <input type="file" id="foto-prima-input" accept="image/*" onchange="loadFoto(this,'prima')">
-          <div class="foto-slot-label">Best <span>forma migliore</span></div>
-        </div>
-        <div class="foto-slot">
-          <div class="foto-thumb" onclick="document.getElementById('foto-dopo-input').click()" id="thumb-dopo">
-            <span class="placeholder">oggi</span>
-          </div>
-          <input type="file" id="foto-dopo-input" accept="image/*" onchange="loadFoto(this,'dopo')">
-          <div class="foto-slot-label">Oggi <span>la realtà</span></div>
-        </div>
-      </div>
-      <button class="confronta-btn" id="confronta-btn" onclick="confrontaFoto()">Dimmi la verità, Coach</button>
+    <div class="card-body">
+      <button class="presenza-btn" id="presenza-btn" onclick="markPresenza()">Segna presenza di oggi</button>
     </div>
   </div>
 
-  <!-- DIARIO GIORNALIERO -->
   <div class="card">
     <div class="card-header">
-      <span class="card-title">Diario giornaliero</span>
-      <span class="badge badge-demo" id="data-badge">oggi</span>
+      <span class="card-title">Log allenamento forza</span>
     </div>
-    <div style="padding:10px 14px;">
-
-      <div class="meal-row">
-        <div class="meal-top"><span class="meal-lbl">Colazione</span><span class="meal-macro" id="macro-colazione">—</span></div>
-        <div class="meal-wrap"><textarea class="meal-ta" id="input-colazione" placeholder="es. 3 uova sode, 10g mandorle, 60g fragole..."></textarea><button class="calc-btn" id="btn-colazione" onclick="calcolaMacro('colazione')">✓</button></div>
-      </div>
-
-      <div class="meal-row">
-        <div class="meal-top"><span class="meal-lbl">Spuntino Matt.</span><span class="meal-macro" id="macro-spuntino_matt">—</span></div>
-        <div class="meal-wrap"><textarea class="meal-ta" id="input-spuntino_matt" placeholder="es. tonno 80g, carote, 5 mandorle..."></textarea><button class="calc-btn" id="btn-spuntino_matt" onclick="calcolaMacro('spuntino_matt')">✓</button></div>
-      </div>
-
-      <div class="meal-row">
-        <div class="meal-top"><span class="meal-lbl">Pranzo</span><span class="meal-macro" id="macro-pranzo">—</span></div>
-        <div class="meal-wrap"><textarea class="meal-ta" id="input-pranzo" placeholder="es. pollo 180g, patata dolce 150g, insalata, EVO..."></textarea><button class="calc-btn" id="btn-pranzo" onclick="calcolaMacro('pranzo')">✓</button></div>
-      </div>
-
-      <div class="meal-row">
-        <div class="meal-top"><span class="meal-lbl">Spuntino Pm</span><span class="meal-macro" id="macro-spuntino_pm">—</span></div>
-        <div class="meal-wrap"><textarea class="meal-ta" id="input-spuntino_pm" placeholder="es. bresaola 40g, mela piccola..."></textarea><button class="calc-btn" id="btn-spuntino_pm" onclick="calcolaMacro('spuntino_pm')">✓</button></div>
-      </div>
-
-      <div class="meal-row">
-        <div class="meal-top"><span class="meal-lbl">Cena</span><span class="meal-macro" id="macro-cena">—</span></div>
-        <div class="meal-wrap"><textarea class="meal-ta" id="input-cena" placeholder="es. pesce bianco 200g, verdure, zucca 200g, EVO..."></textarea><button class="calc-btn" id="btn-cena" onclick="calcolaMacro('cena')">✓</button></div>
-      </div>
-
-      <div class="meal-row">
-        <div class="meal-top"><span class="meal-lbl">Spuntino Sera</span><span class="meal-macro" id="macro-spuntino_sera">—</span></div>
-        <div class="meal-wrap"><textarea class="meal-ta" id="input-spuntino_sera" placeholder="es. frutti di bosco 100g..."></textarea><button class="calc-btn" id="btn-spuntino_sera" onclick="calcolaMacro('spuntino_sera')">✓</button></div>
-      </div>
-
-      <div class="totali-bar">
-        <div class="tot-col"><span class="tot-lbl">Proteine</span><span class="tot-num" id="tot-p">0g</span></div>
-        <div class="tot-col"><span class="tot-lbl">Carboidrati</span><span class="tot-num" id="tot-c">0g</span></div>
-        <div class="tot-col"><span class="tot-lbl">Grassi</span><span class="tot-num" id="tot-g">0g</span></div>
-        <div class="tot-col"><span class="tot-lbl">Kcal</span><span class="tot-num" id="tot-kcal">0</span></div>
-      </div>
-
-      <div class="ps-grid">
-        <div>
-          <span class="ps-lbl">Peso <span style="color:var(--text3)">(ogni venerdì)</span></span>
-          <div class="ps-row">
-            <input type="number" class="ps-num" id="input-peso" placeholder="kg" step="0.1" min="50" max="200">
-            <button class="ps-save" id="btn-peso" onclick="salvaPeso()">Salva</button>
-          </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <span class="field-label">Sessione</span>
+          <input type="text" class="field-input" id="input-sessione" placeholder="es. Forza gambe">
         </div>
-        <div>
-          <span class="ps-lbl">Sonno <span style="color:var(--text3)">(ore)</span></span>
-          <div class="ps-row">
-            <input type="number" class="ps-num" id="input-sonno" placeholder="ore" step="0.5" min="1" max="14">
-            <button class="ps-save" id="btn-sonno" onclick="salvaSonno()">Salva</button>
-          </div>
+        <div class="field" style="max-width:110px;">
+          <span class="field-label">Durata (min)</span>
+          <input type="number" class="field-input" id="input-durata" placeholder="45" min="0" max="240">
         </div>
       </div>
 
-      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
-        <span class="ps-lbl" style="display:block;margin-bottom:8px;">Apple Watch · allenamento</span>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div>
-            <span class="ps-lbl">Kcal attive</span>
-            <div class="ps-row">
-              <input type="number" class="ps-num" id="input-aw-kcal" placeholder="kcal" min="0" max="2000">
-            </div>
-          </div>
-          <div>
-            <span class="ps-lbl">FC media</span>
-            <div class="ps-row">
-              <input type="number" class="ps-num" id="input-aw-fc-media" placeholder="bpm" min="40" max="220">
-            </div>
-          </div>
-          <div>
-            <span class="ps-lbl">FC min</span>
-            <div class="ps-row">
-              <input type="number" class="ps-num" id="input-aw-fc-min" placeholder="bpm" min="40" max="220">
-            </div>
-          </div>
-          <div>
-            <span class="ps-lbl">FC max</span>
-            <div class="ps-row">
-              <input type="number" class="ps-num" id="input-aw-fc-max" placeholder="bpm" min="40" max="220">
-              <button class="ps-save" id="btn-aw" onclick="salvaAppleWatch()">Salva</button>
-            </div>
-          </div>
-        </div>
+      <div id="ex-rows"></div>
+      <button class="add-ex-btn" onclick="addExRow()">+ Esercizio</button>
+
+      <div class="field">
+        <span class="field-label">Note</span>
+        <textarea class="field-textarea" id="input-note" placeholder="note generali sulla sessione (opzionale)" style="height:50px;resize:none;"></textarea>
       </div>
 
+      <button class="save-btn" id="save-btn" onclick="salvaAllenamento()">Salva allenamento</button>
     </div>
   </div>
 
-  <div class="chat-card">
-    <div class="chat-header">
-      <div class="chat-avatar" id="chat-initials">AI</div>
-      <div>
-        <div class="chat-name" id="chat-name">Coach AI</div>
-        <div class="chat-status">online</div>
-      </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Storico recente</span>
     </div>
-    <div class="chat-msgs" id="msgs">
-      <div class="msg bot">
-        <div class="bubble" id="welcome-msg">Ciao Fabrizio! Sono il tuo Coach AI. Ho il tuo piano completo: allenamenti, Paleo-Zone, tutto. Niente scuse — scrivi pure!</div>
-        <span class="msg-time">ora</span>
-      </div>
-    </div>
-    <div class="escalate-banner" id="escalate-banner">⚠ Escalation al trainer — risposta inviata, notifica in arrivo</div>
-    <div class="suggestions">
-      <button class="sug" onclick="useSug(this)">Qual è il mio prossimo allenamento?</button>
-      <button class="sug" onclick="useSug(this)">Cosa mangio oggi?</button>
-      <button class="sug" onclick="useSug(this)">Lombare fastidiosa</button>
-      <button class="sug" onclick="useSug(this)">Ho saltato un giorno</button>
-    </div>
-    <div class="input-row">
-      <textarea id="txt" placeholder="Scrivi come faresti su WhatsApp..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
-      <button class="send-btn" id="send-btn" onclick="send()">Invia</button>
+    <div class="card-body" id="storico-list">
+      <div class="empty-msg">Caricamento...</div>
     </div>
   </div>
 
-  <div class="privacy-note">
-    <svg class="privacy-icon" viewBox="0 0 16 16" fill="none">
-      <path d="M8 1L2 3.5V8c0 3.3 2.5 5.7 6 7 3.5-1.3 6-3.7 6-7V3.5L8 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-      <path d="M5.5 8l1.8 1.8L10.5 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span>Schede e foto non vengono mai salvate — tutto rimane solo nel tuo dispositivo durante la sessione.</span>
-  </div>
 </div>
 
-<div class="paste-overlay" id="paste-overlay" onclick="handleOverlayClick(event)">
-  <div class="paste-modal">
-    <div class="paste-modal-title">Incolla il testo della scheda</div>
-    <textarea id="paste-txt" placeholder="Incolla qui la scheda del cliente: esercizi, serie, ripetizioni, piano alimentare..."></textarea>
-    <div class="paste-actions">
-      <button class="btn-primary" onclick="loadPastedScheda()">Carica scheda</button>
-      <button class="btn-secondary" onclick="closePaste()">Annulla</button>
-    </div>
-  </div>
+<div class="footer">ASD Basket Scicli Meerkat · preparazione atletica</div>
 </div>
-
-<div class="footer" id="footer-txt">coach-ai · demo · nessun dato salvato</div>
 
 <script>
-const WORKER_URL = 'https://trainer-ai-proxy.f-lonatica.workers.dev';
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
 
-const DEMO_SYSTEM = `Sei il Coach AI personale di Fabrizio. Tono diretto, motivante, esigente — niente scuse, vuoi il meglio per lui. Rispondi in italiano, breve come WhatsApp. Max 5-6 righe.
-
-PROFILO: Fabrizio, 52 anni, 185 cm, 90 kg → obiettivo 80 kg entro l'8 agosto 2026. Protrusione lombare: piedi SEMPRE alti in Leg Press, NO squat bilanciere, NO stacchi. Plenity: 3 caps + 500ml acqua, 20 min PRIMA di pranzo (12:40) e cena (19:10) — mai saltare.
-
-NUTRIZIONE PALEO-ZONA (12P + 11C + 17F = 1191 kcal/die — uguale ogni giorno):
-Colazione 7:30 (2P+2C+5F): 2 uova sode + 180g mela + 18g mandorle | 400 kcal
-Spuntino matt 10:30 (1P+1C+1F): 1 uovo sodo + 90g mela | 100 kcal
-Pranzo 13:00 (4P+3C+6F): 120g pollo/pesce/carne + abbondante verdura + 90g frutta + 18g olio EVO | ~550 kcal
-Spuntino pm 16:30 (1P+1C+1F): 20g bresaola + 90g mela + 4g noci | 90 kcal
-Cena 19:30 (3P+3C+3F): 90-120g proteina + verdure abbondanti + 90-115g frutta + 9g olio EVO | ~380 kcal
-Pre-nanna 22:00 (1P+1C+1F): 1 albume (o 1 uovo) + 90g mela + 4g noci | 90 kcal
-1 blocco P=7g (30g pollo cotto, 1 uovo, 35g tonno, 20g bresaola) | 1 blocco C=9g (90g mela, 115g kiwi, 130g arancia, 170g fragole) | 1 blocco F=3g (3g olio EVO, 3 mandorle, 1 noce)
-NO: pane, pasta, riso, legumi, latticini, zuccheri, prodotti industriali. Acqua 2,5-3L/die.
-
-INTEGRATORI (dopo colazione): B Complex + Omega3 + Super Fat Burner. Dopo pranzo: Fat Burner. Dopo cena: Omega3 + Fat Burner. Ore 22:30: Magnesio Supremo in tisana.
-
-PROGRAMMA ALLENAMENTO SPLIT 4x/settimana (ore 6:45, a digiuno, 30-35 min):
-LUNEDÌ — Lower Body + Core (34 min, ~420 kcal):
-Circuito 3 giri, pausa 2' tra giri: Ellittica 2' → Leg Press 15 rip (piedi ALTI!) → Leg Curl seduto 12 rip → Hip Thrust 15 rip → Abduzione 12 rip → Cyclette 1'30" → Leg Extension 12 rip → Plank 1' → Dead Bug 20 rip → Side Plank 30" dx+sx
-
-MERCOLEDÌ — Upper Pull + Spalle (31 min, ~380 kcal):
-Circuito 3 giri: Rowing machine 2' → Lat Machine larga 12 rip → Rematore 12 rip → Ellittica 1'30" → Pulley alto presa inversa 10 rip → Face Pull 12 rip → Step veloce 1' → Shoulder Press seduto 12 rip (schienale 80°) → Alzate laterali 10 rip → Plank 1'
-
-VENERDÌ — Push + Braccia (31 min, ~380 kcal):
-Circuito 3 giri: Ellittica 2' → Chest Press 12 rip (45°) → Pectoral Machine 12 rip → Cyclette 1'30" → French Press manubri 12 rip → Push-down cavi 12 rip → Rowing machine 1' → Curl manubri 12 rip → Curl martello 12 rip → Plank 1'
-
-SABATO — Full Body Metabolico (34 min, ~440 kcal):
-Circuito 3 giri: Ellittica 2' → Leg Press 12 rip → Leg Extension 10 rip → Rowing machine 1' → Rowing Back 12 rip → Lat Machine inversa 10 rip → Step veloce 1' → Spinte manubri alto 12 rip → Alzate laterali 10 rip → Plank 1'
-
-MARTEDÌ, GIOVEDÌ, DOMENICA: Riposo attivo.
-
-FASI PROGRESSIONE 12 SETTIMANE:
-Fase 1 (sett 1-3, fino 7 giu): 3 giri, pausa 2', focus tecnica
-Fase 2 (sett 4-6, fino 28 giu): 3 giri, pausa 90", carichi +5-10%
-Fase 3 (sett 7-9, fino 19 lug): 4 giri se schiena OK, pausa 90", 40-42 min
-Fase 4 (sett 10-12, fino 8 ago): 4 giri, pausa 60", sprint finali massimi
-
-PROGRESSI ATTESI: sett 4 (15 giu) → 86 kg | sett 8 (13 lug) → 83 kg | sett 12 (8 ago) → 80 kg
-
-REGOLE COACH: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore lombare acuto/sciatalgia: scrivi "⚠ SCALA AL MEDICO" in fondo 4) Non inventare esercizi o cibi fuori dal piano 5) Concludi SEMPRE con una frase motivazionale breve e potente 6) Se chiede tecnica/video: breve spiegazione + "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano"`;
-
-let customSystem = null;
-let customSystemSource = null;
-let pdfBase64 = null;
-let history = [];
-let busy = false;
-let trainerName = '';
-let clienteName = '';
-let sessionId = '';
-let fotoPrima = null;
-let fotoDopo = null;
-let trainingLog = [];
-
-function getSystem() { return customSystem || DEMO_SYSTEM; }
-
-async function getSystemWithLog() {
-  const log = await getTrainingLog();
-  return getSystem() + log;
-}
-
-function now() { return new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); }
-function tsISO() { return new Date().toISOString(); }
+let playerId = '';
+let profilo = null;
 
 function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
 }
 
-function initSession() {
-  const params = new URLSearchParams(window.location.search);
-  const tn = params.get('trainer');
-  const cn = params.get('cliente');
-  trainerName = tn ? tn.trim() : 'Fabrizio';
-  clienteName = cn ? cn.trim() : 'test';
-  sessionId = slugify(trainerName) + '_' + slugify(clienteName) + '_' + Date.now();
-
-  if(tn && tn.trim()) {
-    const display = 'Coach ' + tn.trim() + ' AI';
-    document.getElementById('logo-text').textContent = display + ' · Demo';
-    document.getElementById('headline').innerHTML = 'Assistente AI<br>di ' + tn.trim();
-    document.getElementById('chat-name').textContent = display;
-    document.getElementById('chat-initials').textContent = tn.trim().charAt(0).toUpperCase();
-    document.getElementById('welcome-msg').textContent = 'Ciao! Sono l\'assistente AI di ' + tn.trim() + '. Sono qui per assisterti 24/7. Dubbi? Domande sulla scheda o sulla dieta? Scrivi pure!';
-    document.getElementById('footer-txt').textContent = 'coach-ai · ' + tn.trim().toLowerCase() + ' · nessun dato salvato';
-    document.title = 'Coach ' + tn.trim() + ' AI';
-  }
-}
-
-// SALVA MESSAGGIO SU FIREBASE
-function saveMsg(ruolo, testo) {
-  const key = Date.now();
-  const path = '/coach_ai_conversations/' + slugify(trainerName) + '/' + slugify(clienteName) + '/' + key + '.json';
-  fetch(FB_URL + path, {
-    method: 'PUT',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      ruolo,
-      testo: testo.substring(0, 2000),
-      ts: tsISO(),
-      trainer: trainerName,
-      cliente: clienteName
-    })
-  }).catch(()=>{});
-}
-
-function linkify(text) {
-  const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:var(--accent);text-decoration:underline;word-break:break-all;">$1</a>');
-}
-
-function addMsg(text, role, fotoUrl) {
-  const msgs = document.getElementById('msgs');
-  const escalate = text.includes('⚠ SCALA AL TRAINER');
-  const clean = text.replace('⚠ SCALA AL TRAINER','').trim();
-  const d = document.createElement('div');
-  d.className = 'msg ' + (role==='user'?'user':'bot');
-  let html = '';
-  if(fotoUrl) html += `<img src="${fotoUrl}" class="msg-foto">`;
-  const bubbleContent = role==='bot' ? linkify(clean) : clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  html += `<div class="bubble">${bubbleContent}</div>`;
-  html += `<span class="msg-time">${now()}</span>`;
-  d.innerHTML = html;
-  msgs.appendChild(d);
-  document.getElementById('escalate-banner').style.display = escalate ? 'block' : 'none';
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function showTyping() {
-  const msgs = document.getElementById('msgs');
-  const d = document.createElement('div');
-  d.className='msg bot'; d.id='typing-msg';
-  d.innerHTML='<div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
-  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
-}
-function removeTyping() { const t=document.getElementById('typing-msg'); if(t) t.remove(); }
-
-async function callAI(text, extraContent) {
-  busy=true; document.getElementById('send-btn').disabled=true;
-  showTyping();
-
-  const userContent = extraContent || text;
-  const system = await getSystemWithLog();
-  let messages;
-
-  if(pdfBase64 && history.length === 0) {
-    messages = [{ role:'user', content:[
-      { type:'document', source:{ type:'base64', media_type:'application/pdf', data:pdfBase64 } },
-      { type:'text', text: typeof userContent==='string' ? userContent : text }
-    ]}];
-  } else if(pdfBase64 && history.length > 0) {
-    const rebuilt = history.map((h,i) => i===0 ? {
-      role:'user', content:[
-        { type:'document', source:{ type:'base64', media_type:'application/pdf', data:pdfBase64 } },
-        { type:'text', text:h.content }
-      ]
-    } : { role:h.role, content:h.content });
-    rebuilt.push({ role:'user', content: userContent });
-    messages = rebuilt;
-  } else {
-    const allMsgs = [...history, { role:'user', content: userContent }];
-    messages = allMsgs.map(h=>({ role:h.role, content:h.content }));
-  }
-
-  history.push({ role:'user', content: text });
-  saveMsg('cliente', text);
-
-  try {
-    const res = await fetch(WORKER_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, system:system, messages })
-    });
-    const data = await res.json();
-    const reply = data.content?.[0]?.text || 'Errore nella risposta.';
-    history.push({ role:'assistant', content:reply });
-    saveMsg('agente', reply);
-    saveSessione();
-    estraiLog(text);
-    removeTyping(); addMsg(reply,'bot');
-  } catch(e) {
-    removeTyping();
-    addMsg('Errore di connessione. Controlla la rete e riprova.','bot');
-  }
-  busy=false; document.getElementById('send-btn').disabled=false;
-}
-
-function send() {
-  const txt=document.getElementById('txt');
-  const v=txt.value.trim();
-  if(!v||busy) return;
-  txt.value='';
-  document.getElementById('escalate-banner').style.display='none';
-  addMsg(v,'user'); callAI(v);
-}
-
-function useSug(btn) {
-  if(busy) return;
-  document.getElementById('escalate-banner').style.display='none';
-  addMsg(btn.textContent,'user'); callAI(btn.textContent);
-}
-
-function loadFoto(input, tipo) {
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const img=new Image();
-    img.onload=function(){
-      const MAX=1200;
-      let w=img.width, h=img.height;
-      if(w>MAX||h>MAX){ if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;} }
-      const canvas=document.createElement('canvas');
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const url=canvas.toDataURL('image/jpeg',0.82);
-      const base64=url.split(',')[1];
-      const fotoObj={url,base64,mtype:'image/jpeg'};
-      if(tipo==='prima'){ fotoPrima=fotoObj; document.getElementById('thumb-prima').innerHTML=`<img src="${url}">`; }
-      else { fotoDopo=fotoObj; document.getElementById('thumb-dopo').innerHTML=`<img src="${url}">`; }
-      document.getElementById('confronta-btn').style.display=(fotoPrima||fotoDopo)?'block':'none';
-      try { localStorage.setItem('coach_foto_'+tipo, JSON.stringify(fotoObj)); } catch(e) {}
-    };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function loadFotoFromStorage() {
-  ['prima','dopo'].forEach(tipo => {
-    try {
-      const saved = localStorage.getItem('coach_foto_'+tipo);
-      if(!saved) return;
-      const f = JSON.parse(saved);
-      if(!f||!f.url) return;
-      if(tipo==='prima'){ fotoPrima=f; document.getElementById('thumb-prima').innerHTML=`<img src="${f.url}">`; }
-      else { fotoDopo=f; document.getElementById('thumb-dopo').innerHTML=`<img src="${f.url}">`; }
-      document.getElementById('confronta-btn').style.display='block';
-    } catch(e) {}
-  });
-}
-
-async function confrontaFoto() {
-  if(busy) return;
-  const btn=document.getElementById('confronta-btn');
-  btn.disabled=true;
-  document.getElementById('escalate-banner').style.display='none';
-  let content=[], msgText='';
-
-  if(fotoPrima && fotoDopo) {
-    msgText='Confronto: il mio meglio vs oggi';
-    addMsg(msgText,'user',fotoPrima.url);
-    content=[
-      { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
-      { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
-      { type:'text', text:'Prima foto = Fabrizio nella sua forma migliore. Seconda foto = Fabrizio oggi. Solo corpo, senza volto. Fai un confronto brutalmente onesto: cosa ha perso in definizione, massa, postura. Non edulcorare nulla — il gap deve bruciare. Poi trasforma quella frustrazione in carburante: digli esattamente perché può tornare lì e superarsi. Chiudi con una sfida diretta e provocatoria che lo faccia alzare dalla sedia adesso.' }
-    ];
-  } else if(fotoPrima) {
-    msgText='Questa è la mia forma migliore';
-    addMsg(msgText,'user',fotoPrima.url);
-    content=[
-      { type:'image', source:{ type:'base64', media_type:fotoPrima.mtype, data:fotoPrima.base64 } },
-      { type:'text', text:'Questa è la foto di Fabrizio nella sua forma migliore (solo corpo, senza volto). Descrivi cosa vedi in modo provocatorio e sfidante: questa è la versione di lui che esiste, che è già stata raggiunta. Non è un sogno — è già successo. Digli con durezza e rispetto che questa forma lo aspetta, che il lavoro che deve fare non è impossibile ma richiede scelte precise ogni giorno. Sfidalo a fare la foto "oggi" per vedere la distanza reale.' }
-    ];
-  } else {
-    msgText='Questa sono io oggi';
-    addMsg(msgText,'user',fotoDopo.url);
-    content=[
-      { type:'image', source:{ type:'base64', media_type:fotoDopo.mtype, data:fotoDopo.base64 } },
-      { type:'text', text:'Questa è la foto di Fabrizio oggi (solo corpo, senza volto). Sii onesto e diretto: descrivi la composizione corporea attuale senza pietà ma senza cattiveria. Questo è il punto di partenza reale — non il punto più basso, ma il punto da cui si riparte. Sfidalo: digli cosa può cambiare in 30, 60, 90 giorni se segue il piano senza deroghe. Chiudi con una frase che gli bruci dentro e lo faccia alzare adesso.' }
-    ];
-  }
-
-  saveMsg('cliente', msgText);
-  busy=true; document.getElementById('send-btn').disabled=true; showTyping();
-
-  try {
-    const res=await fetch(WORKER_URL,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, system:getSystem(), messages:[{role:'user',content}] })
-    });
-    const data=await res.json();
-    const reply=data.content?.[0]?.text||'Errore.';
-    history.push({role:'user',content:msgText});
-    history.push({role:'assistant',content:reply});
-    saveMsg('agente', reply);
-    removeTyping(); addMsg(reply,'bot');
-  } catch(e){
-    removeTyping();
-    addMsg('Errore di connessione. Riprova.','bot');
-  }
-  busy=false; document.getElementById('send-btn').disabled=false; btn.disabled=false;
-}
-
-function handleFile(input) {
-  const file=input.files[0]; if(!file) return;
-  if(file.type==='application/pdf'){
-    const reader=new FileReader();
-    reader.onload=function(e){
-      const bytes=new Uint8Array(e.target.result);
-      let binary=''; for(let i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
-      applyPDF(file.name.replace('.pdf',''),btoa(binary));
-    };
-    reader.readAsArrayBuffer(file);
-  } else {
-    const reader=new FileReader();
-    reader.onload=function(e){ applyTesto(file.name,e.target.result); };
-    reader.readAsText(file);
-  }
-}
-
-function applyPDF(nome,base64){
-  const tl=trainerName&&trainerName!='demo'?' di '+trainerName:'';
-  pdfBase64=base64; history=[];
-  customSystem=`Sei un assistente AI per il personal training${tl}. Hai letto la scheda dal PDF allegato. Rispondi in italiano, tono diretto e amichevole. Max 5-6 righe. REGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" 4) Non inventare nulla fuori dal PDF 5) Concludi SEMPRE con una frase motivazionale breve e autentica 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
-  customSystemSource='pdf';
-  aggiornaUI(nome,'PDF reale','Letto da Claude');
-}
-
-function applyTesto(nome,contenuto){
-  const tl=trainerName&&trainerName!='demo'?' di '+trainerName:'';
-  pdfBase64=null; history=[];
-  customSystem=`Sei un assistente AI per il personal training${tl}. Conosci la scheda del cliente. Rispondi in italiano, tono diretto e amichevole. Max 5-6 righe.\n\nSCHEDA — ${nome}:\n${contenuto.substring(0,4000)}\n\nREGOLE: 1) Breve come WhatsApp 2) Mai sensi di colpa 3) Dolore acuto: scrivi "⚠ SCALA AL TRAINER" 4) Non inventare nulla fuori dalla scheda 5) Concludi SEMPRE con una frase motivazionale breve e autentica 6) Se il cliente chiede come si esegue un esercizio o vuole vedere un video, rispondi con una breve spiegazione e aggiungi: "Cerca su YouTube: https://www.youtube.com/results?search_query=NOME+ESERCIZIO+tutorial+italiano" sostituendo NOME+ESERCIZIO con il nome dell'esercizio richiesto.`;
-  customSystemSource='testo';
-  aggiornaUI(nome,'Scheda reale','Caricata ora');
-}
-
-function aggiornaUI(nome,t1,t2){
-  let tags = `<span class="tag">${t1}</span><span class="tag">${t2}</span>`;
-  document.getElementById('scheda-name').textContent = nome;
-  document.getElementById('scheda-meta').innerHTML = tags;
-  document.getElementById('scheda-badge').textContent='Attiva';
-  document.getElementById('scheda-badge').className='badge badge-custom';
-  document.getElementById('msgs').innerHTML='';
-  addMsg(`Perfetto! Ho letto la scheda "${nome}". Sono pronto — scrivi come faresti su WhatsApp.`,'bot');
-  document.getElementById('escalate-banner').style.display='none';
-  saveMsg('sistema','Scheda caricata: '+nome);
-}
-
-function openPaste(){document.getElementById('paste-overlay').classList.add('open');setTimeout(()=>document.getElementById('paste-txt').focus(),100);}
-function closePaste(){document.getElementById('paste-overlay').classList.remove('open');document.getElementById('paste-txt').value='';}
-function handleOverlayClick(e){if(e.target===document.getElementById('paste-overlay'))closePaste();}
-function loadPastedScheda(){
-  const txt=document.getElementById('paste-txt').value.trim();
-  if(txt.length<50){alert('Incolla almeno un po\' di testo della scheda.');return;}
-  closePaste(); applyTesto('Scheda personalizzata',txt);
-}
-
-// SALVATAGGIO SESSIONE SU FIREBASE
-function saveSessione() {
-  if(!trainerName || !clienteName) return;
-  const key = slugify(trainerName)+'_'+slugify(clienteName);
-  const data = {
-    ts: tsISO(),
-    trainer: trainerName,
-    cliente: clienteName,
-    customSystem: customSystemSource ? customSystem : '',
-    customSystemSource: customSystemSource||'',
-    schedaNome: document.getElementById('scheda-name')?.textContent||'',
-    messaggi: history.slice(-20)
-  };
-  fetch(FB_URL+'/coach_ai_sessioni/'+key+'.json',{
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(data)
-  }).catch(()=>{});
-}
-
-async function loadSessione() {
-  if(!trainerName || !clienteName || trainerName==='demo') return;
-  const key = slugify(trainerName)+'_'+slugify(clienteName);
-  try {
-    const res = await fetch(FB_URL+'/coach_ai_sessioni/'+key+'.json');
-    const data = await res.json();
-    if(!data || !data.ts) return;
-    const ore = (Date.now() - new Date(data.ts).getTime()) / 3600000;
-    if(ore > 72) return;
-    if(data.customSystem && data.customSystemSource) { customSystem = data.customSystem; customSystemSource = data.customSystemSource; }
-    if(data.messaggi && data.messaggi.length > 0) {
-      history = data.messaggi;
-      document.getElementById('msgs').innerHTML = '';
-      history.forEach(m => addMsg(m.content, m.role==='user'?'user':'bot'));
-      if(customSystemSource) {
-        const nome = data.schedaNome || data.cliente;
-        document.getElementById('scheda-name').textContent = nome;
-        document.getElementById('scheda-badge').textContent = 'Attiva';
-        document.getElementById('scheda-badge').className = 'badge badge-custom';
-        document.getElementById('scheda-meta').innerHTML = `<span class="tag">Sessione ripristinata</span><span class="tag">${Math.round(ore)}h fa</span>`;
-      }
-      addMsg('Bentornato! Ho ripristinato la tua sessione precedente. Continua pure da dove avevamo lasciato.','bot');
-    }
-  } catch(e) {}
-}
-
-function addInfoMsg(text) {
-  const msgs = document.getElementById('msgs');
-  const d = document.createElement('div');
-  d.style.cssText = 'text-align:center;padding:4px 14px;';
-  d.innerHTML = `<span style="font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;opacity:0.75;">${text}</span>`;
-  msgs.appendChild(d);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function localDateStr() {
+function todayStr() {
   const d = new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
-// TRAINING LOG — estrazione automatica da messaggi liberi
-async function estraiLog(testo) {
-  if(trainerName==='demo' || !clienteName) return;
-  const paroleChiave = ['kg','serie','rip','rep','set','squat','press','deadlift','curl','row','pull','push','plank','hip','leg','chest','lat','shoulder','spalla','petto','schiena','gambe','allenamento','workout','seduta','full body','lower body','upper pull','minuti','min','fatto','rematore','alzate','step','ellittica','cyclette','rowing','abduzione','extension','thrust','dead bug','side plank','face pull','pulley','pectoral','french','martello','spinte','watch','bpm','frequenza','battito','kcal attive'];
-  const hasKeyword = paroleChiave.some(k => testo.toLowerCase().includes(k));
-  if(!hasKeyword) return;
+function showLinkError() {
+  document.getElementById('app').innerHTML = `
+    <div class="header">
+      <div class="logo"><div class="logo-dot"></div><span class="logo-text">ASD Basket Scicli Meerkat</span></div>
+    </div>
+    <div class="error-box">Link non valido o giocatore non trovato.<br>Contatta lo staff per ricevere il tuo link personale.</div>`;
+}
 
-  const oggi = localDateStr();
+async function initSession() {
+  const params = new URLSearchParams(window.location.search);
+  const g = params.get('giocatore');
+  if(!g || !g.trim()) { showLinkError(); return; }
+  playerId = slugify(g.trim());
 
   try {
-    const res = await fetch(WORKER_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:600,
-        system:`Sei un estrattore di dati fitness. Rispondi SOLO con JSON valido, senza markdown. Formato esatto: {"data":"${oggi}","sessione":"","durata_min":0,"esercizi":[{"nome":"","serie":0,"rip":0,"carico_kg":0,"note":""}],"note_generali":"","watch":{"kcal":0,"fc_media":0,"fc_min":0,"fc_max":0}}. Regole: sessione = tipo allenamento (es. "Lower Body","Upper Pull","Push+Braccia","Full Body Metabolico"); durata_min = minuti totali (0 se non specificato); carico_kg = 0 se non specificato; watch = dati Apple Watch SE presenti (kcal=calorie attive bruciate, fc_media/min/max=frequenza cardiaca in bpm), altrimenti tutti 0; data sempre "${oggi}". Se nessun esercizio specifico: {"data":"","esercizi":[],"watch":{"kcal":0,"fc_media":0,"fc_min":0,"fc_max":0}}.`,
-        messages:[{role:'user', content:'Estrai i dati fitness da questo messaggio: '+testo}]
-      })
-    });
+    const res = await fetch(FB_URL + '/basket_roster/' + playerId + '.json');
+    profilo = await res.json();
+  } catch(e) { profilo = null; }
+
+  if(!profilo || !profilo.nome) { showLinkError(); return; }
+
+  document.getElementById('headline').textContent = 'Ciao, ' + profilo.nome;
+  const metaBits = [profilo.ruolo, profilo.altezza_cm ? profilo.altezza_cm+' cm' : null, profilo.peso_kg ? profilo.peso_kg+' kg' : null].filter(Boolean);
+  document.getElementById('subline').textContent = metaBits.length ? metaBits.join(' · ') : 'Preparazione atletica in palestra';
+
+  addExRow();
+  checkPresenza();
+  loadStorico();
+}
+
+// ─── PRESENZA ───────────────────────────────────────────────
+
+async function checkPresenza() {
+  try {
+    const res = await fetch(FB_URL + '/basket_presenze/' + playerId + '/' + todayStr() + '.json');
     const data = await res.json();
-    const raw = data.content?.[0]?.text||'';
-    // estrazione JSON robusta: cerca il primo oggetto JSON anche se ci sono testi extra
-    let jsonStr = raw.replace(/```json|```/g,'').trim();
-    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-    if(jsonMatch) jsonStr = jsonMatch[0];
-    const log = JSON.parse(jsonStr);
-    if(!log.esercizi || log.esercizi.length===0) return;
-    // normalizza la data alla data locale (Haiku potrebbe aver usato formato diverso)
-    log.data = oggi;
-    const key = slugify(trainerName)+'_'+slugify(clienteName);
-    const logKey = Date.now();
-    fetch(FB_URL+'/coach_ai_log/'+key+'/'+logKey+'.json',{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({...log, trainer:trainerName, cliente:clienteName})
-    }).catch(()=>{});
-    trainingLog.push(log);
-    addInfoMsg('✓ Allenamento salvato — '+(log.sessione||'Sessione')+' · '+log.esercizi.length+' esercizi'+(log.durata_min>0?' · '+log.durata_min+' min':''));
-    // salva dati Apple Watch se presenti nel messaggio
-    if(log.watch && (log.watch.kcal>0 || log.watch.fc_media>0)) {
-      salvaWatchData(log.watch, oggi);
-    }
-  } catch(e) {
-    console.error('[estraiLog] errore estrazione:', e);
+    setPresenzaUI(!!(data && data.presente));
+  } catch(e) {}
+}
+
+function setPresenzaUI(done) {
+  const btn = document.getElementById('presenza-btn');
+  const badge = document.getElementById('presenza-badge');
+  if(done) {
+    btn.textContent = '✓ Presenza registrata';
+    btn.classList.add('done');
+    badge.textContent = 'presente';
+    badge.className = 'badge badge-ok';
+  } else {
+    btn.textContent = 'Segna presenza di oggi';
+    btn.classList.remove('done');
+    badge.textContent = 'non registrata';
+    badge.className = 'badge badge-off';
   }
 }
 
-async function getTrainingLog() {
-  if(trainerName==='demo' || !clienteName) return '';
-  const key = slugify(trainerName)+'_'+slugify(clienteName);
-  try {
-    const res = await fetch(FB_URL+'/coach_ai_log/'+key+'.json');
-    const data = await res.json();
-    if(!data) return '';
-    const entries = Object.values(data).sort((a,b)=>new Date(a.data)-new Date(b.data)).slice(-8);
-    if(entries.length===0) return '';
-    let log = '\n\nSTORICO ALLENAMENTI (ultime sessioni):\n';
-    entries.forEach(e=>{
-      if(!e.esercizi||e.esercizi.length===0) return;
-      log += `\n${e.data}${e.sessione?' · '+e.sessione:''}:\n`;
-      e.esercizi.forEach(ex=>{
-        if(ex.nome) log += `  - ${ex.nome}: ${ex.serie||'?'}x${ex.rip||'?'}${ex.carico_kg>0?' @ '+ex.carico_kg+'kg':''}${ex.note?' ('+ex.note+')':''}\n`;
-      });
-      if(e.note_generali) log += `  Note: ${e.note_generali}\n`;
-    });
-    return log;
-  } catch(e) { return ''; }
+async function markPresenza() {
+  await fetch(FB_URL + '/basket_presenze/' + playerId + '/' + todayStr() + '.json', {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ data: todayStr(), presente: true, ts: Date.now() })
+  }).catch(()=>{});
+  setPresenzaUI(true);
 }
 
-// DIARIO GIORNALIERO
-const MEALS = ['colazione','spuntino_matt','pranzo','spuntino_pm','cena','spuntino_sera'];
-let macroData = {};
-MEALS.forEach(m => macroData[m] = {desc:'',p:0,c:0,g:0,kcal:0,ok:false});
+// ─── LOG ALLENAMENTO ────────────────────────────────────────
 
-async function calcolaMacro(pasto) {
-  const input = document.getElementById('input-'+pasto);
-  const btn = document.getElementById('btn-'+pasto);
-  const desc = input.value.trim();
-  if(!desc) return;
-  btn.disabled=true; btn.textContent='…';
-  try {
-    const res = await fetch(WORKER_URL,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001', max_tokens:150,
-        system:'Sei un nutrizionista. Calcola i macronutrienti per la lista di alimenti. Rispondi SOLO con JSON: {"p":0,"c":0,"g":0,"kcal":0} dove p=proteine g, c=carboidrati g, g=grassi g, kcal=calorie. Arrotonda a interi.',
-        messages:[{role:'user',content:'Calcola macronutrienti per: '+desc}]
-      })
+function addExRow() {
+  const wrap = document.getElementById('ex-rows');
+  const row = document.createElement('div');
+  row.className = 'ex-row';
+  row.innerHTML = `
+    <div><span class="ex-lbl">Esercizio</span><input type="text" placeholder="es. Squat"></div>
+    <div><span class="ex-lbl">Serie</span><input type="number" min="0" max="20"></div>
+    <div><span class="ex-lbl">Rip</span><input type="number" min="0" max="100"></div>
+    <div style="display:flex;gap:4px;align-items:end;"><input type="number" min="0" max="500" step="0.5" placeholder="kg" style="flex:1;"><button class="ex-del" onclick="this.closest('.ex-row').remove()">✕</button></div>`;
+  wrap.appendChild(row);
+}
+
+async function salvaAllenamento() {
+  const sessione = document.getElementById('input-sessione').value.trim();
+  const durata_min = parseInt(document.getElementById('input-durata').value) || 0;
+  const note_generali = document.getElementById('input-note').value.trim();
+
+  const rows = document.querySelectorAll('#ex-rows .ex-row');
+  const esercizi = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const nome = inputs[0].value.trim();
+    if(!nome) return;
+    esercizi.push({
+      nome,
+      serie: parseInt(inputs[1].value) || 0,
+      rip: parseInt(inputs[2].value) || 0,
+      carico_kg: parseFloat(inputs[3].value) || 0
     });
-    const data = await res.json();
-    const raw = data.content?.[0]?.text||'{}';
-    const m = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    macroData[pasto] = {desc, p:m.p||0, c:m.c||0, g:m.g||0, kcal:m.kcal||0, ok:true};
-    document.getElementById('macro-'+pasto).textContent = `P:${m.p}g C:${m.c}g G:${m.g}g (${m.kcal}kcal)`;
-    aggiornaTotali();
-    salvaNutri();
+  });
+
+  if(esercizi.length === 0) { alert('Aggiungi almeno un esercizio con il nome compilato.'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  const payload = { data: todayStr(), sessione: sessione || 'Allenamento', durata_min, esercizi, note_generali };
+
+  try {
+    await fetch(FB_URL + '/basket_allenamenti/' + playerId + '/' + Date.now() + '.json', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    await markPresenza();
+
+    document.getElementById('input-sessione').value = '';
+    document.getElementById('input-durata').value = '';
+    document.getElementById('input-note').value = '';
+    document.getElementById('ex-rows').innerHTML = '';
+    addExRow();
+
+    btn.classList.add('save-flash');
+    btn.textContent = '✓ Salvato';
+    setTimeout(()=>{ btn.classList.remove('save-flash'); btn.textContent='Salva allenamento'; btn.disabled=false; }, 1800);
+
+    loadStorico();
   } catch(e) {
-    document.getElementById('macro-'+pasto).textContent = 'errore';
+    btn.disabled = false;
+    alert('Errore di salvataggio, riprova.');
   }
-  btn.disabled=false; btn.textContent='✓';
 }
 
-function aggiornaTotali() {
-  let p=0,c=0,g=0,kcal=0;
-  MEALS.forEach(m=>{p+=macroData[m].p;c+=macroData[m].c;g+=macroData[m].g;kcal+=macroData[m].kcal;});
-  document.getElementById('tot-p').textContent=p+'g';
-  document.getElementById('tot-c').textContent=c+'g';
-  document.getElementById('tot-g').textContent=g+'g';
-  document.getElementById('tot-kcal').textContent=kcal;
-}
+// ─── STORICO ────────────────────────────────────────────────
 
-async function caricaNutri() {
-  if(trainerName==='demo'||!clienteName) return;
-  const today=new Date().toISOString().split('T')[0];
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
+async function loadStorico() {
+  const el = document.getElementById('storico-list');
   try {
-    const res=await fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+today+'.json');
-    const data=await res.json();
-    if(!data) return;
-    MEALS.forEach(meal=>{
-      const stored=data[meal];
-      if(!stored||!stored.ok) return;
-      macroData[meal]={desc:stored.desc||'',p:stored.p||0,c:stored.c||0,g:stored.g||0,kcal:stored.kcal||0,ok:true};
-      const input=document.getElementById('input-'+meal);
-      if(input&&stored.desc) input.value=stored.desc;
-      const macro=document.getElementById('macro-'+meal);
-      if(macro) macro.textContent=`P:${stored.p}g C:${stored.c}g G:${stored.g}g (${stored.kcal}kcal)`;
-    });
-    aggiornaTotali();
-  } catch(e) {}
-}
-
-function salvaNutri() {
-  if(trainerName==='demo'||!clienteName) return;
-  const today=new Date().toISOString().split('T')[0];
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  const payload={};
-  MEALS.forEach(m=>{if(macroData[m].ok) payload[m]=macroData[m];});
-  fetch(FB_URL+'/coach_ai_nutri/'+key+'/'+today+'.json',{
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  }).catch(()=>{});
-}
-
-function salvaPeso() {
-  const input=document.getElementById('input-peso');
-  const btn=document.getElementById('btn-peso');
-  const val=parseFloat(input.value);
-  if(!val||val<40||val>250) return;
-  const today=new Date().toISOString().split('T')[0];
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  fetch(FB_URL+'/coach_ai_peso/'+key+'/'+today.replace(/-/g,'')+'.json',{
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({data:today,peso:val,ts:tsISO()})
-  }).then(()=>{btn.classList.add('ps-saved');setTimeout(()=>btn.classList.remove('ps-saved'),2000);}).catch(()=>{});
-}
-
-function salvaSonno() {
-  const input=document.getElementById('input-sonno');
-  const btn=document.getElementById('btn-sonno');
-  const val=parseFloat(input.value);
-  if(!val||val<1||val>24) return;
-  const today=new Date().toISOString().split('T')[0];
-  const key=slugify(trainerName)+'_'+slugify(clienteName);
-  fetch(FB_URL+'/coach_ai_sonno/'+key+'/'+today.replace(/-/g,'')+'.json',{
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({data:today,ore:val,ts:tsISO()})
-  }).then(()=>{btn.classList.add('ps-saved');setTimeout(()=>btn.classList.remove('ps-saved'),2000);}).catch(()=>{});
-}
-
-function initDiarioBadge() {
-  const d=new Date();
-  const giorni=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
-  const mesi=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-  document.getElementById('data-badge').textContent=giorni[d.getDay()]+' '+d.getDate()+' '+mesi[d.getMonth()];
-}
-
-// APPLE WATCH
-function salvaWatchData(watch, data) {
-  const key = slugify(trainerName)+'_'+slugify(clienteName);
-  fetch(FB_URL+'/coach_ai_wo_hw/'+key+'/'+data+'.json',{
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({data, kcal:watch.kcal||0, fc_media:watch.fc_media||0, fc_min:watch.fc_min||0, fc_max:watch.fc_max||0, ts:tsISO()})
-  }).then(()=>{
-    // aggiorna i campi manuali
-    if(watch.kcal) document.getElementById('input-aw-kcal').value=watch.kcal;
-    if(watch.fc_media) document.getElementById('input-aw-fc-media').value=watch.fc_media;
-    if(watch.fc_min) document.getElementById('input-aw-fc-min').value=watch.fc_min;
-    if(watch.fc_max) document.getElementById('input-aw-fc-max').value=watch.fc_max;
-    addInfoMsg('⌚ Watch salvato — '+watch.kcal+'kcal · FC '+watch.fc_media+'bpm avg');
-  }).catch(()=>{});
-}
-
-async function salvaAppleWatch() {
-  if(trainerName==='demo'||!clienteName) return;
-  const kcal = parseInt(document.getElementById('input-aw-kcal').value)||0;
-  const fc_media = parseInt(document.getElementById('input-aw-fc-media').value)||0;
-  const fc_min = parseInt(document.getElementById('input-aw-fc-min').value)||0;
-  const fc_max = parseInt(document.getElementById('input-aw-fc-max').value)||0;
-  if(!kcal && !fc_media) return;
-  const key = slugify(trainerName)+'_'+slugify(clienteName);
-  const btn = document.getElementById('btn-aw');
-  const watchObj = {kcal, fc_media, fc_min, fc_max};
-  try {
-    await Promise.all([
-      // path originale (app)
-      fetch(FB_URL+'/coach_ai_wo_hw/'+key+'/'+localDateStr()+'.json',{
-        method:'PUT', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({data:localDateStr(), ...watchObj, ts:tsISO()})
-      }),
-      // path leggibile dalla dashboard (coach_ai_log)
-      fetch(FB_URL+'/coach_ai_log/'+key+'/'+localDateStr()+'_w.json',{
-        method:'PUT', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({data:localDateStr(), watch:watchObj})
-      })
-    ]);
-    btn.classList.add('ps-saved');
-    setTimeout(()=>btn.classList.remove('ps-saved'),2000);
-  } catch(e) {}
-}
-
-async function caricaAppleWatch() {
-  if(trainerName==='demo'||!clienteName) return;
-  const key = slugify(trainerName)+'_'+slugify(clienteName);
-  try {
-    const res = await fetch(FB_URL+'/coach_ai_wo_hw/'+key+'/'+localDateStr()+'.json');
+    const res = await fetch(FB_URL + '/basket_allenamenti/' + playerId + '.json');
     const data = await res.json();
-    if(!data||!data.data) return;
-    if(data.kcal) document.getElementById('input-aw-kcal').value=data.kcal;
-    if(data.fc_media) document.getElementById('input-aw-fc-media').value=data.fc_media;
-    if(data.fc_min) document.getElementById('input-aw-fc-min').value=data.fc_min;
-    if(data.fc_max) document.getElementById('input-aw-fc-max').value=data.fc_max;
-  } catch(e) {}
+    if(!data) { el.innerHTML = '<div class="empty-msg">Nessuna sessione registrata</div>'; return; }
+    const entries = Object.values(data).filter(e=>e && e.data).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,5);
+    if(entries.length === 0) { el.innerHTML = '<div class="empty-msg">Nessuna sessione registrata</div>'; return; }
+    el.innerHTML = entries.map(e => `
+      <div class="storico-item">
+        <div class="storico-main">
+          <span class="storico-sessione">${e.sessione||'Allenamento'}</span>
+          <span class="storico-data">${e.data}${e.durata_min?' · '+e.durata_min+' min':''}</span>
+        </div>
+        <span class="storico-count">${(e.esercizi||[]).length} es.</span>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty-msg">Errore caricamento storico</div>';
+  }
 }
 
 initSession();
-initDiarioBadge();
-loadSessione();
-loadFotoFromStorage();
-caricaNutri();
-caricaAppleWatch();
 </script>
 </body>
 </html>
