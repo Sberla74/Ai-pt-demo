@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Coach AI · Dashboard</title>
+<title>Meerkat Prep · Dashboard Staff</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--text2:#8a8780;--text3:#555350;--accent:#c8f564;--accent-dim:rgba(200,245,100,0.12);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);--radius:14px;--radius-sm:8px;--cp:#c8f564;--cc:#64b5f6;--cg:#ffb74d;}
+  :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--text2:#8a8780;--text3:#555350;--accent:#ff8f3f;--accent-dim:rgba(255,143,63,0.14);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);--green:#8fd694;--green-dim:rgba(143,214,148,0.12);--radius:14px;--radius-sm:8px;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
@@ -17,15 +17,15 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
   .topbar-title{font-size:14px;font-weight:500;color:var(--accent);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;}
   .topbar-right{display:flex;gap:8px;align-items:center;}
-  .tab-btn{padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
-  .tab-btn:hover{color:var(--text);}
-  .tab-btn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,245,100,0.3);}
+  .link-btn{padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;transition:all 0.15s;}
+  .link-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
   .refresh-btn{padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;}
-  .refresh-btn:hover{color:var(--accent);border-color:rgba(200,245,100,0.3);}
+  .refresh-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
 
-  #view-prog{padding:20px 24px;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+  #view-roster,#view-detail{padding:20px 24px;max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+  #view-detail{display:none;}
 
-  .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+  .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
   .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
   .kpi-val{font-size:26px;font-weight:600;color:var(--accent);line-height:1;}
   .kpi-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:5px;}
@@ -35,133 +35,39 @@
   .chart-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:16px;}
   .chart-empty{font-size:12px;color:var(--text3);text-align:center;padding:20px 0;font-family:'DM Mono',monospace;}
 
-  /* DATE NAV */
-  .date-nav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;}
-  .date-nav-btn{background:transparent;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;padding:5px 14px;transition:all 0.15s;}
-  .date-nav-btn:hover{color:var(--accent);border-color:rgba(200,245,100,0.3);}
-  .date-nav-btn:disabled{opacity:0.3;cursor:default;}
-  .date-nav-center{display:flex;flex-direction:column;align-items:center;gap:2px;}
-  .date-nav-label{font-size:15px;font-weight:500;color:var(--text);}
-  .date-nav-sub{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+  table.roster-table{width:100%;border-collapse:collapse;}
+  table.roster-table th{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.05em;}
+  table.roster-table td{font-size:13px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);}
+  table.roster-table tr.row-clickable{cursor:pointer;transition:background 0.15s;}
+  table.roster-table tr.row-clickable:hover{background:var(--surface2);}
+  .presenze-pill{font-size:11px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:20px;}
+  .presenze-good{background:var(--green-dim);color:var(--green);}
+  .presenze-mid{background:rgba(255,143,63,0.12);color:var(--accent);}
+  .presenze-low{background:var(--red-dim);color:var(--red);}
 
-  /* PIE CHARTS GRID */
-  .meals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-  .meal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;}
-  .meal-card-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;text-align:center;width:100%;}
-  .meal-chart-wrap{position:relative;width:110px;height:110px;flex-shrink:0;}
-  .meal-chart-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
-  .meal-kcal-val{font-size:14px;font-weight:600;color:var(--text);line-height:1;}
-  .meal-kcal-unit{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .meal-macros-table{width:100%;border-collapse:collapse;}
-  .meal-macros-table td{font-size:10px;padding:2px 4px;font-family:'DM Mono',monospace;}
-  .meal-macros-table .lbl{color:var(--text3);}
-  .meal-macros-table .tgt{color:var(--text3);text-align:right;}
-  .meal-macros-table .act{font-weight:500;text-align:right;}
-  .meal-macros-table .act.ok{color:var(--accent);}
-  .meal-macros-table .act.over{color:var(--red);}
-  .meal-macros-table .act.low{color:var(--text2);}
-  .meal-empty{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;padding:8px 0;}
-  .meal-legend{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-  .legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px;}
-  .legend-item{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;}
+  .back-btn{padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;align-self:flex-start;}
+  .back-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
 
-  /* APPLE WATCH STATS */
-  .wo-aw-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);}
-  .wo-aw-stat{font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);}
-  .wo-aw-stat.hi{color:var(--accent);border-color:rgba(200,245,100,0.2);background:var(--accent-dim);}
+  .player-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .player-name{font-size:22px;font-weight:600;color:var(--text);}
+  .player-meta{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:4px;}
 
-  /* WORKOUT */
-  .wo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-  .wo-tipo{font-size:13px;font-weight:500;color:var(--accent);}
-  .wo-ora{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .wo-exercises{display:flex;flex-direction:column;gap:6px;}
-  .wo-ex{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
-  .wo-ex-nome{font-size:13px;color:var(--text);}
-  .wo-ex-detail{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+  .storico-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .storico-item:last-child{border-bottom:none;}
+  .storico-main{display:flex;flex-direction:column;gap:2px;}
+  .storico-sessione{font-size:13px;color:var(--text);}
+  .storico-data{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+  .storico-count{font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;white-space:nowrap;}
 
-  /* TRAINING WEEK */
-  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
-  .day-cell{display:flex;flex-direction:column;align-items:center;gap:4px;}
-  .day-name{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .day-dot{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.2s;}
-  .day-dot.done{background:var(--accent-dim);border-color:rgba(200,245,100,0.4);color:var(--accent);}
-  .day-dot.hiit{background:rgba(100,181,246,0.1);border-color:rgba(100,181,246,0.3);color:#64b5f6;}
-  .day-dot.rest{background:transparent;border-color:var(--border);color:var(--text3);}
-  .day-dot.today{box-shadow:0 0 0 2px rgba(200,245,100,0.2);}
-  .day-dot.missed{background:rgba(255,107,107,0.06);border-color:rgba(255,107,107,0.15);color:var(--text3);}
-  .day-type{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;line-height:1.3;}
+  .presenze-strip{display:flex;gap:5px;flex-wrap:wrap;}
+  .pdot{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;background:var(--surface2);border:1px solid var(--border);color:var(--text3);}
+  .pdot.present{background:var(--green-dim);border-color:rgba(143,214,148,0.35);color:var(--green);}
 
-  /* WEEKLY MACROS PIE */
-  .wm-layout{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
-  .wm-chart-wrap{position:relative;width:160px;height:160px;flex-shrink:0;}
-  .wm-chart-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
-  .wm-kcal-val{font-size:18px;font-weight:600;color:var(--text);line-height:1;}
-  .wm-kcal-unit{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .wm-table{border-collapse:collapse;flex:1;min-width:180px;}
-  .wm-table th{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-align:right;padding:5px 8px;border-bottom:1px solid var(--border);}
-  .wm-table th:first-child{text-align:left;}
-  .wm-table td{font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.03);}
-  .wm-table td:first-child{text-align:left;display:flex;align-items:center;gap:6px;}
-  .wm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-  .wm-ok{color:var(--accent);}
-  .wm-over{color:var(--red);}
-  .wm-low{color:var(--text2);}
-  .wm-neutral{color:var(--text3);}
-  @media(max-width:500px){.wm-layout{flex-direction:column;align-items:flex-start;}}
+  select#ex-selector{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);cursor:pointer;width:100%;outline:none;}
 
-  /* CONVERSAZIONI */
-  #view-conv{height:calc(100vh - 57px);display:none;}
-  .layout{display:flex;height:100%;}
-  .sidebar{width:260px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--surface);}
-  .sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;}
-  .trainer-group{border-bottom:1px solid var(--border);}
-  .trainer-label{padding:10px 16px 6px;font-size:12px;font-weight:500;color:var(--accent);font-family:'DM Mono',monospace;}
-  .cliente-item{padding:8px 16px 8px 24px;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;justify-content:space-between;}
-  .cliente-item:hover{background:var(--surface2);}
-  .cliente-item.active{background:var(--accent-dim);border-left:2px solid var(--accent);}
-  .cliente-name{font-size:13px;color:var(--text);}
-  .cliente-count{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
-  .main-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text3);}
-  .conv-header{padding:16px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
-  .conv-title{font-size:15px;font-weight:500;color:var(--text);}
-  .conv-meta{font-size:12px;color:var(--text2);margin-top:3px;font-family:'DM Mono',monospace;}
-  .conv-msgs{flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:10px;}
-  .msg-row{display:flex;flex-direction:column;max-width:65%;}
-  .msg-row.cliente{align-self:flex-end;align-items:flex-end;}
-  .msg-row.agente{align-self:flex-start;align-items:flex-start;}
-  .msg-row.sistema{align-self:center;align-items:center;}
-  .msg-bubble{padding:9px 13px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
-  .msg-row.cliente .msg-bubble{background:var(--accent);color:#0f0f0f;border-radius:16px 16px 4px 16px;}
-  .msg-row.agente .msg-bubble{background:var(--surface2);color:var(--text);border-radius:16px 16px 16px 4px;border:1px solid var(--border);}
-  .msg-row.sistema .msg-bubble{background:transparent;color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;padding:4px 8px;}
-  .msg-row.escalate .msg-bubble{background:var(--red-dim);border-color:rgba(255,107,107,0.2);color:var(--red);}
-  .msg-ts{font-size:10px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;}
-  .stats-bar{padding:10px 24px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;gap:24px;flex-shrink:0;}
-  .stat{display:flex;flex-direction:column;gap:2px;}
-  .stat-val{font-size:18px;font-weight:600;color:var(--text);}
-  .stat-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
-  .empty-state{color:var(--text3);font-size:13px;text-align:center;margin-top:40px;}
-
-  @media(max-width:1100px){
-    .kpi-row{grid-template-columns:repeat(3,1fr);}
-  }
-  @media(max-width:900px){
-    .kpi-row{grid-template-columns:repeat(3,1fr);}
-    .meals-grid{grid-template-columns:repeat(2,1fr);}
-  }
   @media(max-width:650px){
-    .kpi-row{grid-template-columns:repeat(2,1fr);}
-  }
-  @media(max-width:600px){
-    .meals-grid{grid-template-columns:1fr 1fr;}
-    #view-prog{padding:12px;}
-    .sidebar{width:160px;}
-    .day-dot{width:28px;height:28px;font-size:11px;}
-  }
-  @media(max-width:400px){
-    .meals-grid{grid-template-columns:1fr;}
-    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .kpi-row{grid-template-columns:repeat(1,1fr);}
+    table.roster-table{font-size:12px;}
   }
 </style>
 </head>
@@ -170,931 +76,260 @@
 <div class="topbar">
   <div class="topbar-left">
     <div class="logo-dot"></div>
-    <span class="topbar-title">Coach AI · Dashboard</span>
+    <span class="topbar-title">Meerkat Prep · Dashboard Staff</span>
   </div>
   <div class="topbar-right">
-    <button class="tab-btn active" id="tab-prog" onclick="showTab('prog')">Progressi</button>
-    <button class="tab-btn" id="tab-conv" onclick="showTab('conv')">Conversazioni</button>
+    <a class="link-btn" href="admin.html">Gestisci roster</a>
     <button class="refresh-btn" onclick="reload()">↻</button>
   </div>
 </div>
 
-<!-- PROGRESSI VIEW -->
-<div id="view-prog">
+<!-- ROSTER VIEW -->
+<div id="view-roster">
 
   <div class="kpi-row">
     <div class="kpi-card">
-      <div class="kpi-val" id="kpi-peso">—</div>
-      <div class="kpi-label">Peso attuale</div>
-      <div class="kpi-sub" id="kpi-peso-data"></div>
+      <div class="kpi-val" id="kpi-giocatori">—</div>
+      <div class="kpi-label">Giocatori attivi</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-val" id="kpi-perso" style="color:var(--text);">—</div>
-      <div class="kpi-label">Kg persi</div>
-      <div class="kpi-sub">da 90 kg</div>
+      <div class="kpi-val" id="kpi-presenze-media">—</div>
+      <div class="kpi-label">Presenze medie / 7gg</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-val" id="kpi-rimanenti" style="color:var(--text);">—</div>
-      <div class="kpi-label">Al target</div>
-      <div class="kpi-sub">obiettivo 80 kg</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val" id="kpi-sessioni" style="color:var(--text);">—</div>
-      <div class="kpi-label">Sessioni settimana</div>
-      <div class="kpi-sub">target 4/sett.</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val" id="kpi-sonno" style="color:var(--text);">—</div>
-      <div class="kpi-label">Sonno medio</div>
-      <div class="kpi-sub">ultimi 7 giorni</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val" id="kpi-deficit" style="color:var(--text);">—</div>
-      <div class="kpi-label" id="kpi-deficit-lbl">Deficit oggi</div>
-      <div class="kpi-sub" id="kpi-deficit-sub">vs target piano</div>
+      <div class="kpi-val" id="kpi-sessioni-tot">—</div>
+      <div class="kpi-label">Sessioni loggate / 7gg</div>
     </div>
   </div>
 
-  <!-- Peso chart -->
   <div class="chart-card">
-    <div class="chart-title">Peso nel tempo · verso 80 kg</div>
-    <div id="peso-chart-wrap"><canvas id="pesoChart" height="80"></canvas></div>
-  </div>
-
-  <!-- Date nav -->
-  <div class="date-nav">
-    <button class="date-nav-btn" onclick="changeDate(-1)">← Prec</button>
-    <div class="date-nav-center">
-      <span class="date-nav-label" id="date-nav-label">—</span>
-      <span class="date-nav-sub" id="date-nav-sub"></span>
-    </div>
-    <button class="date-nav-btn" id="btn-next" onclick="changeDate(1)">Succ →</button>
-  </div>
-
-  <!-- 6 Pie charts pasti -->
-  <div class="meals-grid" id="meals-grid"></div>
-
-  <!-- Allenamento del giorno -->
-  <div class="chart-card">
-    <div class="chart-title">Allenamento del giorno</div>
-    <div id="workout-giorno"></div>
-  </div>
-
-  <!-- Settimana corrente -->
-  <div class="chart-card">
-    <div class="chart-title">Settimana corrente · allenamenti</div>
-    <div id="training-week"></div>
-  </div>
-
-  <!-- Recap macro settimanale -->
-  <div class="chart-card">
-    <div class="chart-title">Settimana corrente · macro totali</div>
-    <div id="weekly-macros"></div>
-  </div>
-
-  <!-- Deficit calorico nel tempo -->
-  <div class="chart-card">
-    <div class="chart-title">Deficit calorico · ultimi 30 giorni</div>
-    <div id="deficit-chart-wrap"><canvas id="deficitChart" height="80"></canvas></div>
-  </div>
-
-  <!-- Sonno -->
-  <div class="chart-card">
-    <div class="chart-title">Sonno · ore per notte</div>
-    <div id="sonno-chart-wrap"><canvas id="sonnoChart" height="80"></canvas></div>
-  </div>
-
-  <!-- Progressione pesi -->
-  <div class="chart-card">
-    <div class="chart-title">Progressione pesi · esercizi</div>
-    <div id="exprog-wrap"></div>
+    <div class="chart-title">Roster</div>
+    <table class="roster-table">
+      <thead><tr><th>Giocatore</th><th>Ruolo</th><th>Presenze/7</th><th>Sessioni/7</th><th>Ultima sessione</th></tr></thead>
+      <tbody id="roster-tbody"><tr><td colspan="5" class="chart-empty">Caricamento...</td></tr></tbody>
+    </table>
   </div>
 
 </div>
 
-<!-- CONVERSAZIONI VIEW -->
-<div id="view-conv">
-  <div class="layout">
-    <div class="sidebar">
-      <div class="sidebar-header">Trainer · Clienti</div>
-      <div id="sidebar-content"><div style="padding:16px;font-size:13px;color:var(--text3);">Caricamento...</div></div>
+<!-- PLAYER DETAIL VIEW -->
+<div id="view-detail">
+  <button class="back-btn" onclick="showRoster()">← Torna al roster</button>
+
+  <div class="chart-card">
+    <div class="player-header">
+      <div>
+        <div class="player-name" id="detail-name">—</div>
+        <div class="player-meta" id="detail-meta"></div>
+      </div>
     </div>
-    <div class="main" id="main">
-      <div class="main-empty"><p style="font-size:14px;">Seleziona un cliente</p></div>
-    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Presenze ultimi 14 giorni</div>
+    <div class="presenze-strip" id="detail-presenze"></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Progressione carichi · esercizio</div>
+    <div id="exprog-wrap"></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Storico sessioni</div>
+    <div id="detail-storico"></div>
   </div>
 </div>
 
 <script>
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
-const CLIENT_KEYS = ['fabrizio_test', 'fabrizio_fabrizio'];
-// Body Transformation 12 sett. — split fisso per giorno della settimana
-// Indice = getDay(): 0=Dom, 1=Lun, 2=Mar, 3=Mer, 4=Gio, 5=Ven, 6=Sab
-const ROTATION = [
-  {label:'Riposo · Semidigiuno', type:'rest', p:120, c:30,  g:33, k:900},  // Dom
-  {label:'Lower Body+Core',      type:'lb',   p:170, c:185, g:65, k:1950}, // Lun
-  {label:'Riposo · Semidigiuno', type:'rest', p:120, c:30,  g:33, k:900},  // Mar
-  {label:'Upper Pull+Spalle',    type:'up',   p:170, c:185, g:65, k:1950}, // Mer
-  {label:'Riposo · Semidigiuno', type:'rest', p:120, c:30,  g:33, k:900},  // Gio
-  {label:'Push+Braccia',         type:'push', p:170, c:185, g:65, k:1950}, // Ven
-  {label:'Full Body Metab.',     type:'fb',   p:170, c:210, g:65, k:2050}, // Sab
-];
 
-// Body Transformation — Full Body (sabato) 2050 kcal
-const MEAL_FB = {
-  colazione:      {p:40, c:45, g:15, k:475},
-  spuntino_matt:  {p:15, c:20, g:5,  k:185},
-  pranzo:         {p:55, c:85, g:20, k:740},
-  spuntino_pom:   {p:15, c:20, g:5,  k:185},
-  cena:           {p:45, c:35, g:20, k:500},
-  spuntino_serale:{p:0,  c:5,  g:0,  k:20},
-};
-// Body Transformation — giorni allenamento (lun/mer/ven) 1950 kcal
-const MEAL_TRAIN = {
-  colazione:      {p:40, c:40, g:15, k:455},
-  spuntino_matt:  {p:15, c:20, g:5,  k:185},
-  pranzo:         {p:55, c:75, g:20, k:700},
-  spuntino_pom:   {p:15, c:20, g:5,  k:185},
-  cena:           {p:45, c:25, g:20, k:465},
-  spuntino_serale:{p:0,  c:5,  g:0,  k:20},
-};
-// Body Transformation — semidigiuno 16:8 (riposo) 900 kcal · solo 2 pasti
-const MEAL_REST = {
-  pranzo: {p:60, c:15, g:17, k:460},
-  cena:   {p:60, c:15, g:16, k:440},
-};
-const MEAL_TARGETS = { lb: MEAL_TRAIN, up: MEAL_TRAIN, push: MEAL_TRAIN, fb: MEAL_FB, rest: MEAL_REST };
-const MEAL_LABELS = {
-  colazione:'Colazione', spuntino_matt:'Spuntino matt.',
-  pranzo:'Pranzo', spuntino_pom:'Spuntino pom.',
-  cena:'Cena', spuntino_serale:'Spuntino serale'
-};
-const MEAL_ORDER = ['colazione','spuntino_matt','pranzo','spuntino_pom','cena','spuntino_serale'];
-
-let allData = {};
-let activeKey = null;
-let pesoChart = null;
-let mealCharts = {};
-let weeklyChart = null;
-let sonnoChart = null;
+let roster = {};
+let playersData = {}; // playerId -> { presenze:{}, allenamenti:{} }
 let exProgChart = null;
-let deficitChart = null;
-let woHwAll = {};
-let selectedDate = todayStr();
-let nutriAll = {};
-let logAll = [];
-let sonnoAll = [];
+let currentDetailId = null;
 
 function todayStr() {
   const d = new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
-function formatDateLabel(dateStr) {
-  const d = new Date(dateStr+'T12:00:00');
-  const days=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-  const months=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
-  return days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()];
-}
-
-function getRotationDay(dateStr) {
-  const d = new Date((dateStr||todayStr())+'T00:00:00');
-  return ROTATION[d.getDay()];
-}
-
-function changeDate(delta) {
-  const d = new Date(selectedDate+'T12:00:00');
-  d.setDate(d.getDate()+delta);
-  const s = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  if(s > todayStr()) return;
-  selectedDate = s;
-  updateDateNav();
-  renderMealsGiorno();
-  renderWorkoutGiorno();
-}
-
-function updateDateNav() {
-  const isToday = selectedDate === todayStr();
-  const rot = getRotationDay(selectedDate);
-  document.getElementById('date-nav-label').textContent = isToday ? 'Oggi · '+formatDateLabel(selectedDate) : formatDateLabel(selectedDate);
-  document.getElementById('date-nav-sub').textContent = rot.label+' · target '+rot.k+' kcal';
-  document.getElementById('btn-next').disabled = isToday;
-}
-
-function showTab(tab) {
-  document.getElementById('view-prog').style.display = tab==='prog'?'flex':'none';
-  document.getElementById('view-conv').style.display = tab==='conv'?'block':'none';
-  document.getElementById('tab-prog').className='tab-btn'+(tab==='prog'?' active':'');
-  document.getElementById('tab-conv').className='tab-btn'+(tab==='conv'?' active':'');
-}
-
-async function reload() {
-  loadProgressi();
-  loadConversations();
-}
-
-// ─── PROGRESSI ────────────────────────────────────────────
-
-async function loadProgressi() {
-  const [peso, nutri, log, sonno, woHw] = await Promise.all([fetchPeso(), fetchNutri(), fetchLog(), fetchSonno(), fetchWoHw()]);
-  nutriAll = nutri;
-  logAll = log;
-  sonnoAll = sonno;
-  woHwAll = woHw;
-  log.forEach(entry => {
-    if(entry && entry.data && entry.watch && (entry.watch.kcal > 0 || entry.watch.fc_media > 0)) {
-      const d = normDate(entry.data);
-      if(!woHwAll[d]) woHwAll[d] = entry.watch;
-    }
-  });
-  renderKPI(peso, log, sonno);
-  renderPesoChart(peso);
-  updateDateNav();
-  renderMealsGiorno();
-  renderWorkoutGiorno();
-  renderTrainingWeek(log);
-  renderWeeklyMacros();
-  renderDeficitChart();
-  renderSonnoChart(sonno);
-  renderExProgChart(log);
-}
-
-async function fetchFromKeys(path) {
-  const results = await Promise.all(
-    CLIENT_KEYS.map(k => fetch(FB_URL+'/'+path+'/'+k+'.json').then(r=>r.json()).catch(()=>null))
-  );
-  return results;
-}
-
-async function fetchPeso() {
-  try {
-    const results = await fetchFromKeys('coach_ai_peso');
-    const byDate = {};
-    results.forEach(d => {
-      if(!d) return;
-      Object.values(d).forEach(e => {
-        if(e && e.data && e.peso != null && !isNaN(e.peso))
-          byDate[e.data] = e;
-      });
-    });
-    return Object.values(byDate).sort((a,b)=>new Date(a.data)-new Date(b.data));
-  } catch(e){return[];}
-}
-
-const NEW_MEAL_KEYS = ['colazione','spuntino_matt','pranzo','spuntino_pm','cena','spuntino_sera'];
-const MEAL_KEY_MAP = {spuntino_pm:'spuntino_pom', spuntino_sera:'spuntino_serale'};
-
-async function fetchNutri() {
-  try {
-    const results = await fetchFromKeys('coach_ai_nutri');
-    const merged = {};
-    results.forEach(d => {
-      if(!d) return;
-      Object.entries(d).forEach(([date, meals]) => {
-        if(!merged[date]) merged[date] = {};
-        Object.entries(meals).forEach(([k, m]) => {
-          if(!m) return;
-          if(NEW_MEAL_KEYS.includes(k) && m.p != null) {
-            // nuovo formato: chiave = nome pasto, valori p/c/g
-            const mappedKey = MEAL_KEY_MAP[k] || k;
-            merged[date][mappedKey] = {
-              tipo_pasto: mappedKey,
-              proteine: m.p || 0,
-              carbo: m.c || 0,
-              grassi: m.g || 0,
-              kcal: m.kcal || 0,
-              desc: m.desc || ''
-            };
-          } else {
-            merged[date][k] = m;
-          }
-        });
-      });
-    });
-    return merged;
-  } catch(e){return{};}
-}
-
-async function fetchSonno() {
-  try {
-    const results = await fetchFromKeys('coach_ai_sonno');
-    const byDate = {};
-    results.forEach(d => {
-      if(!d) return;
-      Object.values(d).forEach(e => {
-        if(e && e.data && e.ore != null) byDate[e.data] = e;
-      });
-    });
-    return Object.values(byDate).sort((a,b)=>new Date(a.data)-new Date(b.data));
-  } catch(e){return[];}
-}
-
-async function fetchLog() {
-  try {
-    const results = await fetchFromKeys('coach_ai_log');
-    const merged = [];
-    results.forEach(d => { if(d) merged.push(...Object.values(d)); });
-    return merged;
-  } catch(e){return[];}
-}
-
-async function fetchWoHw() {
-  try {
-    const results = await fetchFromKeys('coach_ai_wo_hw');
-    const byDate = {};
-    results.forEach(d => {
-      if(!d) return;
-      Object.entries(d).forEach(([date, entry]) => {
-        if(entry && entry.data) byDate[normDate(date)] = entry;
-      });
-    });
-    return byDate;
-  } catch(e){return{};}
-}
-
-function getMonday(d) {
-  const day=new Date(d), dow=day.getDay();
-  day.setDate(day.getDate()-(dow===0?6:dow-1)); day.setHours(0,0,0,0);
-  return day;
-}
-
-// KPI
-function renderKPI(peso, log, sonno) {
-  const last = peso[peso.length-1];
-  if(last&&last.peso!=null&&!isNaN(last.peso)){
-    const perso=+(90-last.peso).toFixed(1);
-    const rim=+(last.peso-80).toFixed(1);
-    document.getElementById('kpi-peso').textContent=last.peso+' kg';
-    document.getElementById('kpi-peso-data').textContent=last.data||'';
-    const pe=document.getElementById('kpi-perso');
-    pe.textContent=perso>0?'-'+perso+' kg':perso<0?'+'+Math.abs(perso)+' kg':'0 kg';
-    pe.style.color=perso>0?'var(--accent)':'var(--red)';
-    const re=document.getElementById('kpi-rimanenti');
-    re.textContent=rim>0?rim+' kg':'TARGET!';
-    re.style.color=rim<=2?'var(--accent)':'var(--text)';
+function getDateRange(daysBack) {
+  const dates = [];
+  for(let i=daysBack-1;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    dates.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
   }
-  const monday=getMonday(new Date());
-  const sess=log.filter(e=>e.data&&new Date(normDate(e.data)+'T12:00:00')>=monday&&e.esercizi&&e.esercizi.length>0).length;
-  const se=document.getElementById('kpi-sessioni');
-  se.textContent=sess+'/4';
-  se.style.color=sess>=3?'var(--accent)':'var(--text)';
-  // sonno medio ultimi 7 giorni
-  const sevenDaysAgo=new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7); sevenDaysAgo.setHours(0,0,0,0);
-  const recentSonno=(sonno||[]).filter(s=>new Date(s.data+'T12:00:00')>=sevenDaysAgo);
-  const se2=document.getElementById('kpi-sonno');
-  if(se2){
-    if(recentSonno.length>0){
-      const avg=(recentSonno.reduce((s,e)=>s+(parseFloat(e.ore)||0),0)/recentSonno.length).toFixed(1);
-      se2.textContent=avg+'h';
-      se2.style.color=parseFloat(avg)>=7?'var(--accent)':parseFloat(avg)>=6?'var(--text)':'var(--red)';
-    } else { se2.textContent='—'; }
-  }
-  // deficit calorico oggi
-  // TDEE = BMR (1900) + NEAT (300) + kcal attive Watch
-  const BMR=1900, NEAT=300;
-  const defEl=document.getElementById('kpi-deficit');
-  const defLbl=document.getElementById('kpi-deficit-lbl');
-  const defSub=document.getElementById('kpi-deficit-sub');
-  if(defEl){
-    const todayMeals=nutriAll[todayStr()]||{};
-    let todayKcal=0;
-    Object.values(todayMeals).forEach(m=>{todayKcal+=m.kcal||0;});
-    const todayAw=woHwAll[todayStr()];
-    const awKcal=todayAw&&todayAw.kcal>0?todayAw.kcal:0;
-    if(todayKcal>0){
-      const tdee=BMR+NEAT+awKcal;
-      const diff=tdee-todayKcal;
-      defEl.textContent=(diff>=0?'-':'+')+''+Math.abs(diff)+' kcal';
-      defEl.style.color=diff>=0?'var(--accent)':'var(--red)';
-      if(defLbl) defLbl.textContent=diff>=0?'Deficit reale':'Surplus reale';
-      if(awKcal>0){
-        if(defSub) defSub.textContent='TDEE '+tdee+' (BMR+NEAT+'+(awKcal)+' Watch) · ingerite '+todayKcal;
-      } else {
-        if(defSub) defSub.textContent='TDEE '+tdee+' (BMR+NEAT, no Watch) · ingerite '+todayKcal;
-      }
-    } else {
-      defEl.textContent='—';
-      defEl.style.color='var(--text)';
-      if(defLbl) defLbl.textContent='Deficit oggi';
-      if(defSub) defSub.textContent='nessun pasto registrato';
-    }
-  }
-}
-
-// PESO CHART
-function renderPesoChart(peso) {
-  const wrap=document.getElementById('peso-chart-wrap');
-  if(pesoChart){pesoChart.destroy();pesoChart=null;}
-  if(peso.length===0){
-    wrap.innerHTML='<div class="chart-empty">Nessun peso registrato · Ogni venerdì mattina nell\'app</div>';return;
-  }
-  if(!wrap.querySelector('canvas')) wrap.innerHTML='<canvas id="pesoChart" height="80"></canvas>';
-  const ctx=document.getElementById('pesoChart');
-  const labels=peso.map(p=>{const d=new Date(p.data);return d.getDate()+'/'+(d.getMonth()+1);});
-  const vals=peso.map(p=>p.peso);
-  const minY=Math.min(78,...vals)-0.5, maxY=Math.max(91,...vals)+0.5;
-  Chart.defaults.color='#555350'; Chart.defaults.borderColor='rgba(255,255,255,0.05)';
-  pesoChart=new Chart(ctx,{
-    type:'line',
-    data:{labels,datasets:[
-      {label:'Peso (kg)',data:vals,borderColor:'#c8f564',backgroundColor:'rgba(200,245,100,0.07)',borderWidth:2,pointBackgroundColor:'#c8f564',pointBorderColor:'#0f0f0f',pointBorderWidth:1.5,pointRadius:5,tension:0.3,fill:true},
-      {label:'Target 80 kg',data:Array(vals.length).fill(80),borderColor:'rgba(255,107,107,0.45)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false},
-      {label:'Inizio 90 kg',data:Array(vals.length).fill(90),borderColor:'rgba(255,255,255,0.1)',borderWidth:1,borderDash:[3,6],pointRadius:0,fill:false}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:true,position:'bottom',labels:{font:{family:'DM Mono',size:11},color:'#8a8780',boxWidth:16,padding:16}},
-        tooltip:{backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f0ede8',bodyColor:'#8a8780',padding:10,callbacks:{label:c=>' '+c.parsed.y+' kg'}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350'}},
-        y:{min:minY,max:maxY,grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350',callback:v=>v+' kg',stepSize:1}}}
-    }
-  });
-}
-
-// MEAL PIE CHARTS
-function renderMealsGiorno() {
-  const rot = getRotationDay(selectedDate);
-  const targets = MEAL_TARGETS[rot.type] || MEAL_TARGETS.rest;
-  const dayMeals = nutriAll[selectedDate] || {};
-
-  // giorni di riposo: solo pranzo e cena
-  const activeMealOrder = rot.type === 'rest' ? ['pranzo','cena'] : MEAL_ORDER;
-
-  // group by tipo_pasto
-  const grouped = {};
-  activeMealOrder.forEach(k => grouped[k] = []);
-  Object.values(dayMeals).forEach(m => {
-    const key = m.tipo_pasto || m.pasto || '';
-    const mapped = mapPasto(key);
-    if(grouped[mapped]) grouped[mapped].push(m);
-  });
-
-  // destroy old charts
-  Object.values(mealCharts).forEach(c=>{try{c.destroy();}catch(e){}});
-  mealCharts = {};
-
-  const grid = document.getElementById('meals-grid');
-  grid.innerHTML = activeMealOrder.map(slot => `
-    <div class="meal-card">
-      <div class="meal-card-title">${MEAL_LABELS[slot]}</div>
-      <div class="meal-chart-wrap">
-        <canvas id="chart-${slot}" width="110" height="110"></canvas>
-        <div class="meal-chart-center">
-          <div class="meal-kcal-val" id="kcal-${slot}">—</div>
-          <div class="meal-kcal-unit">kcal</div>
-        </div>
-      </div>
-      <table class="meal-macros-table">
-        <tr>
-          <td class="lbl"></td>
-          <td class="tgt" style="color:var(--text3);font-size:9px;">target</td>
-          <td class="act" style="font-size:9px;color:var(--text3);">reale</td>
-        </tr>
-        <tr>
-          <td class="lbl" style="color:var(--cp);">Prot</td>
-          <td class="tgt">${targets[slot].p}g</td>
-          <td class="act" id="act-p-${slot}">—</td>
-        </tr>
-        <tr>
-          <td class="lbl" style="color:var(--cc);">Carbo</td>
-          <td class="tgt">${targets[slot].c}g</td>
-          <td class="act" id="act-c-${slot}">—</td>
-        </tr>
-        <tr>
-          <td class="lbl" style="color:var(--cg);">Grassi</td>
-          <td class="tgt">${targets[slot].g}g</td>
-          <td class="act" id="act-g-${slot}">—</td>
-        </tr>
-      </table>
-    </div>
-  `).join('');
-
-  activeMealOrder.forEach(slot => {
-    const meals = grouped[slot];
-    const tgt = targets[slot];
-    let totP=0, totC=0, totG=0, totK=0;
-    meals.forEach(m=>{totP+=m.proteine||0;totC+=m.carbo||0;totG+=m.grassi||0;totK+=m.kcal||0;});
-    const hasData = meals.length > 0;
-
-    // kcal from macros (more accurate)
-    const kP=totP*4, kC=totC*4, kG=totG*9;
-    const kTotal = hasData ? Math.round(totK||kP+kC+kG) : 0;
-    // target kcal from macros
-    const tkP=tgt.p*4, tkC=tgt.c*4, tkG=tgt.g*9;
-
-    document.getElementById('kcal-'+slot).textContent = hasData ? kTotal : tgt.k||'—';
-
-    // macro cells
-    function setCell(id, val, tgtVal) {
-      const el = document.getElementById(id);
-      if(!el) return;
-      if(!hasData){el.textContent='—';el.className='act';return;}
-      el.textContent = val+'g';
-      const pct = tgtVal>0?val/tgtVal:0;
-      el.className = 'act '+(pct>1.1?'over':pct>=0.75?'ok':'low');
-    }
-    setCell('act-p-'+slot, Math.round(totP), tgt.p);
-    setCell('act-c-'+slot, Math.round(totC), tgt.c);
-    setCell('act-g-'+slot, Math.round(totG), tgt.g);
-
-    const ctx = document.getElementById('chart-'+slot);
-    if(!ctx) return;
-
-    const useP = hasData ? kP : tkP;
-    const useC = hasData ? kC : tkC;
-    const useG = hasData ? kG : tkG;
-    const total = useP+useC+useG;
-
-    const alpha = hasData ? 1 : 0.3;
-    mealCharts[slot] = new Chart(ctx, {
-      type:'doughnut',
-      data:{
-        labels:['Proteine','Carboidrati','Grassi'],
-        datasets:[{
-          data: total>0 ? [useP,useC,useG] : [1,1,1],
-          backgroundColor:[
-            `rgba(200,245,100,${alpha})`,
-            `rgba(100,181,246,${alpha})`,
-            `rgba(255,183,77,${alpha})`
-          ],
-          borderColor:'#1a1a1a',
-          borderWidth:2,
-          hoverOffset:4
-        }]
-      },
-      options:{
-        responsive:false,
-        cutout:'68%',
-        plugins:{
-          legend:{display:false},
-          tooltip:{enabled:total>3,backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f0ede8',bodyColor:'#8a8780',padding:8,
-            callbacks:{label:c=>{
-              const pct=Math.round(c.parsed/(useP+useC+useG)*100);
-              return ' '+c.label+': '+Math.round(c.parsed/4)+' kcal ('+pct+'%)';
-            }}
-          }
-        }
-      }
-    });
-  });
-}
-
-function mapPasto(key) {
-  key = (key||'').toLowerCase();
-  if(key.includes('colazione')) return 'colazione';
-  if(key.includes('spuntino_matt')||key.includes('spuntino matt')||(key.includes('spuntino')&&(key.includes('matt')||key.includes('morn')))) return 'spuntino_matt';
-  if(key==='pranzo'||key.includes('pranzo')) return 'pranzo';
-  if(key.includes('spuntino_pom')||key.includes('spuntino pom')||key==='spuntino_pm'||(key.includes('spuntino')&&(key.includes('pom')||key.includes('pm')))) return 'spuntino_pom';
-  if(key==='cena'||key.includes('cena')) return 'cena';
-  if(key.includes('spuntino_serale')||key.includes('serale')||key==='spuntino_sera'||key.includes('spuntino_sera')) return 'spuntino_serale';
-  if(key.includes('spuntino')) return 'spuntino_pom';
-  return 'altro';
+  return dates;
 }
 
 function normDate(d) { return (d||'').substring(0,10); }
 
-// WORKOUT GIORNALIERO
-function renderWorkoutGiorno() {
-  const el = document.getElementById('workout-giorno');
-  if(!el) return;
-  const entries = logAll.filter(e=>normDate(e.data)===selectedDate&&e.esercizi&&e.esercizi.length>0);
-  if(entries.length===0){
-    const rot = getRotationDay(selectedDate);
-    el.innerHTML = rot.type==='rest'
-      ? '<div class="chart-empty">Giorno di riposo · Semidigiuno 16:8 · Finestra alimentare 13:00–20:00</div>'
-      : '<div class="chart-empty">Nessun allenamento registrato · Scrivi il resoconto in chat (es. "Ho fatto FB-A in 35 min: leg press 60kg 3x10...")</div>';
-    return;
-  }
-  const aw = woHwAll[selectedDate];
-  let html='';
-  entries.forEach(entry=>{
-    const durStr=entry.durata_min>0?` · ${entry.durata_min} min`:'';
-    html+=`<div class="wo-header"><span class="wo-tipo">${entry.sessione||entry.tipo||'Allenamento'}${durStr}</span><span class="wo-ora">${entry.ora||''}</span></div><div class="wo-exercises">`;
-    entry.esercizi.forEach(ex=>{
-      const d=[ex.serie?ex.serie+'×':null,ex.rip||ex.reps?((ex.rip||ex.reps)+' rip'):null,ex.carico_kg>0?ex.carico_kg+' kg':ex.kg?ex.kg+' kg':null].filter(Boolean).join(' ');
-      html+=`<div class="wo-ex"><span class="wo-ex-nome">${ex.nome||'Esercizio'}</span><span class="wo-ex-detail">${d}</span></div>`;
-    });
-    html+='</div>';
-  });
-  if(aw && (aw.kcal>0||aw.fc_media>0)) {
-    html+='<div class="wo-aw-bar">';
-    if(aw.kcal>0)     html+=`<span class="wo-aw-stat hi">⚡ ${aw.kcal} kcal</span>`;
-    if(aw.fc_media>0) html+=`<span class="wo-aw-stat">♥ ${aw.fc_media} bpm avg</span>`;
-    if(aw.fc_max>0)   html+=`<span class="wo-aw-stat">↑ ${aw.fc_max} max</span>`;
-    if(aw.fc_min>0)   html+=`<span class="wo-aw-stat">↓ ${aw.fc_min} min</span>`;
-    html+='</div>';
-  } else if(entries.length>0) {
-    html+='<div class="wo-aw-bar"><span class="wo-aw-stat" style="opacity:0.5;">⌚ Dati Apple Watch non ancora inseriti</span></div>';
-  }
-  el.innerHTML=html;
+async function fetchJson(path) {
+  try { const r = await fetch(FB_URL+'/'+path+'.json'); return await r.json(); }
+  catch(e) { return null; }
 }
 
-// TRAINING WEEK
-function renderTrainingWeek(log) {
-  const el = document.getElementById('training-week');
-  if(!el) return;
-  const monday = getMonday(new Date());
-  const today = new Date(); today.setHours(0,0,0,0);
-  const days=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+async function reload() {
+  const rosterData = await fetchJson('basket_roster') || {};
+  roster = rosterData;
+  const ids = Object.keys(roster).filter(id => roster[id] && roster[id].attivo !== false);
 
-  const logByDate = {};
-  log.forEach(e=>{
-    if(e.data&&e.esercizi&&e.esercizi.length>0){
-      logByDate[normDate(e.data)] = e.sessione||e.tipo||'✓';
-    }
-  });
+  const results = await Promise.all(ids.map(async id => {
+    const [presenze, allenamenti] = await Promise.all([
+      fetchJson('basket_presenze/'+id),
+      fetchJson('basket_allenamenti/'+id)
+    ]);
+    return [id, { presenze: presenze||{}, allenamenti: allenamenti||{} }];
+  }));
+  playersData = Object.fromEntries(results);
 
-  let html='<div class="week-grid">';
-  for(let i=0;i<7;i++){
-    const d=new Date(monday); d.setDate(d.getDate()+i); d.setHours(0,0,0,0);
-    const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const rot=getRotationDay(ds);
-    const isToday=d.getTime()===today.getTime();
-    const isPast=d<today;
-    const entry=logByDate[ds];
-    let cls='day-dot';
-    let icon='·';
-    if(entry){
-      cls+=' done'; icon='✓';
-    } else if(rot.type==='rest'){cls+=' rest';icon='—';}
-    else if(isPast) cls+=' missed';
-    if(isToday) cls+=' today';
-    const typeLabel=rot.label.replace('Full Body','FB').replace('Riposo attivo','Riposo').replace('HIIT+Addome','HIIT');
-    html+=`<div class="day-cell">
-      <div class="day-name">${days[i]}</div>
-      <div class="${cls}">${icon}</div>
-      <div class="day-type">${typeLabel}</div>
-    </div>`;
-  }
-  html+='</div>';
-  el.innerHTML=html;
+  renderRoster(ids);
+  if(currentDetailId && ids.includes(currentDetailId)) renderDetail(currentDetailId);
 }
 
-// WEEKLY MACROS PIE
-function renderWeeklyMacros() {
-  const el = document.getElementById('weekly-macros');
-  if(!el) return;
-  const monday = getMonday(new Date());
-  const today = todayStr();
+function countPresenzeLast7(id) {
+  const dates = getDateRange(7);
+  const p = playersData[id]?.presenze || {};
+  return Object.values(p).filter(e => e && e.presente && dates.includes(e.data)).length;
+}
 
-  let weekP=0, weekC=0, weekG=0, weekK=0;
-  let weekTP=0, weekTC=0, weekTG=0, weekTK=0;
-  let hasAnyData = false;
+function countSessioniLast7(id) {
+  const dates = getDateRange(7);
+  const a = playersData[id]?.allenamenti || {};
+  return Object.values(a).filter(e => e && e.data && dates.includes(normDate(e.data)) && e.esercizi && e.esercizi.length>0).length;
+}
 
-  for(let i=0;i<7;i++){
-    const d = new Date(monday);
-    d.setDate(d.getDate()+i);
-    const ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    if(ds > today) { const rot=getRotationDay(ds); weekTP+=rot.p;weekTC+=rot.c;weekTG+=rot.g;weekTK+=rot.k; continue; }
-    const rot = getRotationDay(ds);
-    weekTP+=rot.p; weekTC+=rot.c; weekTG+=rot.g; weekTK+=rot.k;
-    const dayMeals = nutriAll[ds] || {};
-    Object.values(dayMeals).forEach(m=>{
-      weekP+=m.proteine||0; weekC+=m.carbo||0; weekG+=m.grassi||0; weekK+=m.kcal||0;
-      hasAnyData=true;
-    });
-  }
+function lastSessionDate(id) {
+  const a = playersData[id]?.allenamenti || {};
+  const dates = Object.values(a).map(e=>e && e.data).filter(Boolean).sort();
+  return dates.length ? dates[dates.length-1] : null;
+}
 
-  if(weeklyChart){ try{weeklyChart.destroy();}catch(e){} weeklyChart=null; }
-
-  if(!hasAnyData){
-    el.innerHTML='<div class="chart-empty">Nessun dato nutrizionale questa settimana</div>';
+function renderRoster(ids) {
+  const tbody = document.getElementById('roster-tbody');
+  if(ids.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="chart-empty">Nessun giocatore nel roster · vai su "Gestisci roster" per aggiungerne</td></tr>';
+    document.getElementById('kpi-giocatori').textContent = '0';
+    document.getElementById('kpi-presenze-media').textContent = '—';
+    document.getElementById('kpi-sessioni-tot').textContent = '—';
     return;
   }
 
-  const rP=Math.round(weekP), rC=Math.round(weekC), rG=Math.round(weekG), rK=Math.round(weekK);
-  const tP=Math.round(weekTP), tC=Math.round(weekTC), tG=Math.round(weekTG), tK=Math.round(weekTK);
-
-  // kcal equivalenti per la torta
-  const kP=rP*4, kC=rC*4, kG=rG*9;
-  const kTotal = kP+kC+kG;
-
-  function deltaHtml(real, tgt) {
-    const d = real - tgt;
-    if(d===0) return `<td class="wm-ok">=</td>`;
-    const cls = d>0?'wm-over':'wm-low';
-    return `<td class="${cls}">${d>0?'+':''}${d}g</td>`;
-  }
-  function deltaKcal(real, tgt) {
-    const d = real - tgt;
-    if(d===0) return `<td class="wm-ok">=</td>`;
-    const cls = d>0?'wm-over':'wm-low';
-    return `<td class="${cls}">${d>0?'+':''}${d}</td>`;
-  }
-
-  el.innerHTML = `<div class="wm-layout">
-    <div class="wm-chart-wrap">
-      <canvas id="weeklyPieChart" width="160" height="160"></canvas>
-      <div class="wm-chart-center">
-        <div class="wm-kcal-val">${rK}</div>
-        <div class="wm-kcal-unit">kcal</div>
-        <div class="wm-kcal-unit" style="margin-top:2px;">/ ${tK}</div>
-      </div>
-    </div>
-    <table class="wm-table">
-      <thead><tr>
-        <th></th><th>Target</th><th>Reale</th><th>Δ</th>
-      </tr></thead>
-      <tbody>
-        <tr>
-          <td><span class="wm-dot" style="background:var(--cp);"></span>Proteine</td>
-          <td class="wm-neutral">${tP}g</td><td>${rP}g</td>${deltaHtml(rP,tP)}
-        </tr>
-        <tr>
-          <td><span class="wm-dot" style="background:var(--cc);"></span>Carboidrati</td>
-          <td class="wm-neutral">${tC}g</td><td>${rC}g</td>${deltaHtml(rC,tC)}
-        </tr>
-        <tr>
-          <td><span class="wm-dot" style="background:var(--cg);"></span>Grassi</td>
-          <td class="wm-neutral">${tG}g</td><td>${rG}g</td>${deltaHtml(rG,tG)}
-        </tr>
-        <tr style="border-top:1px solid var(--border2);">
-          <td style="color:var(--text2);">Kcal</td>
-          <td class="wm-neutral">${tK}</td><td>${rK}</td>${deltaKcal(rK,tK)}
-        </tr>
-      </tbody>
-    </table>
-  </div>`;
-
-  const ctx = document.getElementById('weeklyPieChart');
-  if(!ctx) return;
-  weeklyChart = new Chart(ctx, {
-    type:'doughnut',
-    data:{
-      labels:['Proteine','Carboidrati','Grassi'],
-      datasets:[{
-        data: kTotal>0 ? [kP,kC,kG] : [1,1,1],
-        backgroundColor:['rgba(200,245,100,0.85)','rgba(100,181,246,0.85)','rgba(255,183,77,0.85)'],
-        borderColor:'#1a1a1a',
-        borderWidth:2,
-        hoverOffset:4
-      }]
-    },
-    options:{
-      responsive:false,
-      cutout:'62%',
-      plugins:{
-        legend:{display:false},
-        tooltip:{enabled:kTotal>0,backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
-          titleColor:'#f0ede8',bodyColor:'#8a8780',padding:8,
-          callbacks:{label:c=>{
-            const pct=Math.round(c.parsed/kTotal*100);
-            return ' '+c.label+': '+Math.round(c.parsed/4)+'g ('+pct+'%)';
-          }}
-        }
-      }
-    }
+  let totPresenze = 0, totSessioni = 0;
+  const rows = ids.map(id => {
+    const p = roster[id];
+    const presenze = countPresenzeLast7(id);
+    const sessioni = countSessioniLast7(id);
+    const last = lastSessionDate(id);
+    totPresenze += presenze; totSessioni += sessioni;
+    const pillClass = presenze >= 3 ? 'presenze-good' : presenze >= 1 ? 'presenze-mid' : 'presenze-low';
+    return `<tr class="row-clickable" onclick="showDetail('${id}')">
+      <td>${p.nome} ${p.cognome||''}</td>
+      <td>${p.ruolo||'—'}</td>
+      <td><span class="presenze-pill ${pillClass}">${presenze}/7</span></td>
+      <td>${sessioni}</td>
+      <td>${last||'—'}</td>
+    </tr>`;
   });
+  tbody.innerHTML = rows.join('');
+
+  document.getElementById('kpi-giocatori').textContent = ids.length;
+  document.getElementById('kpi-presenze-media').textContent = (totPresenze/ids.length).toFixed(1);
+  document.getElementById('kpi-sessioni-tot').textContent = totSessioni;
 }
 
-// SONNO CHART
-function renderSonnoChart(sonno) {
-  const wrap = document.getElementById('sonno-chart-wrap');
-  if(!wrap) return;
-  if(sonnoChart){try{sonnoChart.destroy();}catch(e){} sonnoChart=null;}
-  if(!sonno||sonno.length===0){
-    wrap.innerHTML='<div class="chart-empty">Nessun dato sonno · Registra le ore ogni mattina nell\'app</div>';
-    return;
-  }
-  if(!wrap.querySelector('canvas')) wrap.innerHTML='<canvas id="sonnoChart" height="80"></canvas>';
-  const ctx = document.getElementById('sonnoChart');
-  const recent = sonno.slice(-30);
-  const labels = recent.map(s=>{const d=new Date(s.data+'T12:00:00');return d.getDate()+'/'+(d.getMonth()+1);});
-  const vals = recent.map(s=>parseFloat(s.ore)||0);
-  const avg = vals.length>0 ? +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : 0;
-  const colors = vals.map(v=>v>=7?'rgba(200,245,100,0.8)':v>=6?'rgba(139,139,139,0.8)':'rgba(255,107,107,0.8)');
-  sonnoChart = new Chart(ctx, {
-    type:'bar',
-    data:{labels, datasets:[
-      {label:'Ore sonno', data:vals, backgroundColor:colors, borderRadius:4, borderSkipped:false},
-      {label:'Media '+avg+'h', data:Array(vals.length).fill(avg), type:'line',
-        borderColor:'rgba(200,245,100,0.4)', borderWidth:1.5, borderDash:[5,5], pointRadius:0, fill:false}
-    ]},
-    options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{
-        legend:{display:true, position:'bottom', labels:{font:{family:'DM Mono',size:11},color:'#8a8780',boxWidth:16,padding:16}},
-        tooltip:{backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f0ede8',bodyColor:'#8a8780',padding:10,
-          callbacks:{label:c=>c.dataset.type==='line'?null:' '+c.parsed.y+'h'}}
-      },
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350'}},
-        y:{min:0,max:10,grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350',callback:v=>v+'h',stepSize:1}}
-      }
-    }
-  });
+function showDetail(id) {
+  currentDetailId = id;
+  document.getElementById('view-roster').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'flex';
+  renderDetail(id);
 }
 
-// DEFICIT CALORICO CHART
-function renderDeficitChart() {
-  const wrap = document.getElementById('deficit-chart-wrap');
-  if(!wrap) return;
-  if(deficitChart){try{deficitChart.destroy();}catch(e){} deficitChart=null;}
-
-  const today = new Date();
-  const labels=[], vals=[], colors=[];
-  for(let i=29;i>=0;i--){
-    const d=new Date(today);
-    d.setDate(d.getDate()-i);
-    const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const dayMeals=nutriAll[ds]||{};
-    let dayKcal=0;
-    Object.values(dayMeals).forEach(m=>{dayKcal+=m.kcal||0;});
-    if(dayKcal===0) continue;
-    const dayAw=woHwAll[ds];
-    const dayAwKcal=dayAw&&dayAw.kcal>0?dayAw.kcal:0;
-    const deficit=(1900+300+dayAwKcal)-dayKcal;
-    labels.push(d.getDate()+'/'+(d.getMonth()+1));
-    vals.push(deficit);
-    colors.push(deficit>=0?'rgba(200,245,100,0.8)':'rgba(255,107,107,0.8)');
-  }
-
-  if(vals.length===0){
-    wrap.innerHTML='<div class="chart-empty">Nessun dato · I pasti vengono registrati automaticamente dalla chat</div>';
-    return;
-  }
-  if(!wrap.querySelector('canvas')) wrap.innerHTML='<canvas id="deficitChart" height="80"></canvas>';
-  const ctx=document.getElementById('deficitChart');
-  const maxAbs=Math.max(...vals.map(Math.abs),300);
-
-  deficitChart=new Chart(ctx,{
-    type:'bar',
-    data:{labels,datasets:[{
-      label:'Deficit (kcal)',
-      data:vals,
-      backgroundColor:colors,
-      borderRadius:4,
-      borderSkipped:false
-    }]},
-    options:{
-      responsive:true,maintainAspectRatio:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
-          titleColor:'#f0ede8',bodyColor:'#8a8780',padding:10,
-          callbacks:{label:c=>{
-            const v=c.parsed.y;
-            return v>=0?' deficit: -'+v+' kcal':' surplus: +'+Math.abs(v)+' kcal';
-          }}
-        }
-      },
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{family:'DM Mono',size:10},color:'#555350'}},
-        y:{
-          suggestedMin:-maxAbs,suggestedMax:maxAbs,
-          grid:{color:'rgba(255,255,255,0.04)'},
-          ticks:{font:{family:'DM Mono',size:10},color:'#555350',
-            callback:v=>v>0?'-'+v:v<0?'+'+Math.abs(v):'0'
-          }
-        }
-      }
-    }
-  });
+function showRoster() {
+  currentDetailId = null;
+  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('view-roster').style.display = 'flex';
 }
 
-// PROGRESSIONE PESI
-function renderExProgChart(log) {
+function renderDetail(id) {
+  const p = roster[id];
+  if(!p) { showRoster(); return; }
+
+  document.getElementById('detail-name').textContent = p.nome + ' ' + (p.cognome||'');
+  const metaBits = [p.ruolo, p.altezza_cm ? p.altezza_cm+' cm' : null, p.peso_kg ? p.peso_kg+' kg' : null].filter(Boolean);
+  document.getElementById('detail-meta').textContent = metaBits.join(' · ');
+
+  // presenze ultimi 14 giorni
+  const dates = getDateRange(14);
+  const presenzeObj = playersData[id]?.presenze || {};
+  const presByDate = {};
+  Object.values(presenzeObj).forEach(e => { if(e && e.data) presByDate[e.data] = !!e.presente; });
+  document.getElementById('detail-presenze').innerHTML = dates.map(d => {
+    const present = !!presByDate[d];
+    const dd = new Date(d+'T12:00:00');
+    return `<div class="pdot${present?' present':''}" title="${d}">${dd.getDate()}</div>`;
+  }).join('');
+
+  // storico sessioni
+  const allenamenti = Object.values(playersData[id]?.allenamenti || {}).filter(e=>e && e.data).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const storicoEl = document.getElementById('detail-storico');
+  if(allenamenti.length === 0) {
+    storicoEl.innerHTML = '<div class="chart-empty">Nessuna sessione registrata</div>';
+  } else {
+    storicoEl.innerHTML = allenamenti.slice(0,15).map(e => `
+      <div class="storico-item">
+        <div class="storico-main">
+          <span class="storico-sessione">${e.sessione||'Allenamento'}</span>
+          <span class="storico-data">${e.data}${e.durata_min?' · '+e.durata_min+' min':''}</span>
+        </div>
+        <span class="storico-count">${(e.esercizi||[]).length} es.</span>
+      </div>`).join('');
+  }
+
+  renderExProgChart(allenamenti);
+}
+
+// PROGRESSIONE PESI (per giocatore selezionato)
+function renderExProgChart(allenamenti) {
   const wrap = document.getElementById('exprog-wrap');
   if(!wrap) return;
   const exMap = {};
-  log.forEach(entry=>{
-    if(!entry.esercizi||!entry.data) return;
-    entry.esercizi.forEach(ex=>{
-      if(!ex.nome||!(ex.carico_kg>0)) return;
-      if(!exMap[ex.nome]) exMap[ex.nome]=[];
-      exMap[ex.nome].push({data:normDate(entry.data), kg:ex.carico_kg});
+  allenamenti.forEach(entry => {
+    if(!entry.esercizi || !entry.data) return;
+    entry.esercizi.forEach(ex => {
+      if(!ex.nome || !(ex.carico_kg>0)) return;
+      if(!exMap[ex.nome]) exMap[ex.nome] = [];
+      exMap[ex.nome].push({ data: normDate(entry.data), kg: ex.carico_kg });
     });
   });
   const names = Object.keys(exMap).sort();
-  if(names.length===0){
-    if(exProgChart){try{exProgChart.destroy();}catch(e){} exProgChart=null;}
-    wrap.innerHTML='<div class="chart-empty">Nessun dato pesi · Scrivi in chat il resoconto con kg (es. "leg press 60kg 3x10")</div>';
+  if(exProgChart) { try{ exProgChart.destroy(); }catch(e){} exProgChart = null; }
+  if(names.length === 0) {
+    wrap.innerHTML = '<div class="chart-empty">Nessun dato carichi per questo giocatore</div>';
     return;
   }
-  const currentSel = wrap.dataset.selected||names[0];
-  const selName = names.includes(currentSel)?currentSel:names[0];
+  const currentSel = wrap.dataset.selected || names[0];
+  const selName = names.includes(currentSel) ? currentSel : names[0];
   const entries = exMap[selName].sort((a,b)=>new Date(a.data)-new Date(b.data));
-  const labels = entries.map(e=>{const d=new Date(e.data+'T12:00:00');return d.getDate()+'/'+(d.getMonth()+1);});
+  const labels = entries.map(e => { const d=new Date(e.data+'T12:00:00'); return d.getDate()+'/'+(d.getMonth()+1); });
   const vals = entries.map(e=>e.kg);
-  if(exProgChart){try{exProgChart.destroy();}catch(e){} exProgChart=null;}
   const optionsHtml = names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"${n===selName?' selected':''}>${n}</option>`).join('');
   wrap.innerHTML = `
     <div style="margin-bottom:12px;">
-      <select id="ex-selector" onchange="onExSelect(this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);cursor:pointer;width:100%;outline:none;">
-        ${optionsHtml}
-      </select>
+      <select id="ex-selector" onchange="onExSelect(this.value)">${optionsHtml}</select>
     </div>
-    <canvas id="exProgChart" height="80"></canvas>
-  `;
+    <canvas id="exProgChart" height="80"></canvas>`;
   wrap.dataset.selected = selName;
   const ctx = document.getElementById('exProgChart');
-  const maxVal = vals.length>0?Math.max(...vals):50;
+  const maxVal = vals.length>0 ? Math.max(...vals) : 50;
   exProgChart = new Chart(ctx, {
     type:'line',
-    data:{labels, datasets:[{
+    data:{ labels, datasets:[{
       label:selName, data:vals,
-      borderColor:'#c8f564', backgroundColor:'rgba(200,245,100,0.07)',
-      borderWidth:2, pointBackgroundColor:'#c8f564', pointBorderColor:'#0f0f0f',
+      borderColor:'#ff8f3f', backgroundColor:'rgba(255,143,63,0.08)',
+      borderWidth:2, pointBackgroundColor:'#ff8f3f', pointBorderColor:'#0f0f0f',
       pointBorderWidth:1.5, pointRadius:5, tension:0.3, fill:true
     }]},
     options:{
@@ -1115,66 +350,12 @@ function renderExProgChart(log) {
 function onExSelect(name) {
   const wrap = document.getElementById('exprog-wrap');
   if(wrap) wrap.dataset.selected = name;
-  renderExProgChart(logAll);
-}
-
-// ─── CONVERSAZIONI ─────────────────────────────────────────
-
-async function loadConversations() {
-  try {
-    const r=await fetch(FB_URL+'/coach_ai_conversations.json');
-    allData=(await r.json())||{};
-    renderSidebar();
-    if(activeKey) renderConv(activeKey.t,activeKey.c);
-  } catch(e){
-    document.getElementById('sidebar-content').innerHTML='<div style="padding:16px;font-size:13px;color:var(--red);">Errore Firebase</div>';
-  }
-}
-
-function renderSidebar(){
-  const el=document.getElementById('sidebar-content');
-  if(!allData||Object.keys(allData).length===0){el.innerHTML='<div style="padding:16px;font-size:13px;color:var(--text3);">Nessuna conversazione.</div>';return;}
-  let html='';
-  for(const t in allData){
-    const cl=allData[t];
-    html+=`<div class="trainer-group"><div class="trainer-label">${t}</div>`;
-    for(const c in cl){
-      const cnt=Object.keys(cl[c]).length;
-      const act=activeKey&&activeKey.t===t&&activeKey.c===c;
-      html+=`<div class="cliente-item${act?' active':''}" onclick="selectCliente('${t}','${c}')"><span class="cliente-name">${c}</span><span class="cliente-count">${cnt}</span></div>`;
-    }
-    html+='</div>';
-  }
-  el.innerHTML=html;
-}
-
-function selectCliente(t,c){activeKey={t,c};renderSidebar();renderConv(t,c);}
-
-function renderConv(t,c){
-  const msgs=allData[t]?.[c]||{};
-  const sorted=Object.entries(msgs).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
-  const cC=sorted.filter(([,m])=>m.ruolo==='cliente').length;
-  const aC=sorted.filter(([,m])=>m.ruolo==='agente').length;
-  const eC=sorted.filter(([,m])=>m.ruolo==='agente'&&m.testo&&(m.testo.includes('SCALA AL TRAINER')||m.testo.includes('SCALA AL MEDICO'))).length;
-  let html=`<div class="conv-header"><div class="conv-title">${c}</div><div class="conv-meta">Trainer: ${t}</div></div>
-    <div class="stats-bar">
-      <div class="stat"><span class="stat-val">${cC}</span><span class="stat-label">cliente</span></div>
-      <div class="stat"><span class="stat-val">${aC}</span><span class="stat-label">agente</span></div>
-      <div class="stat"><span class="stat-val" style="color:${eC>0?'var(--red)':'var(--text)'}">${eC}</span><span class="stat-label">escalation</span></div>
-    </div><div class="conv-msgs">`;
-  if(!sorted.length) html+='<div class="empty-state">Nessun messaggio.</div>';
-  else for(const[,msg] of sorted){
-    const r=msg.ruolo||'sistema',tx=msg.testo||'';
-    const ts=msg.ts?new Date(msg.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
-    const esc=tx.includes('SCALA AL TRAINER')||tx.includes('SCALA AL MEDICO');
-    html+=`<div class="${esc?'msg-row escalate':'msg-row '+r}"><div class="msg-bubble">${tx.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><span class="msg-ts">${r} · ${ts}</span></div>`;
-  }
-  html+='</div>';
-  document.getElementById('main').innerHTML=html;
+  const allenamenti = Object.values(playersData[currentDetailId]?.allenamenti || {}).filter(e=>e && e.data).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  renderExProgChart(allenamenti);
 }
 
 reload();
-setInterval(reload,30000);
+setInterval(reload, 30000);
 </script>
 </body>
 </html>
