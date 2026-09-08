@@ -149,7 +149,7 @@
           <select class="field-input" id="test-tipo" onchange="onTestTipoChange()">
             <option value="agilita">Agilità</option>
             <option value="forza">Forza</option>
-            <option value="resistenza">Resistenza</option>
+            <option value="resistenza">Beep Test</option>
           </select>
         </div>
         <div class="field"><span class="field-label">Data</span><input type="date" class="field-input" id="test-data"></div>
@@ -165,7 +165,7 @@
         </div>
         <div class="field" id="field-kg" style="display:none;"><span class="field-label">Kg</span><input type="number" class="field-input" id="test-kg" step="0.5" min="0" placeholder="80"></div>
         <div class="field" id="field-rip" style="display:none;"><span class="field-label">Ripetizioni</span><input type="number" class="field-input" id="test-rip" min="0" placeholder="5"></div>
-        <div class="field" id="field-livello" style="display:none;"><span class="field-label">Livello</span><input type="number" class="field-input" id="test-livello" step="0.1" min="0" placeholder="12"></div>
+        <div class="field" id="field-livello" style="display:none;"><span class="field-label">Livello (es. 8.5)</span><input type="number" class="field-input" id="test-livello" step="0.1" min="0" placeholder="8.5"></div>
         <button class="add-btn" onclick="salvaTest()">+ Salva test</button>
       </div>
     </div>
@@ -362,7 +362,7 @@ function onTestTipoChange() {
   document.getElementById('field-livello').style.display = tipo === 'resistenza' ? 'flex' : 'none';
 }
 
-const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Resistenza' };
+const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Beep Test' };
 const FORZA_ESERCIZI = { squat: 'Squat', stacco: 'Stacco', trazioni: 'Trazioni', lat_machine: 'Lat Machine' };
 
 function formatTestValore(t) {
