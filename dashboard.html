@@ -63,7 +63,7 @@
   .pdot{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;background:var(--surface2);border:1px solid var(--border);color:var(--text3);}
   .pdot.present{background:var(--green-dim);border-color:rgba(143,214,148,0.35);color:var(--green);}
 
-  select#ex-selector{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);cursor:pointer;width:100%;outline:none;}
+  select#ex-selector,select#test-forza-esercizio-select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);cursor:pointer;width:100%;outline:none;}
 
   .maintabbar{display:flex;gap:8px;padding:16px 24px 0;max-width:1000px;margin:0 auto;}
   .maintabbtn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
@@ -185,6 +185,7 @@
     </div>
     <div class="chart-card">
       <div class="chart-title">Forza · carico (kg)</div>
+      <div id="test-forza-select-wrap" style="margin-bottom:10px;"></div>
       <div id="test-forza-wrap"><canvas id="testForzaChart" height="120"></canvas></div>
     </div>
     <div class="chart-card">
@@ -204,6 +205,7 @@ let currentDetailId = null;
 let currentTestDetailId = null;
 let testAgilitaChart = null, testForzaChart = null, testResistenzaChart = null;
 const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Resistenza' };
+const FORZA_ESERCIZI = { squat: 'Squat', stacco: 'Stacco', trazioni: 'Trazioni', lat_machine: 'Lat Machine' };
 
 function todayStr() {
   const d = new Date();
@@ -335,7 +337,7 @@ function latestTestByTipo(id, tipo) {
 function formatTestValore(t) {
   if(!t) return '—';
   if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's <span style="color:var(--text3);">· '+t.data+'</span>';
-  if(t.tipo === 'forza') return (t.carico_kg||0) + 'kg×' + (t.rip||0) + ' <span style="color:var(--text3);">· '+t.data+'</span>';
+  if(t.tipo === 'forza') return (FORZA_ESERCIZI[t.esercizio]||'Forza') + ' ' + (t.carico_kg||0) + 'kg×' + (t.rip||0) + ' <span style="color:var(--text3);">· '+t.data+'</span>';
   if(t.tipo === 'resistenza') return 'Liv. ' + (t.livello||0) + ' <span style="color:var(--text3);">· '+t.data+'</span>';
   return '—';
 }
@@ -376,13 +378,41 @@ function renderTestDetail(id) {
 
   const allTest = Object.values(playersData[id]?.test || {}).filter(e => e && e.data && e.tipo);
 
-  testAgilitaChart = renderTestLineChart('testAgilitaChart', testAgilitaChart, allTest.filter(e=>e.tipo==='agilita'), 'tempo_sec', ' s', '#ff8f3f');
-  testForzaChart = renderTestLineChart('testForzaChart', testForzaChart, allTest.filter(e=>e.tipo==='forza'), 'carico_kg', ' kg', '#5dade2');
-  testResistenzaChart = renderTestLineChart('testResistenzaChart', testResistenzaChart, allTest.filter(e=>e.tipo==='resistenza'), 'livello', '', '#8fd694');
+  testAgilitaChart = renderTestLineChart('test-agilita-wrap', 'testAgilitaChart', testAgilitaChart, allTest.filter(e=>e.tipo==='agilita'), 'tempo_sec', ' s', '#ff8f3f');
+  testResistenzaChart = renderTestLineChart('test-resistenza-wrap', 'testResistenzaChart', testResistenzaChart, allTest.filter(e=>e.tipo==='resistenza'), 'livello', '', '#8fd694');
+  renderForzaTestChart(allTest.filter(e=>e.tipo==='forza'));
 }
 
-function renderTestLineChart(canvasId, existingChart, entries, field, unit, color) {
-  const wrap = document.getElementById(canvasId).parentElement;
+let forzaSelectedEsercizio = null;
+
+function renderForzaTestChart(forzaEntries) {
+  const selectWrap = document.getElementById('test-forza-select-wrap');
+  const esercizi = Object.keys(FORZA_ESERCIZI).filter(k => forzaEntries.some(e => e.esercizio === k));
+
+  if(esercizi.length === 0) {
+    selectWrap.innerHTML = '';
+    if(testForzaChart) { try{ testForzaChart.destroy(); }catch(e){} testForzaChart = null; }
+    document.getElementById('test-forza-wrap').innerHTML = '<div class="chart-empty">Nessun test di forza registrato</div>';
+    return;
+  }
+
+  if(!forzaSelectedEsercizio || !esercizi.includes(forzaSelectedEsercizio)) forzaSelectedEsercizio = esercizi[0];
+  selectWrap.innerHTML = `<select id="test-forza-esercizio-select" onchange="onForzaEsercizioSelect(this.value)">
+    ${esercizi.map(k => `<option value="${k}"${k===forzaSelectedEsercizio?' selected':''}>${FORZA_ESERCIZI[k]}</option>`).join('')}
+  </select>`;
+
+  const filtered = forzaEntries.filter(e => e.esercizio === forzaSelectedEsercizio);
+  testForzaChart = renderTestLineChart('test-forza-wrap', 'testForzaChart', testForzaChart, filtered, 'carico_kg', ' kg', '#5dade2');
+}
+
+function onForzaEsercizioSelect(val) {
+  forzaSelectedEsercizio = val;
+  const allTest = Object.values(playersData[currentTestDetailId]?.test || {}).filter(e => e && e.data && e.tipo === 'forza');
+  renderForzaTestChart(allTest);
+}
+
+function renderTestLineChart(wrapId, canvasId, existingChart, entries, field, unit, color) {
+  const wrap = document.getElementById(wrapId);
   if(existingChart) { try{ existingChart.destroy(); }catch(e){} }
   if(entries.length === 0) {
     wrap.innerHTML = '<div class="chart-empty">Nessun test registrato</div>';
