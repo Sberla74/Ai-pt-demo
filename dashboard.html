@@ -65,6 +65,14 @@
 
   select#ex-selector{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);cursor:pointer;width:100%;outline:none;}
 
+  .maintabbar{display:flex;gap:8px;padding:16px 24px 0;max-width:1000px;margin:0 auto;}
+  .maintabbtn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
+  .maintabbtn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(255,143,63,0.4);}
+
+  #view-test-roster,#view-test-detail{padding:20px 24px;max-width:1000px;margin:0 auto;display:none;flex-direction:column;gap:16px;}
+  .test-chart-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:800px){.test-chart-row{grid-template-columns:1fr;}}
+
   @media(max-width:650px){
     .kpi-row{grid-template-columns:repeat(1,1fr);}
     table.roster-table{font-size:12px;}
@@ -82,6 +90,11 @@
     <a class="link-btn" href="admin.html">Gestisci roster</a>
     <button class="refresh-btn" onclick="reload()">↻</button>
   </div>
+</div>
+
+<div class="maintabbar">
+  <button class="maintabbtn active" id="maintabbtn-prep" onclick="showMainTab('prep')">Preparazione</button>
+  <button class="maintabbtn" id="maintabbtn-test" onclick="showMainTab('test')">Test Atletici</button>
 </div>
 
 <!-- ROSTER VIEW -->
@@ -141,13 +154,56 @@
   </div>
 </div>
 
+<!-- TEST ROSTER VIEW -->
+<div id="view-test-roster">
+  <div class="chart-card">
+    <div class="chart-title">Ultimi test per giocatore</div>
+    <table class="roster-table">
+      <thead><tr><th>Giocatore</th><th>Agilità</th><th>Forza</th><th>Resistenza</th></tr></thead>
+      <tbody id="test-roster-tbody"><tr><td colspan="4" class="chart-empty">Caricamento...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TEST DETAIL VIEW -->
+<div id="view-test-detail">
+  <button class="back-btn" onclick="showTestRoster()">← Torna ai test</button>
+
+  <div class="chart-card">
+    <div class="player-header">
+      <div>
+        <div class="player-name" id="test-detail-name">—</div>
+        <div class="player-meta" id="test-detail-meta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-chart-row">
+    <div class="chart-card">
+      <div class="chart-title">Agilità · tempo (s)</div>
+      <div id="test-agilita-wrap"><canvas id="testAgilitaChart" height="120"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Forza · carico (kg)</div>
+      <div id="test-forza-wrap"><canvas id="testForzaChart" height="120"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Resistenza · livello</div>
+      <div id="test-resistenza-wrap"><canvas id="testResistenzaChart" height="120"></canvas></div>
+    </div>
+  </div>
+</div>
+
 <script>
 const FB_URL = 'https://casa-manager-24414-default-rtdb.europe-west1.firebasedatabase.app';
 
 let roster = {};
-let playersData = {}; // playerId -> { presenze:{}, allenamenti:{} }
+let playersData = {}; // playerId -> { presenze:{}, allenamenti:{}, test:{} }
 let exProgChart = null;
 let currentDetailId = null;
+let currentTestDetailId = null;
+let testAgilitaChart = null, testForzaChart = null, testResistenzaChart = null;
+const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Resistenza' };
 
 function todayStr() {
   const d = new Date();
@@ -177,16 +233,19 @@ async function reload() {
   const ids = Object.keys(roster).filter(id => roster[id] && roster[id].attivo !== false);
 
   const results = await Promise.all(ids.map(async id => {
-    const [presenze, allenamenti] = await Promise.all([
+    const [presenze, allenamenti, test] = await Promise.all([
       fetchJson('basket_presenze/'+id),
-      fetchJson('basket_allenamenti/'+id)
+      fetchJson('basket_allenamenti/'+id),
+      fetchJson('basket_test/'+id)
     ]);
-    return [id, { presenze: presenze||{}, allenamenti: allenamenti||{} }];
+    return [id, { presenze: presenze||{}, allenamenti: allenamenti||{}, test: test||{} }];
   }));
   playersData = Object.fromEntries(results);
 
   renderRoster(ids);
   if(currentDetailId && ids.includes(currentDetailId)) renderDetail(currentDetailId);
+  renderTestRoster(ids);
+  if(currentTestDetailId && ids.includes(currentTestDetailId)) renderTestDetail(currentTestDetailId);
 }
 
 function countPresenzeLast7(id) {
@@ -251,6 +310,108 @@ function showRoster() {
   currentDetailId = null;
   document.getElementById('view-detail').style.display = 'none';
   document.getElementById('view-roster').style.display = 'flex';
+}
+
+// ─── MAIN TABS (Preparazione / Test Atletici) ────────────────
+
+function showMainTab(tab) {
+  document.getElementById('maintabbtn-prep').classList.toggle('active', tab === 'prep');
+  document.getElementById('maintabbtn-test').classList.toggle('active', tab === 'test');
+  document.getElementById('view-roster').style.display = tab === 'prep' && !currentDetailId ? 'flex' : 'none';
+  document.getElementById('view-detail').style.display = tab === 'prep' && currentDetailId ? 'flex' : 'none';
+  document.getElementById('view-test-roster').style.display = tab === 'test' && !currentTestDetailId ? 'flex' : 'none';
+  document.getElementById('view-test-detail').style.display = tab === 'test' && currentTestDetailId ? 'flex' : 'none';
+}
+
+// ─── TEST ATLETICI ROSTER ────────────────────────────────────
+
+function latestTestByTipo(id, tipo) {
+  const entries = Object.values(playersData[id]?.test || {}).filter(e => e && e.data && e.tipo === tipo);
+  if(entries.length === 0) return null;
+  entries.sort((a,b) => (b.data||'').localeCompare(a.data||''));
+  return entries[0];
+}
+
+function formatTestValore(t) {
+  if(!t) return '—';
+  if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's <span style="color:var(--text3);">· '+t.data+'</span>';
+  if(t.tipo === 'forza') return (t.carico_kg||0) + 'kg×' + (t.rip||0) + ' <span style="color:var(--text3);">· '+t.data+'</span>';
+  if(t.tipo === 'resistenza') return 'Liv. ' + (t.livello||0) + ' <span style="color:var(--text3);">· '+t.data+'</span>';
+  return '—';
+}
+
+function renderTestRoster(ids) {
+  const tbody = document.getElementById('test-roster-tbody');
+  if(ids.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="chart-empty">Nessun giocatore nel roster</td></tr>'; return; }
+  tbody.innerHTML = ids.map(id => {
+    const p = roster[id];
+    return `<tr class="row-clickable" onclick="showTestDetail('${id}')">
+      <td>${p.nome} ${p.cognome||''}</td>
+      <td>${formatTestValore(latestTestByTipo(id,'agilita'))}</td>
+      <td>${formatTestValore(latestTestByTipo(id,'forza'))}</td>
+      <td>${formatTestValore(latestTestByTipo(id,'resistenza'))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function showTestDetail(id) {
+  currentTestDetailId = id;
+  document.getElementById('view-test-roster').style.display = 'none';
+  document.getElementById('view-test-detail').style.display = 'flex';
+  renderTestDetail(id);
+}
+
+function showTestRoster() {
+  currentTestDetailId = null;
+  document.getElementById('view-test-detail').style.display = 'none';
+  document.getElementById('view-test-roster').style.display = 'flex';
+}
+
+function renderTestDetail(id) {
+  const p = roster[id];
+  if(!p) { showTestRoster(); return; }
+  document.getElementById('test-detail-name').textContent = p.nome + ' ' + (p.cognome||'');
+  const metaBits = [p.ruolo, p.altezza_cm ? p.altezza_cm+' cm' : null, p.peso_kg ? p.peso_kg+' kg' : null].filter(Boolean);
+  document.getElementById('test-detail-meta').textContent = metaBits.join(' · ');
+
+  const allTest = Object.values(playersData[id]?.test || {}).filter(e => e && e.data && e.tipo);
+
+  testAgilitaChart = renderTestLineChart('testAgilitaChart', testAgilitaChart, allTest.filter(e=>e.tipo==='agilita'), 'tempo_sec', ' s', '#ff8f3f');
+  testForzaChart = renderTestLineChart('testForzaChart', testForzaChart, allTest.filter(e=>e.tipo==='forza'), 'carico_kg', ' kg', '#5dade2');
+  testResistenzaChart = renderTestLineChart('testResistenzaChart', testResistenzaChart, allTest.filter(e=>e.tipo==='resistenza'), 'livello', '', '#8fd694');
+}
+
+function renderTestLineChart(canvasId, existingChart, entries, field, unit, color) {
+  const wrap = document.getElementById(canvasId).parentElement;
+  if(existingChart) { try{ existingChart.destroy(); }catch(e){} }
+  if(entries.length === 0) {
+    wrap.innerHTML = '<div class="chart-empty">Nessun test registrato</div>';
+    return null;
+  }
+  if(!wrap.querySelector('canvas')) wrap.innerHTML = `<canvas id="${canvasId}" height="120"></canvas>`;
+  const sorted = entries.slice().sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const labels = sorted.map(e => { const d=new Date(e.data+'T12:00:00'); return d.getDate()+'/'+(d.getMonth()+1); });
+  const vals = sorted.map(e => e[field] || 0);
+  return new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: { labels, datasets: [{
+      data: vals, borderColor: color, backgroundColor: color+'22',
+      borderWidth: 2, pointBackgroundColor: color, pointBorderColor: '#0f0f0f',
+      pointBorderWidth: 1.5, pointRadius: 5, tension: 0.3, fill: true
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor:'#1a1a1a', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, titleColor:'#f0ede8', bodyColor:'#8a8780', padding:10,
+          callbacks: { label: c => ' ' + c.parsed.y + unit } }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{font:{family:'DM Mono',size:10},color:'#555350'} },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{font:{family:'DM Mono',size:10},color:'#555350', callback:v=>v+unit} }
+      }
+    }
+  });
 }
 
 function renderDetail(id) {
