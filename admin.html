@@ -59,7 +59,7 @@
   .tabbtn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
   .tabbtn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(255,143,63,0.4);}
 
-  .test-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:8px;align-items:end;}
+  .test-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;align-items:end;}
   .test-item{padding:9px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .test-item:last-child{border-bottom:none;}
   .test-tipo-lbl{font-size:11px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:20px;background:var(--accent-dim);color:var(--accent);white-space:nowrap;}
@@ -154,6 +154,15 @@
         </div>
         <div class="field"><span class="field-label">Data</span><input type="date" class="field-input" id="test-data"></div>
         <div class="field" id="field-tempo"><span class="field-label">Tempo (sec)</span><input type="number" class="field-input" id="test-tempo" step="0.01" min="0" placeholder="4.85"></div>
+        <div class="field" id="field-esercizio" style="display:none;">
+          <span class="field-label">Esercizio</span>
+          <select class="field-input" id="test-esercizio">
+            <option value="squat">Squat</option>
+            <option value="stacco">Stacco</option>
+            <option value="trazioni">Trazioni</option>
+            <option value="lat_machine">Lat Machine</option>
+          </select>
+        </div>
         <div class="field" id="field-kg" style="display:none;"><span class="field-label">Kg</span><input type="number" class="field-input" id="test-kg" step="0.5" min="0" placeholder="80"></div>
         <div class="field" id="field-rip" style="display:none;"><span class="field-label">Ripetizioni</span><input type="number" class="field-input" id="test-rip" min="0" placeholder="5"></div>
         <div class="field" id="field-livello" style="display:none;"><span class="field-label">Livello</span><input type="number" class="field-input" id="test-livello" step="0.1" min="0" placeholder="12"></div>
@@ -347,16 +356,18 @@ function todayStr() {
 function onTestTipoChange() {
   const tipo = document.getElementById('test-tipo').value;
   document.getElementById('field-tempo').style.display = tipo === 'agilita' ? 'flex' : 'none';
+  document.getElementById('field-esercizio').style.display = tipo === 'forza' ? 'flex' : 'none';
   document.getElementById('field-kg').style.display = tipo === 'forza' ? 'flex' : 'none';
   document.getElementById('field-rip').style.display = tipo === 'forza' ? 'flex' : 'none';
   document.getElementById('field-livello').style.display = tipo === 'resistenza' ? 'flex' : 'none';
 }
 
 const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Resistenza' };
+const FORZA_ESERCIZI = { squat: 'Squat', stacco: 'Stacco', trazioni: 'Trazioni', lat_machine: 'Lat Machine' };
 
 function formatTestValore(t) {
   if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's';
-  if(t.tipo === 'forza') return (t.carico_kg||0) + 'kg × ' + (t.rip||0);
+  if(t.tipo === 'forza') return (FORZA_ESERCIZI[t.esercizio]||'Forza') + ' — ' + (t.carico_kg||0) + 'kg × ' + (t.rip||0);
   if(t.tipo === 'resistenza') return 'Livello ' + (t.livello||0);
   return '—';
 }
@@ -392,7 +403,11 @@ async function salvaTest() {
 
   const payload = { data, tipo, ts: Date.now() };
   if(tipo === 'agilita') payload.tempo_sec = parseFloat(document.getElementById('test-tempo').value) || 0;
-  if(tipo === 'forza') { payload.carico_kg = parseFloat(document.getElementById('test-kg').value) || 0; payload.rip = parseInt(document.getElementById('test-rip').value) || 0; }
+  if(tipo === 'forza') {
+    payload.esercizio = document.getElementById('test-esercizio').value;
+    payload.carico_kg = parseFloat(document.getElementById('test-kg').value) || 0;
+    payload.rip = parseInt(document.getElementById('test-rip').value) || 0;
+  }
   if(tipo === 'resistenza') payload.livello = parseFloat(document.getElementById('test-livello').value) || 0;
 
   await fetch(FB_URL + '/basket_test/' + playerId + '/' + Date.now() + '.json', {
