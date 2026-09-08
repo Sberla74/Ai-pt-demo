@@ -54,6 +54,19 @@
   .add-ex-btn{padding:9px;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.18s;margin-top:10px;}
   .add-ex-btn:hover{border-color:rgba(255,143,63,0.35);color:var(--accent);background:var(--accent-dim2);}
   .scheda-preview-empty{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;font-family:'DM Mono',monospace;}
+
+  .tabbar{display:flex;gap:8px;margin-bottom:4px;}
+  .tabbtn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
+  .tabbtn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(255,143,63,0.4);}
+
+  .test-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:8px;align-items:end;}
+  .test-item{padding:9px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .test-item:last-child{border-bottom:none;}
+  .test-tipo-lbl{font-size:11px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:20px;background:var(--accent-dim);color:var(--accent);white-space:nowrap;}
+  .test-data-txt{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;}
+  .test-valore-txt{font-size:13px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;}
+  .test-del{background:transparent;border:none;color:var(--text3);font-size:14px;cursor:pointer;}
+  .test-del:hover{color:var(--red);}
 </style>
 </head>
 <body>
@@ -67,6 +80,13 @@
 </div>
 
 <div class="wrap">
+
+  <div class="tabbar">
+    <button class="tabbtn active" id="tabbtn-roster" onclick="showAdminTab('roster')">Roster</button>
+    <button class="tabbtn" id="tabbtn-test" onclick="showAdminTab('test')">Test Atletici</button>
+  </div>
+
+  <div id="tab-roster">
 
   <div class="card">
     <div class="card-title">Aggiungi giocatore</div>
@@ -108,6 +128,44 @@
 
       <button class="add-btn" style="margin-top:14px;" onclick="salvaScheda()">Salva scheda</button>
     </div>
+  </div>
+
+  </div>
+
+  <div id="tab-test" style="display:none;">
+
+    <div class="card">
+      <div class="card-title">Registra test</div>
+      <div class="field">
+        <span class="field-label">Giocatore</span>
+        <select class="scheda-select" id="test-player-select" onchange="loadTestHistory()">
+          <option value="">— seleziona un giocatore —</option>
+        </select>
+      </div>
+
+      <div class="test-form-grid" style="margin-top:14px;">
+        <div class="field">
+          <span class="field-label">Tipo test</span>
+          <select class="field-input" id="test-tipo" onchange="onTestTipoChange()">
+            <option value="agilita">Agilità</option>
+            <option value="forza">Forza</option>
+            <option value="resistenza">Resistenza</option>
+          </select>
+        </div>
+        <div class="field"><span class="field-label">Data</span><input type="date" class="field-input" id="test-data"></div>
+        <div class="field" id="field-tempo"><span class="field-label">Tempo (sec)</span><input type="number" class="field-input" id="test-tempo" step="0.01" min="0" placeholder="4.85"></div>
+        <div class="field" id="field-kg" style="display:none;"><span class="field-label">Kg</span><input type="number" class="field-input" id="test-kg" step="0.5" min="0" placeholder="80"></div>
+        <div class="field" id="field-rip" style="display:none;"><span class="field-label">Ripetizioni</span><input type="number" class="field-input" id="test-rip" min="0" placeholder="5"></div>
+        <div class="field" id="field-livello" style="display:none;"><span class="field-label">Livello</span><input type="number" class="field-input" id="test-livello" step="0.1" min="0" placeholder="12"></div>
+        <button class="add-btn" onclick="salvaTest()">+ Salva test</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Storico test giocatore</div>
+      <div id="test-history"><div class="empty-msg">Seleziona un giocatore</div></div>
+    </div>
+
   </div>
 
 </div>
@@ -159,6 +217,19 @@ function populateSchedaSelect(ids) {
   sel.innerHTML = '<option value="">— seleziona un giocatore —</option>' +
     ids.map(id => `<option value="${id}">${rosterCache[id].nome} ${rosterCache[id].cognome||''}</option>`).join('');
   if(ids.includes(current)) sel.value = current;
+
+  const testSel = document.getElementById('test-player-select');
+  const testCurrent = testSel.value;
+  testSel.innerHTML = '<option value="">— seleziona un giocatore —</option>' +
+    ids.map(id => `<option value="${id}">${rosterCache[id].nome} ${rosterCache[id].cognome||''}</option>`).join('');
+  if(ids.includes(testCurrent)) testSel.value = testCurrent;
+}
+
+function showAdminTab(tab) {
+  document.getElementById('tab-roster').style.display = tab === 'roster' ? 'block' : 'none';
+  document.getElementById('tab-test').style.display = tab === 'test' ? 'block' : 'none';
+  document.getElementById('tabbtn-roster').classList.toggle('active', tab === 'roster');
+  document.getElementById('tabbtn-test').classList.toggle('active', tab === 'test');
 }
 
 async function addPlayer() {
@@ -265,6 +336,87 @@ async function salvaScheda() {
 
   alert('Scheda salvata.');
 }
+
+// ─── TEST ATLETICI ──────────────────────────────────────────
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function onTestTipoChange() {
+  const tipo = document.getElementById('test-tipo').value;
+  document.getElementById('field-tempo').style.display = tipo === 'agilita' ? 'flex' : 'none';
+  document.getElementById('field-kg').style.display = tipo === 'forza' ? 'flex' : 'none';
+  document.getElementById('field-rip').style.display = tipo === 'forza' ? 'flex' : 'none';
+  document.getElementById('field-livello').style.display = tipo === 'resistenza' ? 'flex' : 'none';
+}
+
+const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Resistenza' };
+
+function formatTestValore(t) {
+  if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's';
+  if(t.tipo === 'forza') return (t.carico_kg||0) + 'kg × ' + (t.rip||0);
+  if(t.tipo === 'resistenza') return 'Livello ' + (t.livello||0);
+  return '—';
+}
+
+async function loadTestHistory() {
+  const playerId = document.getElementById('test-player-select').value;
+  const el = document.getElementById('test-history');
+  if(!playerId) { el.innerHTML = '<div class="empty-msg">Seleziona un giocatore</div>'; return; }
+  el.innerHTML = '<div class="empty-msg">Caricamento...</div>';
+  try {
+    const res = await fetch(FB_URL + '/basket_test/' + playerId + '.json');
+    const data = await res.json();
+    const entries = data ? Object.entries(data).filter(([,e]) => e && e.data && e.tipo) : [];
+    entries.sort((a,b) => (b[1].data||'').localeCompare(a[1].data||''));
+    if(entries.length === 0) { el.innerHTML = '<div class="empty-msg">Nessun test registrato per questo giocatore</div>'; return; }
+    el.innerHTML = entries.map(([key, t]) => `
+      <div class="test-item">
+        <span class="test-tipo-lbl">${TEST_LABELS[t.tipo]||t.tipo}</span>
+        <span class="test-data-txt">${t.data}</span>
+        <span class="test-valore-txt">${formatTestValore(t)}</span>
+        <button class="test-del" onclick="eliminaTest('${playerId}','${key}')">✕</button>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty-msg">Errore caricamento storico test</div>';
+  }
+}
+
+async function salvaTest() {
+  const playerId = document.getElementById('test-player-select').value;
+  if(!playerId) { alert('Seleziona un giocatore.'); return; }
+  const tipo = document.getElementById('test-tipo').value;
+  const data = document.getElementById('test-data').value || todayStr();
+
+  const payload = { data, tipo, ts: Date.now() };
+  if(tipo === 'agilita') payload.tempo_sec = parseFloat(document.getElementById('test-tempo').value) || 0;
+  if(tipo === 'forza') { payload.carico_kg = parseFloat(document.getElementById('test-kg').value) || 0; payload.rip = parseInt(document.getElementById('test-rip').value) || 0; }
+  if(tipo === 'resistenza') payload.livello = parseFloat(document.getElementById('test-livello').value) || 0;
+
+  await fetch(FB_URL + '/basket_test/' + playerId + '/' + Date.now() + '.json', {
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  }).catch(()=>{});
+
+  document.getElementById('test-tempo').value = '';
+  document.getElementById('test-kg').value = '';
+  document.getElementById('test-rip').value = '';
+  document.getElementById('test-livello').value = '';
+
+  loadTestHistory();
+}
+
+async function eliminaTest(playerId, key) {
+  if(!confirm('Eliminare questo test?')) return;
+  await fetch(FB_URL + '/basket_test/' + playerId + '/' + key + '.json', { method: 'DELETE' }).catch(()=>{});
+  loadTestHistory();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const dataInput = document.getElementById('test-data');
+  if(dataInput) dataInput.value = todayStr();
+});
 
 function copyLink(link, btn) {
   navigator.clipboard.writeText(link).then(()=>{
