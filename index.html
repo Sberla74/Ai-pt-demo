@@ -91,6 +91,15 @@
 
   .error-box{width:100%;max-width:480px;margin:40px 20px;padding:20px;background:var(--surface);border:1px solid var(--red-dim);border-radius:var(--radius);text-align:center;color:var(--text2);font-size:14px;line-height:1.6;}
 
+  .tabbar{display:flex;gap:8px;width:100%;max-width:480px;padding:16px 20px 0;}
+  .tabbtn{flex:1;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;}
+  .tabbtn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(255,143,63,0.4);}
+
+  .test-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .test-item:last-child{border-bottom:none;}
+  .test-data{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;}
+  .test-valore{font-size:14px;font-weight:600;color:var(--accent);font-family:'DM Mono',monospace;white-space:nowrap;}
+
   .footer{width:100%;max-width:480px;padding:16px 20px 32px;text-align:center;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
 </style>
 </head>
@@ -106,7 +115,12 @@
   <p class="subline" id="subline">Caricamento profilo...</p>
 </div>
 
-<div class="container">
+<div class="tabbar">
+  <button class="tabbtn active" id="tabbtn-allenamento" onclick="showMainTab('allenamento')">Allenamento</button>
+  <button class="tabbtn" id="tabbtn-test" onclick="showMainTab('test')">Test Atletici</button>
+</div>
+
+<div class="container" id="view-allenamento">
 
   <div class="card">
     <div class="card-header">
@@ -166,6 +180,25 @@
 
 </div>
 
+<div class="container" id="view-test" style="display:none;">
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Test Agilità</span></div>
+    <div class="card-body" id="test-agilita-list"><div class="empty-msg">Caricamento...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Test di Forza</span></div>
+    <div class="card-body" id="test-forza-list"><div class="empty-msg">Caricamento...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Test di Resistenza</span></div>
+    <div class="card-body" id="test-resistenza-list"><div class="empty-msg">Caricamento...</div></div>
+  </div>
+
+</div>
+
 <div class="footer">ASD Basket Scicli Meerkat · preparazione atletica</div>
 </div>
 
@@ -213,6 +246,48 @@ async function initSession() {
   checkPresenza();
   loadStorico();
   loadScheda();
+  loadTest();
+}
+
+// ─── TAB SWITCH ─────────────────────────────────────────────
+
+function showMainTab(tab) {
+  document.getElementById('view-allenamento').style.display = tab === 'allenamento' ? 'flex' : 'none';
+  document.getElementById('view-test').style.display = tab === 'test' ? 'flex' : 'none';
+  document.getElementById('tabbtn-allenamento').classList.toggle('active', tab === 'allenamento');
+  document.getElementById('tabbtn-test').classList.toggle('active', tab === 'test');
+}
+
+// ─── TEST ATLETICI (sola lettura per il giocatore) ───────────
+
+const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Resistenza' };
+
+function formatTestValore(t) {
+  if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's';
+  if(t.tipo === 'forza') return (t.carico_kg||0) + 'kg × ' + (t.rip||0);
+  if(t.tipo === 'resistenza') return 'Livello ' + (t.livello||0);
+  return '—';
+}
+
+async function loadTest() {
+  const containers = { agilita: 'test-agilita-list', forza: 'test-forza-list', resistenza: 'test-resistenza-list' };
+  try {
+    const res = await fetch(FB_URL + '/basket_test/' + playerId + '.json');
+    const data = await res.json();
+    const entries = data ? Object.values(data).filter(e => e && e.data && e.tipo) : [];
+    ['agilita','forza','resistenza'].forEach(tipo => {
+      const el = document.getElementById(containers[tipo]);
+      const list = entries.filter(e => e.tipo === tipo).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+      if(list.length === 0) { el.innerHTML = '<div class="empty-msg">Nessun test registrato</div>'; return; }
+      el.innerHTML = list.map(t => `
+        <div class="test-item">
+          <span class="test-data">${t.data}</span>
+          <span class="test-valore">${formatTestValore(t)}</span>
+        </div>`).join('');
+    });
+  } catch(e) {
+    Object.values(containers).forEach(id => { document.getElementById(id).innerHTML = '<div class="empty-msg">Errore caricamento test</div>'; });
+  }
 }
 
 // ─── SCHEDA ASSEGNATA ───────────────────────────────────────
