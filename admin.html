@@ -62,6 +62,7 @@
   .ex-row-wrap:last-of-type{border-bottom:none;}
   .ex-row-wrap .ex-row{padding:0;border-bottom:none;}
   .ex-note-input{width:100%;margin-top:5px;padding:6px 8px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;}
+  .ex-gruppo-input{width:56px;flex:none;padding:6px 8px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;font-family:'DM Mono',monospace;outline:none;text-align:center;}
   .ex-note-input:focus{border-color:rgba(255,143,63,0.4);}
   .secondary-btn{padding:9px;border-radius:var(--radius-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%;}
   .secondary-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
@@ -302,7 +303,10 @@ function addSchedaExRow(container, ex) {
       <div><span class="ex-lbl">Kg target</span><input type="number" min="0" max="500" step="0.5" value="${ex&&ex.carico_kg?ex.carico_kg:''}"></div>
       <button class="ex-del" onclick="this.closest('.ex-row-wrap').remove()">✕</button>
     </div>
-    <input type="text" class="ex-note-input" placeholder="note (recupero, superset, tecnica...)" value="${ex&&ex.note?ex.note.replace(/"/g,'&quot;'):''}">`;
+    <div style="display:flex;gap:6px;margin-top:5px;">
+      <input type="text" class="ex-note-input" placeholder="note (recupero, superset, tecnica...)" style="flex:1;margin-top:0;" value="${ex&&ex.note?ex.note.replace(/"/g,'&quot;'):''}">
+      <input type="number" class="ex-gruppo-input" placeholder="grp" min="1" title="Numero gruppo: stesso numero su più esercizi = superset, un solo numero visualizzato al giocatore" value="${ex&&ex.gruppo?ex.gruppo:''}">
+    </div>`;
   container.appendChild(wrap);
 }
 
@@ -372,13 +376,16 @@ function raccogliSchedaPayload() {
       const inputs = wrap.querySelectorAll('.ex-row input');
       const exNome = inputs[0].value.trim();
       if(!exNome) return;
-      esercizi.push({
+      const gruppoVal = parseInt(wrap.querySelector('.ex-gruppo-input').value);
+      const exercise = {
         nome: exNome,
         serie: parseInt(inputs[1].value) || 0,
         rip: parseInt(inputs[2].value) || 0,
         carico_kg: parseFloat(inputs[3].value) || 0,
         note: wrap.querySelector('.ex-note-input').value.trim()
-      });
+      };
+      if(gruppoVal) exercise.gruppo = gruppoVal;
+      esercizi.push(exercise);
     });
     if(esercizi.length === 0) return;
     giorni.push({ nome: giornoNome || 'Giorno', note: giornoNote, esercizi });
