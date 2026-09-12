@@ -55,6 +55,17 @@
   .add-ex-btn:hover{border-color:rgba(255,143,63,0.35);color:var(--accent);background:var(--accent-dim2);}
   .scheda-preview-empty{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;font-family:'DM Mono',monospace;}
 
+  .giorno-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;}
+  .giorno-del{padding:9px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;white-space:nowrap;}
+  .giorno-del:hover{color:var(--red);border-color:rgba(255,107,107,0.3);}
+  .ex-row-wrap{padding:8px 0;border-bottom:1px solid var(--border);}
+  .ex-row-wrap:last-of-type{border-bottom:none;}
+  .ex-row-wrap .ex-row{padding:0;border-bottom:none;}
+  .ex-note-input{width:100%;margin-top:5px;padding:6px 8px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;}
+  .ex-note-input:focus{border-color:rgba(255,143,63,0.4);}
+  .secondary-btn{padding:9px;border-radius:var(--radius-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%;}
+  .secondary-btn:hover{color:var(--accent);border-color:rgba(255,143,63,0.3);}
+
   .tabbar{display:flex;gap:8px;margin-bottom:4px;}
   .tabbtn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
   .tabbtn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(255,143,63,0.4);}
@@ -120,13 +131,18 @@
     <div id="scheda-editor" style="display:none;margin-top:14px;">
       <div class="field">
         <span class="field-label">Nome scheda</span>
-        <input type="text" class="field-input" id="scheda-nome" placeholder="es. Fase 1 - Forza gambe">
+        <input type="text" class="field-input" id="scheda-nome" placeholder="es. Preparazione Forza — Programma Squadra">
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <span class="field-label">Note generali (opzionale)</span>
+        <textarea class="field-textarea" id="scheda-note" placeholder="es. addome e warm-up comuni a tutti i giorni" style="height:50px;resize:none;"></textarea>
       </div>
 
-      <div id="scheda-ex-rows" style="margin-top:12px;"></div>
-      <button class="add-ex-btn" onclick="addSchedaExRow()">+ Esercizio</button>
+      <div id="scheda-giorni" style="margin-top:14px;display:flex;flex-direction:column;gap:16px;"></div>
+      <button class="add-ex-btn" style="margin-top:10px;" onclick="addSchedaGiorno()">+ Giorno</button>
 
       <button class="add-btn" style="margin-top:14px;" onclick="salvaScheda()">Salva scheda</button>
+      <button class="secondary-btn" style="margin-top:8px;" onclick="applicaSchedaATutti()">Applica questa scheda a tutti i giocatori attivi</button>
     </div>
   </div>
 
@@ -273,41 +289,67 @@ async function toggleAttivo(id, currentlyActive) {
   loadRoster();
 }
 
-// ─── SCHEDA ALLENAMENTO ─────────────────────────────────────
+// ─── SCHEDA ALLENAMENTO (multi-giorno) ───────────────────────
 
-function addSchedaExRow(ex) {
-  const wrap = document.getElementById('scheda-ex-rows');
-  const row = document.createElement('div');
-  row.className = 'ex-row';
-  row.innerHTML = `
-    <div><span class="ex-lbl">Esercizio</span><input type="text" placeholder="es. Squat" value="${ex&&ex.nome?ex.nome.replace(/"/g,'&quot;'):''}"></div>
-    <div><span class="ex-lbl">Serie</span><input type="number" min="0" max="20" value="${ex&&ex.serie?ex.serie:''}"></div>
-    <div><span class="ex-lbl">Rip</span><input type="number" min="0" max="100" value="${ex&&ex.rip?ex.rip:''}"></div>
-    <div><span class="ex-lbl">Kg target</span><input type="number" min="0" max="500" step="0.5" value="${ex&&ex.carico_kg?ex.carico_kg:''}"></div>
-    <button class="ex-del" onclick="this.closest('.ex-row').remove()">✕</button>`;
-  wrap.appendChild(row);
+function addSchedaExRow(container, ex) {
+  const wrap = document.createElement('div');
+  wrap.className = 'ex-row-wrap';
+  wrap.innerHTML = `
+    <div class="ex-row">
+      <div><span class="ex-lbl">Esercizio</span><input type="text" placeholder="es. Squat" value="${ex&&ex.nome?ex.nome.replace(/"/g,'&quot;'):''}"></div>
+      <div><span class="ex-lbl">Serie</span><input type="number" min="0" max="20" value="${ex&&ex.serie?ex.serie:''}"></div>
+      <div><span class="ex-lbl">Rip</span><input type="number" min="0" max="100" value="${ex&&ex.rip?ex.rip:''}"></div>
+      <div><span class="ex-lbl">Kg target</span><input type="number" min="0" max="500" step="0.5" value="${ex&&ex.carico_kg?ex.carico_kg:''}"></div>
+      <button class="ex-del" onclick="this.closest('.ex-row-wrap').remove()">✕</button>
+    </div>
+    <input type="text" class="ex-note-input" placeholder="note (recupero, superset, tecnica...)" value="${ex&&ex.note?ex.note.replace(/"/g,'&quot;'):''}">`;
+  container.appendChild(wrap);
+}
+
+function addSchedaGiorno(giorno) {
+  const wrap = document.getElementById('scheda-giorni');
+  const block = document.createElement('div');
+  block.className = 'giorno-block';
+  block.innerHTML = `
+    <div class="field-row">
+      <div class="field" style="flex:1;"><span class="field-label">Nome giorno</span><input type="text" class="field-input giorno-nome" placeholder="es. Giorno 1 — Parte Bassa" value="${giorno&&giorno.nome?giorno.nome.replace(/"/g,'&quot;'):''}"></div>
+      <button class="giorno-del" onclick="this.closest('.giorno-block').remove()">✕ Rimuovi giorno</button>
+    </div>
+    <div class="field" style="margin-top:8px;"><span class="field-label">Note giorno (opzionale)</span><textarea class="field-textarea giorno-note" style="height:40px;resize:none;">${giorno&&giorno.note?giorno.note:''}</textarea></div>
+    <div class="giorno-ex-rows" style="margin-top:10px;"></div>
+    <button class="add-ex-btn" onclick="addSchedaExRow(this.closest('.giorno-block').querySelector('.giorno-ex-rows'))">+ Esercizio</button>`;
+  wrap.appendChild(block);
+
+  const exRowsContainer = block.querySelector('.giorno-ex-rows');
+  if(giorno && giorno.esercizi && giorno.esercizi.length) {
+    giorno.esercizi.forEach(ex => addSchedaExRow(exRowsContainer, ex));
+  } else {
+    addSchedaExRow(exRowsContainer);
+  }
 }
 
 async function loadSchedaForm() {
   const playerId = document.getElementById('scheda-player-select').value;
   const editor = document.getElementById('scheda-editor');
-  const rowsWrap = document.getElementById('scheda-ex-rows');
+  const giorniWrap = document.getElementById('scheda-giorni');
   if(!playerId) { editor.style.display = 'none'; return; }
   editor.style.display = 'block';
   document.getElementById('scheda-nome').value = '';
-  rowsWrap.innerHTML = '';
+  document.getElementById('scheda-note').value = '';
+  giorniWrap.innerHTML = '';
 
   try {
     const res = await fetch(FB_URL + '/basket_schede/' + playerId + '.json');
     const data = await res.json();
-    if(data && data.esercizi && data.esercizi.length) {
+    if(data && data.giorni && data.giorni.length) {
       document.getElementById('scheda-nome').value = data.nome || '';
-      data.esercizi.forEach(ex => addSchedaExRow(ex));
+      document.getElementById('scheda-note').value = data.note || '';
+      data.giorni.forEach(g => addSchedaGiorno(g));
     } else {
-      addSchedaExRow();
+      addSchedaGiorno();
     }
   } catch(e) {
-    addSchedaExRow();
+    addSchedaGiorno();
   }
 }
 
@@ -317,33 +359,61 @@ function editScheda(playerId) {
   document.getElementById('scheda-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function raccogliSchedaPayload() {
+  const nome = document.getElementById('scheda-nome').value.trim();
+  const note = document.getElementById('scheda-note').value.trim();
+
+  const giorni = [];
+  document.querySelectorAll('#scheda-giorni .giorno-block').forEach(block => {
+    const giornoNome = block.querySelector('.giorno-nome').value.trim();
+    const giornoNote = block.querySelector('.giorno-note').value.trim();
+    const esercizi = [];
+    block.querySelectorAll('.ex-row-wrap').forEach(wrap => {
+      const inputs = wrap.querySelectorAll('.ex-row input');
+      const exNome = inputs[0].value.trim();
+      if(!exNome) return;
+      esercizi.push({
+        nome: exNome,
+        serie: parseInt(inputs[1].value) || 0,
+        rip: parseInt(inputs[2].value) || 0,
+        carico_kg: parseFloat(inputs[3].value) || 0,
+        note: wrap.querySelector('.ex-note-input').value.trim()
+      });
+    });
+    if(esercizi.length === 0) return;
+    giorni.push({ nome: giornoNome || 'Giorno', note: giornoNote, esercizi });
+  });
+
+  if(giorni.length === 0) return null;
+  return { nome: nome || 'Scheda', note, giorni, updatedAt: Date.now() };
+}
+
 async function salvaScheda() {
   const playerId = document.getElementById('scheda-player-select').value;
   if(!playerId) { alert('Seleziona un giocatore.'); return; }
-  const nome = document.getElementById('scheda-nome').value.trim();
-
-  const rows = document.querySelectorAll('#scheda-ex-rows .ex-row');
-  const esercizi = [];
-  rows.forEach(row => {
-    const inputs = row.querySelectorAll('input');
-    const exNome = inputs[0].value.trim();
-    if(!exNome) return;
-    esercizi.push({
-      nome: exNome,
-      serie: parseInt(inputs[1].value) || 0,
-      rip: parseInt(inputs[2].value) || 0,
-      carico_kg: parseFloat(inputs[3].value) || 0
-    });
-  });
-
-  if(esercizi.length === 0) { alert('Aggiungi almeno un esercizio con il nome compilato.'); return; }
+  const payload = raccogliSchedaPayload();
+  if(!payload) { alert('Aggiungi almeno un giorno con un esercizio compilato.'); return; }
 
   await fetch(FB_URL + '/basket_schede/' + playerId + '.json', {
-    method: 'PUT', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ nome: nome || 'Scheda', esercizi, updatedAt: Date.now() })
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
   }).catch(()=>{});
 
   alert('Scheda salvata.');
+}
+
+async function applicaSchedaATutti() {
+  const payload = raccogliSchedaPayload();
+  if(!payload) { alert('Aggiungi almeno un giorno con un esercizio compilato.'); return; }
+
+  const ids = Object.keys(rosterCache).filter(id => rosterCache[id] && rosterCache[id].attivo !== false);
+  if(ids.length === 0) { alert('Nessun giocatore attivo nel roster.'); return; }
+  if(!confirm(`Applicare questa scheda a tutti i ${ids.length} giocatori attivi? Sostituirà le loro schede individuali.`)) return;
+
+  await Promise.all(ids.map(id => fetch(FB_URL + '/basket_schede/' + id + '.json', {
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  }).catch(()=>{})));
+
+  alert('Scheda applicata a ' + ids.length + ' giocatori.');
 }
 
 // ─── TEST ATLETICI ──────────────────────────────────────────
