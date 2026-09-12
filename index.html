@@ -74,11 +74,18 @@
   .save-btn:disabled{opacity:0.35;cursor:not-allowed;}
   .save-flash{background:var(--green)!important;}
 
-  .scheda-ex{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:8px;}
-  .scheda-ex:last-of-type{border-bottom:none;}
+  .scheda-note{font-size:12px;color:var(--text2);line-height:1.6;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+  .scheda-giorno{padding-top:10px;}
+  .scheda-giorno+.scheda-giorno{border-top:1px solid var(--border);margin-top:6px;}
+  .scheda-giorno-header{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .scheda-giorno-note{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:8px;}
+  .scheda-ex-item{padding:7px 0;border-bottom:1px solid var(--border);}
+  .scheda-ex-item:last-of-type{border-bottom:none;}
+  .scheda-ex-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .scheda-ex-nome{font-size:13px;color:var(--text);}
   .scheda-ex-target{font-size:12px;color:var(--accent);font-family:'DM Mono',monospace;white-space:nowrap;}
-  .carica-scheda-btn{width:100%;margin-top:12px;padding:10px;border-radius:var(--radius-sm);border:1px solid rgba(255,143,63,0.35);background:var(--accent-dim2);color:var(--accent);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;}
+  .scheda-ex-note{font-size:11px;color:var(--text3);margin-top:2px;}
+  .carica-scheda-btn{width:100%;margin-top:10px;padding:10px;border-radius:var(--radius-sm);border:1px solid rgba(255,143,63,0.35);background:var(--accent-dim2);color:var(--accent);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;}
   .carica-scheda-btn:hover{background:var(--accent-dim);}
 
   .storico-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
@@ -299,27 +306,39 @@ async function loadScheda() {
   try {
     const res = await fetch(FB_URL + '/basket_schede/' + playerId + '.json');
     const data = await res.json();
-    if(!data || !data.esercizi || data.esercizi.length === 0) return;
+    if(!data || !data.giorni || data.giorni.length === 0) return;
     schedaCorrente = data;
 
     document.getElementById('scheda-card').style.display = 'block';
     document.getElementById('scheda-nome-badge').textContent = data.nome || 'scheda';
 
     const body = document.getElementById('scheda-body');
-    body.innerHTML = data.esercizi.map(ex => `
-      <div class="scheda-ex">
-        <span class="scheda-ex-nome">${ex.nome}</span>
-        <span class="scheda-ex-target">${ex.serie||0}×${ex.rip||0}${ex.carico_kg>0?' @ '+ex.carico_kg+'kg':''}</span>
-      </div>`).join('') + `<button class="carica-scheda-btn" onclick="caricaSchedaNelLog()">Carica nel log di oggi</button>`;
+    let html = data.note ? `<div class="scheda-note">${data.note}</div>` : '';
+    html += data.giorni.map((g, i) => `
+      <div class="scheda-giorno">
+        <div class="scheda-giorno-header">${g.nome || 'Giorno ' + (i+1)}</div>
+        ${g.note ? `<div class="scheda-giorno-note">${g.note}</div>` : ''}
+        ${(g.esercizi||[]).map(ex => `
+          <div class="scheda-ex-item">
+            <div class="scheda-ex-top">
+              <span class="scheda-ex-nome">${ex.nome}</span>
+              <span class="scheda-ex-target">${ex.serie||0}×${ex.rip||0}${ex.carico_kg>0?' @ '+ex.carico_kg+'kg':''}</span>
+            </div>
+            ${ex.note ? `<div class="scheda-ex-note">${ex.note}</div>` : ''}
+          </div>`).join('')}
+        <button class="carica-scheda-btn" onclick="caricaSchedaNelLog(${i})">Carica "${(g.nome||'').replace(/"/g,'&quot;')}" nel log</button>
+      </div>`).join('');
+    body.innerHTML = html;
   } catch(e) {}
 }
 
-function caricaSchedaNelLog() {
-  if(!schedaCorrente) return;
-  document.getElementById('input-sessione').value = schedaCorrente.nome || '';
+function caricaSchedaNelLog(giornoIndex) {
+  if(!schedaCorrente || !schedaCorrente.giorni || !schedaCorrente.giorni[giornoIndex]) return;
+  const giorno = schedaCorrente.giorni[giornoIndex];
+  document.getElementById('input-sessione').value = giorno.nome || schedaCorrente.nome || '';
   const wrap = document.getElementById('ex-rows');
   wrap.innerHTML = '';
-  schedaCorrente.esercizi.forEach(ex => {
+  (giorno.esercizi||[]).forEach(ex => {
     addExRow();
     const row = wrap.lastElementChild;
     const inputs = row.querySelectorAll('input');
