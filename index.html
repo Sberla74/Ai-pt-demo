@@ -8,14 +8,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meerkat Prep">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0f0f0f">
+<meta name="theme-color" content="#f4f1ea">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#0f0f0f;--surface:#1c1b1a;--surface2:#2e2b28;
+    --bg:#f4f1ea;--surface:#1c1b1a;--surface2:#2e2b28;
     --border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.26);
     --text:#f0ede8;--text2:#b0aca2;--text3:#857f74;
-    --accent:#ff8f3f;--accent-dim:rgba(255,143,63,0.14);--accent-dim2:rgba(255,143,63,0.07);
+    --page-text:#211d18;--page-text2:#5c564c;
+    --accent:#ff8f3f;--accent-on-light:#b8560f;--accent-dim:rgba(255,143,63,0.14);--accent-dim2:rgba(255,143,63,0.07);
     --red:#ff6b6b;--red-dim:rgba(255,107,107,0.1);
     --green:#8fd694;--green-dim:rgba(143,214,148,0.12);
     --radius:14px;--radius-sm:8px;
@@ -31,12 +32,12 @@
   }
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
   .header{width:100%;max-width:480px;padding:28px 20px 0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
-  .headline{font-size:24px;font-weight:600;line-height:1.2;color:var(--text);margin-top:6px;}
-  .subline{font-size:13px;color:var(--text2);line-height:1.6;margin-top:4px;}
+  .headline{font-size:24px;font-weight:600;line-height:1.2;color:var(--page-text);margin-top:6px;}
+  .subline{font-size:13px;color:var(--page-text2);line-height:1.6;margin-top:4px;}
   .logo{display:flex;align-items:center;gap:10px;}
   .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.8)}}
-  .logo-text{font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);font-family:'DM Mono',monospace;}
+  .logo-text{font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-on-light);font-family:'DM Mono',monospace;}
   .container{width:100%;max-width:480px;padding:20px;display:flex;flex-direction:column;gap:14px;flex:1;}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
   .card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -74,19 +75,24 @@
   .save-btn:disabled{opacity:0.35;cursor:not-allowed;}
   .save-flash{background:var(--green)!important;}
 
-  .scheda-note{font-size:12px;color:var(--text2);line-height:1.6;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px;}
-  .scheda-giorno{padding-top:10px;}
-  .scheda-giorno+.scheda-giorno{border-top:1px solid var(--border);margin-top:6px;}
-  .scheda-giorno-header{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .scheda-giorno-block{border-top:1px solid var(--border);}
+  .scheda-giorno-block:first-of-type{border-top:none;}
+  .scheda-giorno-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;background:transparent;border:none;padding:10px 0;cursor:pointer;text-align:left;}
+  .scheda-giorno-label{font-size:14px;font-weight:600;color:var(--text);}
+  .scheda-giorno-chevron{color:var(--text3);font-size:12px;transition:transform 0.2s;flex-shrink:0;}
+  .scheda-giorno-chevron.open{transform:rotate(180deg);}
+  .scheda-giorno-content{padding-bottom:10px;}
   .scheda-giorno-note{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:8px;}
-  .scheda-ex-item{padding:7px 0;border-bottom:1px solid var(--border);}
+  .scheda-ex-item{padding:8px 0;border-bottom:1px solid var(--border);}
   .scheda-ex-item:last-of-type{border-bottom:none;}
   .scheda-ex-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .scheda-ex-nome{font-size:13px;color:var(--text);}
   .scheda-ex-target{font-size:12px;color:var(--accent);font-family:'DM Mono',monospace;white-space:nowrap;}
   .scheda-ex-note{font-size:11px;color:var(--text3);margin-top:2px;}
-  .carica-scheda-btn{width:100%;margin-top:10px;padding:10px;border-radius:var(--radius-sm);border:1px solid rgba(255,143,63,0.35);background:var(--accent-dim2);color:var(--accent);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;}
-  .carica-scheda-btn:hover{background:var(--accent-dim);}
+  .scheda-ex-input-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+  .scheda-ex-input-lbl{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+  .scheda-kg-input{width:84px;padding:6px 8px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
+  .scheda-kg-input:focus{border-color:rgba(255,143,63,0.4);}
 
   .storico-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .storico-item:last-child{border-bottom:none;}
@@ -107,7 +113,7 @@
   .test-data{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;}
   .test-valore{font-size:14px;font-weight:600;color:var(--accent);font-family:'DM Mono',monospace;white-space:nowrap;}
 
-  .footer{width:100%;max-width:480px;padding:16px 20px 32px;text-align:center;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+  .footer{width:100%;max-width:480px;padding:16px 20px 32px;text-align:center;font-size:11px;color:var(--page-text2);font-family:'DM Mono',monospace;}
 </style>
 </head>
 <body>
@@ -141,7 +147,7 @@
 
   <div class="card" id="scheda-card" style="display:none;">
     <div class="card-header">
-      <span class="card-title">Scheda assegnata</span>
+      <span class="card-title">Scheda Assegnata: Forza</span>
       <span class="badge badge-off" id="scheda-nome-badge">—</span>
     </div>
     <div class="card-body" id="scheda-body">
@@ -313,41 +319,75 @@ async function loadScheda() {
     document.getElementById('scheda-nome-badge').textContent = data.nome || 'scheda';
 
     const body = document.getElementById('scheda-body');
-    let html = data.note ? `<div class="scheda-note">${data.note}</div>` : '';
-    html += data.giorni.map((g, i) => `
-      <div class="scheda-giorno">
-        <div class="scheda-giorno-header">${g.nome || 'Giorno ' + (i+1)}</div>
-        ${g.note ? `<div class="scheda-giorno-note">${g.note}</div>` : ''}
-        ${(g.esercizi||[]).map(ex => `
-          <div class="scheda-ex-item">
-            <div class="scheda-ex-top">
-              <span class="scheda-ex-nome">${ex.nome}</span>
-              <span class="scheda-ex-target">${ex.serie||0}×${ex.rip||0}${ex.carico_kg>0?' @ '+ex.carico_kg+'kg':''}</span>
-            </div>
-            ${ex.note ? `<div class="scheda-ex-note">${ex.note}</div>` : ''}
-          </div>`).join('')}
-        <button class="carica-scheda-btn" onclick="caricaSchedaNelLog(${i})">Carica "${(g.nome||'').replace(/"/g,'&quot;')}" nel log</button>
-      </div>`).join('');
-    body.innerHTML = html;
+    body.innerHTML = data.giorni.map((g, i) => {
+      const lettera = String.fromCharCode(65 + i);
+      return `
+      <div class="scheda-giorno-block">
+        <button class="scheda-giorno-toggle" onclick="toggleGiorno(this)">
+          <span class="scheda-giorno-label">Scheda ${lettera}: ${g.nome || 'Giorno ' + (i+1)}</span>
+          <span class="scheda-giorno-chevron${i===0?' open':''}">▾</span>
+        </button>
+        <div class="scheda-giorno-content" style="display:${i===0?'block':'none'};">
+          ${g.note ? `<div class="scheda-giorno-note">${g.note}</div>` : ''}
+          ${(g.esercizi||[]).map((ex, exi) => `
+            <div class="scheda-ex-item">
+              <div class="scheda-ex-top">
+                <span class="scheda-ex-nome">${ex.nome}</span>
+                <span class="scheda-ex-target">${ex.serie||0}×${ex.rip||0}${ex.carico_kg>0?' @ '+ex.carico_kg+'kg':''}</span>
+              </div>
+              ${ex.note ? `<div class="scheda-ex-note">${ex.note}</div>` : ''}
+              <div class="scheda-ex-input-row">
+                <span class="scheda-ex-input-lbl">Kg oggi</span>
+                <input type="number" class="scheda-kg-input" data-ex="${exi}" step="0.5" min="0" placeholder="kg">
+              </div>
+            </div>`).join('')}
+          <button class="save-btn" style="margin-top:6px;" onclick="salvaSchedaGiorno(${i}, this)">Salva Scheda ${lettera}</button>
+        </div>
+      </div>`;
+    }).join('');
   } catch(e) {}
 }
 
-function caricaSchedaNelLog(giornoIndex) {
-  if(!schedaCorrente || !schedaCorrente.giorni || !schedaCorrente.giorni[giornoIndex]) return;
+function toggleGiorno(btn) {
+  const content = btn.nextElementSibling;
+  const chevron = btn.querySelector('.scheda-giorno-chevron');
+  const isOpen = content.style.display === 'block';
+  content.style.display = isOpen ? 'none' : 'block';
+  chevron.classList.toggle('open', !isOpen);
+}
+
+async function salvaSchedaGiorno(giornoIndex, btn) {
   const giorno = schedaCorrente.giorni[giornoIndex];
-  document.getElementById('input-sessione').value = giorno.nome || schedaCorrente.nome || '';
-  const wrap = document.getElementById('ex-rows');
-  wrap.innerHTML = '';
-  (giorno.esercizi||[]).forEach(ex => {
-    addExRow();
-    const row = wrap.lastElementChild;
-    const inputs = row.querySelectorAll('input');
-    inputs[0].value = ex.nome || '';
-    inputs[1].value = ex.serie || '';
-    inputs[2].value = ex.rip || '';
-    inputs[3].value = ex.carico_kg || '';
+  const content = btn.closest('.scheda-giorno-content');
+  const esercizi = (giorno.esercizi||[]).map((ex, exi) => {
+    const input = content.querySelector('.scheda-kg-input[data-ex="'+exi+'"]');
+    return {
+      nome: ex.nome,
+      serie: ex.serie || 0,
+      rip: ex.rip || 0,
+      carico_kg: input ? (parseFloat(input.value) || 0) : 0
+    };
   });
-  document.getElementById('log-card').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  btn.disabled = true;
+  const origText = btn.textContent;
+  const payload = { data: todayStr(), sessione: giorno.nome || 'Allenamento', durata_min: 0, esercizi, note_generali: '' };
+
+  try {
+    await fetch(FB_URL + '/basket_allenamenti/' + playerId + '/' + Date.now() + '.json', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    await markPresenza();
+
+    btn.classList.add('save-flash');
+    btn.textContent = '✓ Salvato';
+    setTimeout(()=>{ btn.classList.remove('save-flash'); btn.textContent = origText; btn.disabled = false; }, 1800);
+
+    loadStorico();
+  } catch(e) {
+    btn.disabled = false;
+    alert('Errore di salvataggio, riprova.');
+  }
 }
 
 // ─── PRESENZA ───────────────────────────────────────────────
