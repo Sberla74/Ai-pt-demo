@@ -43,14 +43,6 @@
   .card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
   .card-title{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);font-family:'DM Mono',monospace;}
   .card-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
-  .badge{font-size:11px;font-weight:500;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:20px;}
-  .badge-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(143,214,148,0.25);}
-  .badge-off{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-
-  .presenza-btn{width:100%;padding:16px;border-radius:var(--radius-sm);border:1px solid rgba(255,143,63,0.35);background:var(--accent-dim2);color:var(--accent);font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;}
-  .presenza-btn:hover{background:var(--accent-dim);}
-  .presenza-btn.done{background:var(--green-dim);border-color:rgba(143,214,148,0.35);color:var(--green);cursor:default;}
-
   .field{display:flex;flex-direction:column;gap:4px;}
   .field-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;letter-spacing:0.04em;}
   .field-input,.field-textarea{width:100%;padding:9px 11px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
@@ -126,16 +118,6 @@
 </div>
 
 <div class="container" id="view-allenamento">
-
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Presenza oggi</span>
-      <span class="badge badge-off" id="presenza-badge">—</span>
-    </div>
-    <div class="card-body">
-      <button class="presenza-btn" id="presenza-btn" onclick="markPresenza()">Segna presenza di oggi</button>
-    </div>
-  </div>
 
   <div class="card" id="scheda-card" style="display:none;">
     <div class="card-header">
@@ -218,7 +200,6 @@ async function initSession() {
   const metaBits = [profilo.ruolo, profilo.altezza_cm ? profilo.altezza_cm+' cm' : null, profilo.peso_kg ? profilo.peso_kg+' kg' : null].filter(Boolean);
   document.getElementById('subline').textContent = metaBits.length ? metaBits.join(' · ') : 'Preparazione atletica in palestra';
 
-  checkPresenza();
   loadStorico();
   loadScheda();
   loadTest();
@@ -383,30 +364,7 @@ async function salvaSchedaGiorno(giornoIndex, btn) {
 }
 
 // ─── PRESENZA ───────────────────────────────────────────────
-
-async function checkPresenza() {
-  try {
-    const res = await fetch(FB_URL + '/basket_presenze/' + playerId + '/' + todayStr() + '.json');
-    const data = await res.json();
-    setPresenzaUI(!!(data && data.presente));
-  } catch(e) {}
-}
-
-function setPresenzaUI(done) {
-  const btn = document.getElementById('presenza-btn');
-  const badge = document.getElementById('presenza-badge');
-  if(done) {
-    btn.textContent = '✓ Presenza registrata';
-    btn.classList.add('done');
-    badge.textContent = 'presente';
-    badge.className = 'badge badge-ok';
-  } else {
-    btn.textContent = 'Segna presenza di oggi';
-    btn.classList.remove('done');
-    badge.textContent = 'non registrata';
-    badge.className = 'badge badge-off';
-  }
-}
+// Marcata automaticamente al salvataggio di una scheda (salvaSchedaGiorno), niente più bottone manuale.
 
 async function markPresenza() {
   await fetch(FB_URL + '/basket_presenze/' + playerId + '/' + todayStr() + '.json', {
@@ -414,7 +372,6 @@ async function markPresenza() {
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ data: todayStr(), presente: true, ts: Date.now() })
   }).catch(()=>{});
-  setPresenzaUI(true);
 }
 
 // ─── STORICO ────────────────────────────────────────────────
