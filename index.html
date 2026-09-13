@@ -241,7 +241,7 @@ const FORZA_ESERCIZI = { squat: 'Squat', stacco: 'Stacco', trazioni: 'Trazioni',
 function formatTestValore(t) {
   if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's';
   if(t.tipo === 'forza') return (FORZA_ESERCIZI[t.esercizio]||'Forza') + ' — ' + (t.carico_kg||0) + 'kg × ' + (t.rip||0);
-  if(t.tipo === 'resistenza') return 'Livello ' + (t.livello||0);
+  if(t.tipo === 'resistenza') return 'Livello ' + (t.livello||0) + (t.descrizione ? ' — ' + t.descrizione : '');
   return '—';
 }
 
