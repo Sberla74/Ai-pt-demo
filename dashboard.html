@@ -338,7 +338,7 @@ function formatTestValore(t) {
   if(!t) return '—';
   if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's <span style="color:var(--text3);">· '+t.data+'</span>';
   if(t.tipo === 'forza') return (FORZA_ESERCIZI[t.esercizio]||'Forza') + ' ' + (t.carico_kg||0) + 'kg×' + (t.rip||0) + ' <span style="color:var(--text3);">· '+t.data+'</span>';
-  if(t.tipo === 'resistenza') return 'Liv. ' + (t.livello||0) + ' <span style="color:var(--text3);">· '+t.data+'</span>';
+  if(t.tipo === 'resistenza') return 'Liv. ' + (t.livello||0) + (t.descrizione ? ' — ' + t.descrizione : '') + ' <span style="color:var(--text3);">· '+t.data+'</span>';
   return '—';
 }
 
