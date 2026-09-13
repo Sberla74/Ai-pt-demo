@@ -183,6 +183,7 @@
         <div class="field" id="field-kg" style="display:none;"><span class="field-label">Kg</span><input type="number" class="field-input" id="test-kg" step="0.5" min="0" placeholder="80"></div>
         <div class="field" id="field-rip" style="display:none;"><span class="field-label">Ripetizioni</span><input type="number" class="field-input" id="test-rip" min="0" placeholder="5"></div>
         <div class="field" id="field-livello" style="display:none;"><span class="field-label">Livello (es. 8.5)</span><input type="number" class="field-input" id="test-livello" step="0.1" min="0" placeholder="8.5"></div>
+        <div class="field" id="field-descrizione" style="display:none;"><span class="field-label">Descrizione</span><input type="text" class="field-input" id="test-descrizione" placeholder="es. buono, da migliorare"></div>
         <button class="add-btn" onclick="salvaTest()">+ Salva test</button>
       </div>
     </div>
@@ -437,6 +438,7 @@ function onTestTipoChange() {
   document.getElementById('field-kg').style.display = tipo === 'forza' ? 'flex' : 'none';
   document.getElementById('field-rip').style.display = tipo === 'forza' ? 'flex' : 'none';
   document.getElementById('field-livello').style.display = tipo === 'resistenza' ? 'flex' : 'none';
+  document.getElementById('field-descrizione').style.display = tipo === 'resistenza' ? 'flex' : 'none';
 }
 
 const TEST_LABELS = { agilita: 'Agilità', forza: 'Forza', resistenza: 'Beep Test' };
@@ -445,7 +447,7 @@ const FORZA_ESERCIZI = { squat: 'Squat', stacco: 'Stacco', trazioni: 'Trazioni',
 function formatTestValore(t) {
   if(t.tipo === 'agilita') return (t.tempo_sec||0) + 's';
   if(t.tipo === 'forza') return (FORZA_ESERCIZI[t.esercizio]||'Forza') + ' — ' + (t.carico_kg||0) + 'kg × ' + (t.rip||0);
-  if(t.tipo === 'resistenza') return 'Livello ' + (t.livello||0);
+  if(t.tipo === 'resistenza') return 'Livello ' + (t.livello||0) + (t.descrizione ? ' — ' + t.descrizione : '');
   return '—';
 }
 
@@ -485,7 +487,10 @@ async function salvaTest() {
     payload.carico_kg = parseFloat(document.getElementById('test-kg').value) || 0;
     payload.rip = parseInt(document.getElementById('test-rip').value) || 0;
   }
-  if(tipo === 'resistenza') payload.livello = parseFloat(document.getElementById('test-livello').value) || 0;
+  if(tipo === 'resistenza') {
+    payload.livello = parseFloat(document.getElementById('test-livello').value) || 0;
+    payload.descrizione = document.getElementById('test-descrizione').value.trim();
+  }
 
   await fetch(FB_URL + '/basket_test/' + playerId + '/' + Date.now() + '.json', {
     method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
@@ -495,6 +500,7 @@ async function salvaTest() {
   document.getElementById('test-kg').value = '';
   document.getElementById('test-rip').value = '';
   document.getElementById('test-livello').value = '';
+  document.getElementById('test-descrizione').value = '';
 
   loadTestHistory();
 }
