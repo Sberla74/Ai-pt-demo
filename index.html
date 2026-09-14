@@ -77,6 +77,10 @@
   .scheda-kg-input{width:104px;padding:10px 12px;border-radius:var(--radius-sm);border:2px solid var(--accent);background:var(--surface2);color:#ffffff;font-size:19px;font-weight:700;font-family:'DM Mono',monospace;text-align:center;outline:none;-webkit-appearance:none;}
   .scheda-kg-input::placeholder{color:var(--text3);font-weight:400;}
   .scheda-kg-input:focus{background:var(--accent-dim);}
+  .scheda-ex-save-btn{padding:11px 16px;border-radius:var(--radius-sm);background:var(--accent);color:#0f0f0f;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;flex:1;transition:opacity 0.15s;}
+  .scheda-ex-save-btn:hover{opacity:0.85;}
+  .scheda-ex-save-btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .scheda-ex-save-btn.save-flash{background:var(--green)!important;}
 
   .storico-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .storico-item:last-child{border-bottom:none;}
@@ -303,6 +307,7 @@ async function loadScheda() {
                       <div class="scheda-ex-input-row">
                         <span class="scheda-ex-input-lbl">Kg oggi</span>
                         <input type="number" class="scheda-kg-input" data-ex="${exi}" step="0.5" min="0" placeholder="kg">
+                        <button class="scheda-ex-save-btn" onclick="salvaSingoloEsercizio(${i}, this)">Salva</button>
                       </div>
                     </div>`).join('')}
                 </div>
@@ -312,7 +317,6 @@ async function loadScheda() {
             <span class="field-label">Note</span>
             <textarea class="field-textarea scheda-giorno-note-input" placeholder="note su questa sessione (opzionale)" style="height:44px;resize:none;"></textarea>
           </div>
-          <button class="save-btn" style="margin-top:10px;" onclick="salvaSchedaGiorno(${i}, this)">Salva Scheda ${lettera}</button>
         </div>
       </div>`;
     }).join('');
@@ -327,7 +331,7 @@ function toggleGiorno(btn) {
   chevron.classList.toggle('open', !isOpen);
 }
 
-async function salvaSchedaGiorno(giornoIndex, btn) {
+async function salvaSingoloEsercizio(giornoIndex, btn) {
   const giorno = schedaCorrente.giorni[giornoIndex];
   const content = btn.closest('.scheda-giorno-content');
   const esercizi = (giorno.esercizi||[]).map((ex, exi) => {
@@ -342,19 +346,22 @@ async function salvaSchedaGiorno(giornoIndex, btn) {
   const noteInput = content.querySelector('.scheda-giorno-note-input');
   const note_generali = noteInput ? noteInput.value.trim() : '';
 
-  btn.disabled = true;
-  const origText = btn.textContent;
+  // chiave stabile per data+giorno: più salvataggi lo stesso giorno aggiornano la stessa sessione
+  const key = todayStr().replace(/-/g,'') + '_g' + giornoIndex;
   const payload = { data: todayStr(), sessione: giorno.nome || 'Allenamento', durata_min: 0, esercizi, note_generali };
 
+  btn.disabled = true;
+  const origText = btn.textContent;
+
   try {
-    await fetch(FB_URL + '/basket_allenamenti/' + playerId + '/' + Date.now() + '.json', {
+    await fetch(FB_URL + '/basket_allenamenti/' + playerId + '/' + key + '.json', {
       method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
     });
     await markPresenza();
 
     btn.classList.add('save-flash');
-    btn.textContent = '✓ Salvato';
-    setTimeout(()=>{ btn.classList.remove('save-flash'); btn.textContent = origText; btn.disabled = false; }, 1800);
+    btn.textContent = '✓';
+    setTimeout(()=>{ btn.classList.remove('save-flash'); btn.textContent = origText; btn.disabled = false; }, 1200);
 
     loadStorico();
   } catch(e) {
